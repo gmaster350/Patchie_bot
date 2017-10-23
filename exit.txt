@@ -1,0 +1,59 @@
+Hello! thank you for adding me to your server. 
+I come with several tools to assist in moderating your server. 
+To setup these tools, type !setup adminTools, and I will make a DM session with you. 
+(You must be the owner or have a role with the administrator permission)
+
+1/6) Spam:
+	Enable spam control? `yes` | `no`
+	// Enable automatic spam detection and handling
+	
+	Trigger (choose one or more): `similarity` | `frequency`
+	// What will trigger the spam detection.
+	// similarity: based upon relative similarity between consecutive messages
+	// frequency: based upon message frequency i.e. rapidly posting
+	
+		Frequency (per minute): `<integer>`
+		// Triggers when the frequency of messages exceeds
+	
+		Consecutive similar messages (up to 30): `<integer>`
+		// Triggers when the specified number of messages are all similar
+	
+			Similarity sensitivity: `low` | `medium` | `high`
+			// Low: Only identical messages
+			// Medium: One or two letters different
+			// High: One or two words different
+	
+	Action (choose one): `warn` | `mute <integer>` | `kick` | 'ban <integer>'
+	// <integer> represents minutes
+	// Action to take when spam is detected
+
+		Repeat offense: `none` | `warn` | `mute <integer>` | `kick` | `ban <integer>`
+		// <integer> represents minutes
+		// Action to take for repeated spam offenses
+
+			Strikes: `<integer>`
+			// How many times spam will be tolerated before the repeat action is taken
+
+Swear Filter (2/6):  // Use `!adminTools filter` to view and change these settings later
+	Enable swear filter? `yes` | `no`
+	// Enable automatic swear filter detection and enforcement
+
+	Add Words (comma separated): `word, word, word`
+	// Default set:
+	// `fuck, cunt, shit, whore, nigger`
+	
+	Action: `none` | `warn` | `censor` | `delete`
+	// none: will disable the filter
+	// warn: asks the user not to swear
+	// censor: edits the user's message to mask the offending word
+	// delete: deletes the user message containing the offending word
+	
+		Repeat offense: `none` | `mute <integer>` | `kick` | `ban` <integer>
+		// <integer> represents minutes
+		// Action to take if repeat offenses occur
+
+			Strikes: `<integer>`
+			// How many times swearing will tolerated before the repeat action is taken
+
+			Cooldown: `<integer>`
+			//time in minutes until strikes are removed
