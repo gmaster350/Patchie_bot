@@ -1,6 +1,6 @@
 /*####################
 	Object Helper Module
-		Provides utility functions to assist with objects.
+		Provides utility functions to assist with JS objects.
 		
 		Method parameters:
 			hasKey( <Object>, <String> | <Number> | <RegExp>, function( <boolean> ) [, <boolean> ])
@@ -10,7 +10,13 @@
 
 
 function hasKey(object,key,callback,recurse=false){
-	if(Object.keys(object).some(function(k){return (key instanceof RegExp) ? k.match(key) : k == key;})){
+	if(Object.keys(object).some(function(k){
+		
+		// If 'key' is a RegExp Object, perform a the relevant 
+		// RegExp match on each key of the object.
+		// Otherwise, do a simple string equality check.
+		return (key instanceof RegExp) ? k.match(key) : k == key;
+	})){
 		callback(true);
 	}
 	else if(recurse){
@@ -33,7 +39,7 @@ function hasKey(object,key,callback,recurse=false){
 }
 
 // Check for value existence, optionally recursive
-function hasValue(object,value,recurse=false){
+function hasValue(object,value,callback,recurse=false){
 	if(Object.keys(object).some(function(k){return object[k] == value})){
 		callback(true);
 	}
@@ -58,12 +64,47 @@ function hasValue(object,value,recurse=false){
 
 // For each key-value pairs of given object,
 // call callback 'callback'. Once all callbacks are done,
-// call second callback 'after'.
-function forEach(arr,callback,after){
-	Object.keys(arr).forEach(function(key,index,self){
-		callback(arr[key],key,self);
-	});
-	if(after)after();
+// calls second callback 'after'.
+// recursive allows users to perform a function on every value and sub-object of an object.
+function forEach(arr,callback,after,recursive){
+	if(arr instanceof Map){
+		arr.forEach(function(value,key,self){
+			if(recursive && value instanceof Object){
+				forEach(value,function(v,k,s){
+					callback(v,k,s);
+				},function(){
+					if(after){
+						after();
+					}
+				});
+			}
+			else{
+				callback(value,key,self);
+			}
+		});
+	}
+	else if(arr instanceof Object){
+		Object.keys(arr).forEach(function(key,index,self){
+			if(recursive && value instanceof Object){
+				forEach(value,function(v,k,s){
+					callback(v,k,s);
+				},function(){
+					if(after){
+						after();
+					}
+				});
+			}
+			else{
+				callback(arr[key],key,self);
+			}
+		});
+	}
+	else{
+		throw "objectHelper.forEach must use an Object or Map as its first parameter.";
+	}
+	if(after){
+		after();
+	}
 }
 
 // Step through object branches defined in 'nodes', return object or value at end node.
@@ -74,7 +115,7 @@ function subObject(arr,nodes,callback){
 		});
 	}
 	else{
-		callback(arr[nodes[0]]);
+		callback(arr);
 	}
 }
 

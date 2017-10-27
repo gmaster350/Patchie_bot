@@ -1,28 +1,34 @@
 //Submenu Module
 
 const oh = require('./objectHelper');
-
+const debug = true;
 
 var active = {}; //{'userid':['node','node','node']}
 var tree = {};
 
-function down(user,destination,callback){
+function down(user,destination,callback){ 
+	// Get User's current tree position
 	oh.subObject(tree,active[user],function(result){
-		if(oh.hasKey(result,destination)){
-			if(typeof result[destination] == "object"){
-				active[user].push(destination);
-				callback("Entered submenu " + destination);
-			}
-			else if(typeof result[destination] == "function"){
-				callback(result[destination]);
+		// Check to see if the branches immediately 
+		// below the current tree position
+		// contain the destination key.
+		oh.hasKey(result,destination,function(has_key){
+			if(has_key){
+				if(typeof result[destination] == "object"){
+					active[user].push(destination);
+					callback("Entered submenu " + destination);
+				}
+				else if(typeof result[destination] == "function"){
+					callback(result[destination]);
+				}
+				else{
+					callback("Error: Not a submenu or command.");
+				}
 			}
 			else{
-				callback("Not a submenu or command.");
+				callback("Error: No submenu or command with that name exists.");
 			}
-		}
-		else{
-			callback("No submenu or command with that name exists.");
-		}
+		});
 	});
 }
 
@@ -43,11 +49,29 @@ function list(message,callback){
 		});
 	});
 }
+
+function setTree(newtree){
+	tree = newtree;
+}
+
+function addUser(userid){
+	active[userid] = [];
+}
+
+function getTree(callback){
+	callback(tree);
+}
+
+function getActive(userid,callback){
+	callback(active[userid]);
+}
 	
 module.exports = {
 	"up":up,
 	"down":down,
 	"list":list,
-	"active":active,
-	"tree":tree
+	"addUser":addUser,
+	"getActive":getActive,
+	"setTree":setTree,
+	"getTree":getTree
 };

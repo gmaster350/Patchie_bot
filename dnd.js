@@ -2,7 +2,57 @@ const oh = require("./objectHelper.js");
 const submenu = require("./submenu.js");
 const roleplay = require("./roleplay.js");
 
-const verbs = ["cast","throw","strike","stab","shoot","punch","attack","bash","biforcate","impale","open","steal"];
+const verbs = [
+	"cast",
+	"throw",
+	"strike",
+	"stab",
+	"shoot",
+	"punch",
+	"attack",
+	"bash",
+	"impale",
+	"open",
+	"steal",
+	"give",
+	"hand",
+	"poke",
+	"grab",
+	"pick",
+	"throw",
+	"drink",
+	"eat",
+	"smell",
+	"feel",
+	"stroke",
+	"kick",
+	"open",
+	"twist",
+	"drain",
+	"clean",
+	"rub",
+	"grip",
+	"balance",
+	"read",
+	"watch",
+	"search",
+	"look around",
+	"dance",
+	"lick",
+	"chant",
+	"say",
+	"insult",
+	"berret",
+	"compliment",
+	"chew",
+	"gnaw",
+	"kiss",
+	"suck",
+	"lie down",
+	"stand up",
+	"roll over",
+	"release"
+];
 var playerNames = [];
 
 //evaluates message content, to determine the action to perform
@@ -29,7 +79,7 @@ function evaluate(message,callback){
 			for(var w = 0; i < message.content.split(" "); w++){
 				let word = message.content.split(" ")[w];
 				
-				// If the message contains any action keywords, send a temporary message advising the using about doing actions.
+				// If the message contains any action keywords, send a temporary message advising the using about making actions.
 				if(word == verb){
 					message.channel.send("Action keyword __"+word+"__ was detected. D&D actions must be done using /me.\n`This is a temporary message.`").then(function(msg){
 						msg.delete(3);
