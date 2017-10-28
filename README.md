@@ -1,3 +1,23 @@
+# Patchie bot:
+A multi-function bot, with modularized functions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # dragon_vore_bot
 r/dragonvore subreddit manager created by u/K-guy.
 
