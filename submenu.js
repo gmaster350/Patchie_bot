@@ -16,7 +16,7 @@ function down(user,destination,callback){
 			if(has_key){
 				if(typeof result[destination] == "object"){
 					active[user].push(destination);
-					callback("Entered submenu " + destination);
+					callback("Info: Entered submenu *" + destination + "*");
 				}
 				else if(typeof result[destination] == "function"){
 					callback(result[destination]);
@@ -34,19 +34,45 @@ function down(user,destination,callback){
 
 function up(message,callback){
 	var user = message.author.id;
-	active[user].pop();
-	callback("Went back up to "+active[user][active[user].length-1]);
+	if(active[user].length > 0){
+		var newlast = active[user].length == 1 ? "[root]" : active[user].slice(-2,-1);
+		active[user].pop();
+		callback("Info: Went back up to "+newlast);
+	}
+	else{
+		callback("Info: You are already in *[root]*.");
+	}
 }
 
 function list(message,callback){
 	var user = message.author.id;
-	var response = "";
-	oh.subObject(tree,active[user],function(result){
-		oh.forEach(result,function(value,key){
-			response += "    "+key;
-		},function(){
-			callback(response);
+	var response = "Info:\n**Current location:**\n[root] ";
+	
+	active[user].forEach(function(node){
+		response += "> " + node;
+	});
+	
+	response += "\n\n**Available:**";
+	
+	var makeResponse = new Promise(function(res,rej){
+		oh.subObject(tree,active[user],function(menu){
+			var index = 0;
+			var max = Object.keys(menu).length-1;
+			oh.forEach(menu,function(value,key,self){
+				index += 1;
+				response += "\n" + key;
+				if(typeof value == "object"){
+					response += "...";
+				}
+				if(index == max){
+					res();
+				}
+			});
 		});
+	});
+	
+	makeResponse.then(function(){
+		callback(response);
 	});
 }
 

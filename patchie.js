@@ -63,7 +63,6 @@
 	const test = require("./test.js");
 	const mysql = require("./mysql");
 	const oh = require("./objectHelper");
-	const privateRoom = require("./privateRoom.js");
 
 	
 ///////////////////////////////////////////////
@@ -102,32 +101,22 @@
 */
 	
 
-// Private Room Module
-
-function createRoom(message,callback){
-	var parameters = message.substr(prefix.length).split(" ");
-	var name = parameters[1];
-	var userlist = [];
-	oh.forEach(message.mentions.members.map,function(user,index,self){
-		
-	},function(){
-		privateRoom.create(message.guild,name,userlist,function(){
-			
-		});
-	});
-}
-
-
-
-
 
 // Test Module
 
 function echo(message,callback){
-	callback(message.substr(prefix.length + "echo".length + 1));
+	console.log("echo called");
+	var cut = message.content.substr(prefix.length + 5);
+	callback(cut);
 }
 
-
+function reverse(message,callback){
+	result = "";
+	for(var i = message.content.length-1; i > "reverse".length+2; i--){
+		result += message.content.charAt(i);
+	}
+	callback(result);
+}
 
 
 
@@ -136,9 +125,11 @@ function echo(message,callback){
 submenu.setTree({
 	"test":{
 		"echo":echo,
+		"reverse":reverse,
 		"back":submenu.up, //returns to upper command tree
-		"help":submenu.list
+		"help":submenu.list //print commands present at current location
 	},
+	"back":submenu.up,
 	"help":submenu.list
 });
 
@@ -198,12 +189,13 @@ function command(message,callback){
 							
 							else if(typeof response == "function"){
 								response(message,function(res){
-									if(res instanceof String && res.length > 0){
-										callback(res);
-									}
+									callback(res);
 								});
 							}
 						});
+					}
+					else{
+						callback("Error: No command or menu exists with that name.");
 					}
 				});
 			});
@@ -220,7 +212,7 @@ function command(message,callback){
 	Any functions not part of any module. These include event handling and command rooting
 */
 
-var errorCodes = ["Error:","Warning:","Note:","Be advised:"];
+var errorCodes = ["Error:","Warning:","Note:","Be advised:","Info:"];
 var errorTimeout = 5000;
 
 bot.once("ready",function(){
@@ -237,22 +229,19 @@ bot.once("ready",function(){
 
 bot.on("message",function(message){
 	var send = "";
-	submenu.getActive(message.author.id,function(submenu_active){
-		oh.forEach(submenu_active,function(node){
-			send += node + "> ";
-		});
-	});
 	
 	if(message.content.startsWith(prefix)){
 		command(message,function(response){
-			if(response){
+			if(typeof response == "string" && response.length > 0){
 				if(errorCodes.some(function(code){return response.startsWith(code)})){
-					message.channel.send(response + "\n`this is a temporary message`").then(function(msg){
+					send += response + "\n`this is a temporary message`"
+					message.channel.send(send).then(function(msg){
 						msg.delete(errorTimeout);
 					});
 				}
 				else{
-					message.channel.send(response);
+					send += response;
+					message.channel.send(send);
 				}
 			}
 		});

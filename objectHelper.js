@@ -109,7 +109,7 @@ function forEach(arr,callback,after,recursive){
 
 // Step through object branches defined in 'nodes', return object or value at end node.
 function subObject(arr,nodes,callback){
-	if(nodes.length > 1){
+	if(nodes.length >= 1){
 		subObject(arr[nodes[0]],nodes.slice(1),function(res){
 			callback(res);
 		});
