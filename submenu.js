@@ -1,10 +1,13 @@
 //Submenu Module
 
-const oh = require('./objectHelper');
+const oh = require("./objectHelper");
 const debug = true;
+const fs = require("fs");
 
 var active = {}; //{'userid':['node','node','node']}
 var tree = {};
+
+
 
 function down(user,destination,callback){ 
 	// Get User's current tree position
@@ -28,6 +31,11 @@ function down(user,destination,callback){
 			else{
 				callback("Error: No submenu or command with that name exists.");
 			}
+			fs.writeFile("../submenuData.txt",JSON.stringify(active),function(err){
+				if(err){
+					console.log(err);
+				}
+			});
 		});
 	});
 }
@@ -38,6 +46,11 @@ function up(message,callback){
 		var newlast = active[user].length == 1 ? "[root]" : active[user].slice(-2,-1);
 		active[user].pop();
 		callback("Info: Went back up to "+newlast);
+		fs.writeFile("../submenuData.txt",JSON.stringify(active),function(err){
+			if(err){
+				console.log(err);
+			}
+		});
 	}
 	else{
 		callback("Info: You are already in *[root]*.");
@@ -45,7 +58,14 @@ function up(message,callback){
 }
 
 function list(message,callback){
-	var user = message.author.id;
+	var user;
+	if(message.mentions.users.length > 0){
+		user = message.mentions.users[0].id;
+	}
+	else{
+		user = message.author.id;
+	}
+	
 	var response = "Info:\n**Current location:**\n[root] ";
 	
 	active[user].forEach(function(node){
@@ -62,7 +82,7 @@ function list(message,callback){
 				index += 1;
 				response += "\n" + key;
 				if(typeof value == "object"){
-					response += "...";
+					response += " ...";
 				}
 				if(index == max){
 					res();
@@ -74,6 +94,29 @@ function list(message,callback){
 	makeResponse.then(function(){
 		callback(response);
 	});
+}
+
+function place(message,callback){
+	var user;
+	if(message.mentions.users.length > 0){
+		user = message.mentions.users[0].id;
+	}
+	else{
+		user = message.author.id;
+	}
+	
+	var response = "Info:\n**Current location:**\n[root] ";
+	
+	active[user].forEach(function(node){
+		response += "> " + node;
+	});
+	
+	callback(response);
+}
+
+function importActive(act,callback){
+	active = act;
+	callback();
 }
 
 function setTree(newtree){
@@ -91,6 +134,10 @@ function getTree(callback){
 function getActive(userid,callback){
 	callback(active[userid]);
 }
+
+function getActiveAll(callback){
+	callback(active);
+}
 	
 module.exports = {
 	"up":up,
@@ -98,6 +145,9 @@ module.exports = {
 	"list":list,
 	"addUser":addUser,
 	"getActive":getActive,
+	"importActive":importActive,
+	"getActiveAll":getActiveAll,
 	"setTree":setTree,
-	"getTree":getTree
+	"getTree":getTree,
+	"place":place
 };
