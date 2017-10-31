@@ -8,6 +8,75 @@ var active = {}; //{'userid':['node','node','node']}
 var tree = {};
 
 
+function evaluate(prefix,message,callback){
+	var parameters = message.content.substr(prefix.length).split(" ");
+	
+	/* If the (sub)object 
+	// present at the user's active node 
+	// of the menu tree
+	// contains a key
+	// matching the first parameter...*/
+	submenu.getTree(function(submenu_tree){
+		submenu.getActive(message.author.id,function(submenu_active){
+			oh.subObject(submenu_tree,submenu_active,function(menu){
+				oh.hasKey(menu,parameters[0],function(has_key){
+					if(has_key){
+						
+						/* ...then move the user down the tree
+						// such that the user's new active node
+						// within the command tree
+						// is the submenu they gave*/
+						
+						submenu.down(message.author.id,parameters[0],function(response){
+							
+							/* The response given is what the value of the 
+							// key-value pair in the subobject at the 
+							// current location, which will be either a 
+							// string or a function.
+							
+							// The string response exists for the purpose of responsiveness.
+							
+							// If the value of the key-value pair with the key whose string-value
+							// is equal to the first command parameter 
+							// is another sub-object, 
+							// it means that the command they entered was the name of a submenu, 
+							// and must then be moved down the subtree.
+							// Their active node will be changed 
+							// to reflect their current location
+							// in the submenu tree. */
+							
+							if(typeof response == "string"){
+								callback(response);
+							}	
+							
+							/* If however the response's type is a function
+							// it indicates that the value of the key-value pair 
+							// with the key whose string-value
+							// is equal to the first command parameter
+							// references a function.
+							// In this case, the user remains where they are in the submenu tree
+							// and the function is called.
+							
+							// The function will be defined above, likely to handle the imput,
+							// processing the raw Message object so that it can be used by another
+							// method or function, of which will likely have its own formal parameter format. */
+							
+							else if(typeof response == "function"){
+								response(message,function(res){
+									callback(res);
+								});
+							}
+						});
+					}
+					else{
+						callback("Error: No command or menu exists with that name.");
+					}
+				});
+			});
+		});
+	});
+}
+
 
 function down(user,destination,callback){ 
 	// Get User's current tree position

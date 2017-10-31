@@ -1,13 +1,3 @@
-/*####################
-	Object Helper Module
-		Provides utility functions to assist with JS objects.
-		
-		Method parameters:
-			hasKey( <Object>, <String> | <Number> | <RegExp>, function( <boolean> ) [, <boolean> ])
-			hasValue( <Object>, <ANYTHING> [, <boolean> ])
-####################*/
-
-
 
 function hasKey(object,key,callback,recurse=false){
 	if(Object.keys(object).some(function(k){
