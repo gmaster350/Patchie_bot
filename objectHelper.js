@@ -119,6 +119,72 @@ function subObject(arr,nodes,callback){
 	}
 }
 
+// Search deep object breadth-first, returning first value with a matching key
+function getFirst(obj,key,callback,recursive=false){
+	var objs = [];
+	var flag = false;
+	var result;
+	
+	// Check all keys at current object depth
+	Object.keys(obj).some(function(k){
+		
+		// If the value is another object, store it for later use.
+		if(typeof obj[k] == "object"){
+			objs.push(obj[k]);
+		}
+		
+		// Otherwise, check the key to see if it matches the search parameter.
+		else if(k == key){
+			flag = true;
+			result = obj[k];
+		}
+		
+		// If flag has been set as true, the Array.some() will short circuit.
+		return flag;
+	});
+	
+	// Callback the result if one is found.
+	if(flag){
+		callback(result);
+	}
+	
+	// Otherwise, if there are deeper objects, 
+	// and this function is set as recursive, check deeper.
+	else if(recursive && objs.length > 0){
+		if(!objs.some(function(o){
+			
+			// For all deeper objects, run recurse function.
+			getFirst(o,key,function(res){
+				
+				// An undefined value means that this branch has no matching key,
+				// false is returned to the Array.some() to continue the search.
+				if(res === undefined){
+					return false;
+				}
+				
+				// A non-undefined value means something was found.
+				// true is return to the Array.some() function, short-circuiting the search.
+				else{
+					callback(res);
+					return true;
+				}
+			},recursive);
+		})){
+			// If the search reaches its end without finding anything, callback undefined.
+			callback(undefined);
+		}
+	}
+	else{
+		
+		// If no match is found at this level,
+		// and the search is not recursive,
+		// or there are no deeper objects to find,
+		// callback undefined.
+		callback(undefined);
+	}
+}
+
+
 function printObject(obj,callback,delimiter="    ",output="",level=1){
 	Object.keys(obj).forEach(function(k){
 		v = obj[k];

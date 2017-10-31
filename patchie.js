@@ -13,6 +13,7 @@
 
 // Standard nodejs modules
 	const fs = require("fs");
+	const process = require("process");
 
 // Discord
 	const Discord = require("Discord.js");
@@ -105,7 +106,6 @@
 // Test Module
 
 function echo(message,callback){
-	console.log("echo called");
 	var cut = message.content.substr(prefix.length + 5);
 	callback(cut);
 }
@@ -122,16 +122,32 @@ function reverse(message,callback){
 
 // Submenu Module
 
-submenu.setTree({
+var commandTree = {
 	"test":{
 		"echo":echo,
 		"reverse":reverse,
 		"back":submenu.up, //returns to upper command tree
-		"help":submenu.list //print commands present at current location
+		"help":submenu.list, //print commands present at current location
+		"whereami":submenu.place
 	},
 	"back":submenu.up,
-	"help":submenu.list
+	"help":submenu.list,
+	"whereami":submenu.place
+}
+
+fs.readFile("../submenuData.txt",function(err,data){
+	if(err){
+		console.log(err);
+	}
+	else{
+		submenu.importActive(JSON.parse(data),function(){
+			console.log("Loaded Submenu data");
+			submenu.setTree(commandTree);
+		});
+	}
 });
+
+
 
 function command(message,callback){
 	// Split parameters sans prefix
@@ -213,16 +229,18 @@ function command(message,callback){
 */
 
 var errorCodes = ["Error:","Warning:","Note:","Be advised:","Info:"];
-var errorTimeout = 5000;
+var errorTimeout = 30000;
 
 bot.once("ready",function(){
-	console.log("I'm ready!");
-	bot.user.setGame("prefix: " + prefix);
-	
-	oh.forEach(bot.guilds,function(guild,guildSnowflake,self){
-		oh.forEach(guild.members,function(member,memberSnowflake,self){
-			submenu.addUser(member.id);
+	bot.user.setPresence("online").then(function(user){
+		user.setGame("prefix: " + prefix).then(function(usr){
+			console.log("I'm ready!");
+		},
+		function(err){
+			console.log(err);
 		});
+	},function(err){
+		console.log(err);
 	});
 });
 
@@ -230,11 +248,43 @@ bot.once("ready",function(){
 bot.on("message",function(message){
 	var send = "";
 	
-	if(message.content.startsWith(prefix)){
+	if(message.content == (prefix + "ping")){
+		message.channel.send("pong");
+	}
+	
+	if(message.content == (prefix + "stop") && message.channel.type == "text"){
+		if(message.member.permissions.has("MANAGE_GUILD")){
+			message.channel.send("Bye!").then(function(msg){
+				setTimeout(function(){
+					msg.delete();
+						bot.user.setStatus("invisible").then(function(user){
+							bot.destroy().then(function(){
+							console.log("\n\n\n\n\n\n\nClean exit.");
+						},function(err){
+							console.log(err);
+						});
+					});
+				},1000);
+			});
+		}
+		else{
+			message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
+		}
+	}
+	
+	/*
+	
+	submenu.evaluate(message.substr(prefix.length),function(response){
+		message.channel.send(response);
+	});
+	
+	*/
+	
+	else if(message.content.startsWith(prefix)){
 		command(message,function(response){
 			if(typeof response == "string" && response.length > 0){
 				if(errorCodes.some(function(code){return response.startsWith(code)})){
-					send += response + "\n`this is a temporary message`"
+					send += response + "\n`this is a temporary message` `("+String(errorTimeout/1000)+" seconds)`";
 					message.channel.send(send).then(function(msg){
 						msg.delete(errorTimeout);
 					});
