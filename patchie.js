@@ -281,7 +281,7 @@ bot.on("message",function(message){
 	
 	/*
 	
-	submenu.evaluate(message.substr(prefix.length),function(response){
+	submenu.evaluate(prefix,message,function(response){
 		message.channel.send(response);
 	});
 	
