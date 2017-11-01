@@ -2,7 +2,7 @@
 const fs = require("fs");
 const mysql = require("mysql");
 
-fs.readFile("../databaseSecrets",function(err,secrets){
+fs.readFile("../databaseSecrets.txt",function(err,secrets){
 	const con = mysql.createConnection(JSON.parse(secrets));
 });
 
