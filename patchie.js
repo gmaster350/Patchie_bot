@@ -51,10 +51,13 @@
 					
 					getNew = setTimeout(function(){
 						reddit.new({"r":"pics","limit":1},function(err,response){
-							if(err)
+							if(!err)
+								response.children.forEach(function(post){
+									console.log(post.data.preview.images[0].resolutions);
+								});
+							else{
 								console.log(err);
-							else
-								console.log(response);
+							}
 						});
 					},10000);
 					
