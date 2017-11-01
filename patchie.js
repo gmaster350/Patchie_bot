@@ -14,50 +14,7 @@
 // Standard nodejs modules
 	const fs = require("fs");
 	const process = require("process");
-
-// Discord
-	const Discord = require("Discord.js");
-	const bot = new Discord.Client();
-	const prefix = "~!";
-
-// Reddit
-	const rawjs = require("raw.js");
-	const reddit = new rawjs("User Agent: dragon_vore_bot/1.0 by u/K-guy");
-	/*
-	fs.readFile("../redditClientId.txt",function(err,clientID){
-		if(!err){
-			fs.readFile("../redditSecret.txt",function(err,secret){
-				if(!err){
-					fs.readFile("../password.txt",function(err,pass){
-						if(!err){
-							reddit.setupOAuth2(clientID.toString(), secret.toString(), "https://github.com/gmaster350/dragon_vore_bot");
-							reddit.auth({"username": "dragon_vore_bot", "password": pass.toString()}, function(err, response) {
-								if(!err) {
-									// The user is now authenticated. If you want the temporary bearer token, it's available as response.access_token
-									// and will be valid for response.expires_in seconds.
-									// raw.js will automatically refresh the bearer token as it expires. Unlike web apps, no refresh tokens are available.
-								}
-								else{
-									console.log("Unable to authenticate user: " + err);
-								}
-							});
-							
-						}
-						else{
-							console.log("Could not read file: " +err);
-						}
-					});
-				}
-				else{
-					console.log("Could not read file: " +err);
-				}
-			});
-		}
-		else{
-			console.log("Could not read file: " +err);
-		}
-	});
-	*/
+	
 
 // Custom modules
 	const submenu = require("./submenu.js");
@@ -77,6 +34,52 @@
 ///////////////////////////////////////////////
 
 
+	const rawjs = require("raw.js");
+	const reddit = new rawjs("User Agent: dragon_vore_bot/1.0 by u/K-guy");
+	
+	var queue = []; // array of functions, each must have no arguments.
+	var sendQueue;
+	
+	fs.readFile("../redditSecrets.txt",function(err,res){
+		var data = JSON.parse(res);
+		if(!err){
+			reddit.setupOAuth2(data.clientId, data.secret, "https://github.com/gmaster350/Patchie_bot");
+			reddit.auth({"username": data.username, "password": data.password}, function(err, response) {
+				if(!err) {
+					console.log("Successfully logged into reddit.");
+					
+					// any reddit request must be queued.
+					sendQueue = setInterval(function(){
+						for(var i = 0; i < queue.length && i < 55; i++){
+							queue[i]();
+						}
+					},60000);
+					
+					
+					// The user is now authenticated. If you want the temporary bearer token, it's available as response.access_token
+					// and will be valid for response.expires_in seconds.
+					// raw.js will automatically refresh the bearer token as it expires. Unlike web apps, no refresh tokens are available.
+				}
+				else{
+					console.log("Unable to authenticate user: " + err);
+				}
+			});
+		}
+		else{
+			console.log("Could not read file: " +err);
+		}
+	});
+	
+
+
+
+
+
+
+
+
+
+
 
 //////////////////////////////////////////////////////
 //  _____    _                                   _  //
@@ -87,6 +90,10 @@
 // |_____/  |_| |___/  \___|  \___/  |_|     \__,_| //
 //                                                  //
 //////////////////////////////////////////////////////
+
+	const Discord = require("Discord.js");
+	const bot = new Discord.Client();
+	const prefix = "~!";
 
 
 
