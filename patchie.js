@@ -38,7 +38,8 @@
 	const reddit = new rawjs("User Agent: dragon_vore_bot/1.0 by u/K-guy");
 	
 	var queue = []; // array of functions, each must have no arguments.
-	var sendQueue;
+	var getNew;
+	var lastSearchTime = new Date();
 	
 	fs.readFile("../redditSecrets.txt",function(err,res){
 		var data = JSON.parse(res);
@@ -48,17 +49,15 @@
 				if(!err) {
 					console.log("Successfully logged into reddit.");
 					
-					// any reddit request must be queued.
-					sendQueue = setInterval(function(){
-						for(var i = 0; i < queue.length && i < 55; i++){
-							queue[i]();
-						}
-					},60000);
+					getNew = setTimeout(function(){
+						reddit.new({"r":"pics","limit":1},function(err,response){
+							if(err)
+								console.log(err);
+							else
+								console.log(response);
+						});
+					},10000);
 					
-					
-					// The user is now authenticated. If you want the temporary bearer token, it's available as response.access_token
-					// and will be valid for response.expires_in seconds.
-					// raw.js will automatically refresh the bearer token as it expires. Unlike web apps, no refresh tokens are available.
 				}
 				else{
 					console.log("Unable to authenticate user: " + err);
