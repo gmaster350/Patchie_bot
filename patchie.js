@@ -38,8 +38,10 @@
 	const reddit = new rawjs("User Agent: dragon_vore_bot/1.0 by u/K-guy");
 	
 	var queue = []; // array of functions, each must have no arguments.
-	var getNew;
+	var getModQueue;
 	var lastSearchTime = new Date();
+	
+	var titleMatch = new RegExp("^(\[NSFW\])? ?(.+) (\(.+\)) ?(\{.+\}) ?(\[(imminent|implied)? ?(oral vore|anal vore|unbirth|tail vore|penis vore|cock vore|absorption|mawshot|tongueplay|tongue play|soul vore|hard vore|soft vore|alternative vore|non-vore|non vore|other)\]) ?(\[.+\])+");
 	
 	fs.readFile("../redditSecrets.txt",function(err,res){
 		var data = JSON.parse(res);
@@ -49,12 +51,10 @@
 				if(!err) {
 					console.log("Successfully logged into reddit.");
 					
-					getNew = setTimeout(function(){
-						reddit.new({"r":"pics","limit":1},function(err,response){
+					getModQueue = setTimeout(function(){
+						reddit.new({"r":"dragonvore","limit":50},function(err,response){
 							if(!err)
-								response.children.forEach(function(post){
-									console.log(post.data.preview.images[0].resolutions);
-								});
+								console.log(response);
 							else{
 								console.log(err);
 							}
