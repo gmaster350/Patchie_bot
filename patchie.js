@@ -36,12 +36,43 @@
 
 	const rawjs = require("raw.js");
 	const reddit = new rawjs("User Agent: dragon_vore_bot/1.0 by u/K-guy");
+
+	var getModQueue;	
+	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+ (\(.+\))+ ?(\{.+\})+ ?(\[.+\])+$/g);
 	
-	var queue = []; // array of functions, each must have no arguments.
-	var getModQueue;
-	var lastSearchTime = new Date();
-	
-	var titleMatch = new RegExp("^(\[NSFW\])? ?(.+) (\(.+\)) ?(\{.+\}) ?(\[(imminent|implied)? ?(oral vore|anal vore|unbirth|tail vore|penis vore|cock vore|absorption|mawshot|tongueplay|tongue play|soul vore|hard vore|soft vore|alternative vore|non-vore|non vore|other)\]) ?(\[.+\])+");
+	function titleCheck(title,callback){
+		var is_nsfw = false;
+		var artists = [];
+		var characters = [];
+		var types = [];
+		var content = [];
+		
+		if(title.startsWith("[")){
+			if(title.startsWith("[NSFW]")){
+				is_nsfw = true;
+			}
+			else{
+				callback(false,null,"Malformed [NSFW] tag.",{});
+			}
+		}
+		
+		var opened = "";
+		var index = 0;
+
+		while(str.indexOf("(",index) > 0 && str.indexOf(")",index) > 0 && str.indexOf("{",index) > 0 && str.indexOf("}",index) > 0 && str.indexOf("[",index) > 0 && str.indexOf("]",index) > 0){
+			switch(opened){
+				case "":
+					let next = "(";
+					["(",")","{","}","[","]"].forEach(function(sym){
+						next = str.indexOf(sym,index+1) < str.indexOf(next,index+1) ? sym : next;
+					});
+					index = indexOf(next,index+1);
+					break;
+				case "(":
+					break;
+			}
+		}
+	}
 	
 	fs.readFile("../redditSecrets.txt",function(err,res){
 		var data = JSON.parse(res);
@@ -52,9 +83,22 @@
 					console.log("Successfully logged into reddit.");
 					
 					getModQueue = setTimeout(function(){
-						reddit.new({"r":"dragonvore","limit":50},function(err,response){
-							if(!err)
-								console.log(response);
+						reddit.unmoderated({"r":"dragonvore","limit":1},function(err,response){
+							if(!err){
+								response.children.forEach(function(p){
+									var post = p.data;
+									if(post.title.match(titleMatch) != null){
+										titleCheck(post.title,function(is_valid,nsfw,error,res){
+											if(is_valid){
+												// approve post
+											}
+											else{
+												
+											}
+										});
+									}
+								});
+							}
 							else{
 								console.log(err);
 							}
