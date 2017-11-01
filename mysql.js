@@ -1,11 +1,9 @@
 //mysql helper
-
+const fs = require("fs");
 const mysql = require("mysql");
-const con = mysql.createConnection({
-  host: "game-data.cpl7rgdekurd.us-east-2.rds.amazonaws.com",
-  user: "gmaster351",
-  password: "QuantumLeap144212",
-  database: "Patchie"
+
+fs.readFile("../databaseSecrets",function(err,JSON.parse(secrets)){
+	const con = mysql.createConnection(secrets);
 });
 
 function query(q,callback){
