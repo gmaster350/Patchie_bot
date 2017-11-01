@@ -2,8 +2,8 @@
 const fs = require("fs");
 const mysql = require("mysql");
 
-fs.readFile("../databaseSecrets",function(err,JSON.parse(secrets)){
-	const con = mysql.createConnection(secrets);
+fs.readFile("../databaseSecrets",function(err,secrets){
+	const con = mysql.createConnection(JSON.parse(secrets));
 });
 
 function query(q,callback){
