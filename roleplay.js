@@ -16,16 +16,20 @@ function hash(callback){
 }
 
 class Character{
-	constructor(ownerid,name,hash){
+	constructor(ownerid,name,hash,imported){
 		this.ownerid = ownerid;
 		this.name = name;
-		if(hash)
-			this.hash = hash; //hash allows for unique idenftification
-		else
-			hash(function(h){this.hash=h;});
+		if(hash){
+			this.hash = hash; 
+		}
+		else{
+			hash(function(h){
+				this.hash=h;
+			}); //hash allows for unique idenftification of a character.
+		}
 		
 		this.species;
-		this.health;
+		this.health = 100.00; //stored as an integer between 0 and 10000
 		this.stamina;
 		this.mana;
 		this.height;
@@ -47,7 +51,7 @@ class Item{
 		this.weight = 1;
 		this.ownerId = null;
 		this.ownerHash = null;
-		this.extra = {}; //properties of subclass instances must be stored as extra variables.
+		this.extra = {}; //properties of subclass instances must be stored as 'extra' variables.
 	}
 }
 
@@ -130,9 +134,6 @@ function updateItemTable(item){
 	mysql.query(sql);
 }
 
-function createCharacter(){
-	// You have not specified all features, what would you like to do for the remaining features?
-	//    `random` -> set the remaining features to a random value
-	//    `zero`   -> set the remaining features to zero, or the lowest value
-	//    `ignore` -> leave the remaining features as undefined
+function startCharacter(userid,name,callback){
+	var character = new Character(userid,name);
 }
