@@ -163,7 +163,7 @@
 										titleCheck(post.title,function(is_valid,nsfw,error,res){
 											if(is_valid){
 												// approve post
-												
+												console.log(res);
 											}
 											else{
 												console.log(error);
