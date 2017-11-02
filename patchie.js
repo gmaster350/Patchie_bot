@@ -39,6 +39,40 @@
 
 	var getModQueue;	
 	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+ (\(.+\))+ ?(\{.+\})+ ?(\[.+\])+$/g);
+	var vorePrepends = ["implied","imminent"];
+	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
+	
+	function doubleSplit(string,str1,str2,callback){
+		if(str1 != str2 && str1 !== undefined && str2 !== undefined){
+			str1_indices = [];
+			str2_indices = [];
+			for(var i=0,offset=0;i<string.length;i++){
+				if(string.charAt(i) == str1){
+					if(offset === 0)
+						str1_indices.push(i);
+					offset++;
+				}
+				if(string.charAt(i) == str2){
+					offset--;
+					if(offset === 0)
+						str2_indices.push(i);
+				}
+			}
+			if(str1_indices.length == str2_indices.length){
+				var result = [];
+				for(var s1 = 0, s2 = 0; s1 < str1_indices.length && s2 < str2_indices.length; s1++, s2++){
+					result.push(string.substring(str1_indices[s1]+1,str2_indices[s2]));
+				}
+				callback(result);
+			}
+			else{
+				callback("Token count mismatch. \n'"+str1+"': "+String(str1_indices.length)+"\n'"+str2+"': "+String(str2_indices.length));
+			}
+		}
+		else{
+			callback("You must provide two different token characters");
+		}
+	}
 	
 	function titleCheck(title,callback){
 		var is_nsfw = false;
@@ -59,19 +93,57 @@
 		var opened = "";
 		var index = 0;
 
-		while(str.indexOf("(",index) > 0 && str.indexOf(")",index) > 0 && str.indexOf("{",index) > 0 && str.indexOf("}",index) > 0 && str.indexOf("[",index) > 0 && str.indexOf("]",index) > 0){
-			switch(opened){
-				case "":
-					let next = "(";
-					["(",")","{","}","[","]"].forEach(function(sym){
-						next = str.indexOf(sym,index+1) < str.indexOf(next,index+1) ? sym : next;
-					});
-					index = indexOf(next,index+1);
-					break;
-				case "(":
-					break;
+		doubleSplit(title,"(",")",function(res){
+			if(typeof res == "string"){
+				callback(false,is_nsfw,res,{});
 			}
-		}
+			else{
+				res.forEach(function(a){
+					artists.push(a)
+				});
+				doubleSplit(title,"{","}",function(res){
+					if(typeof res == "string"){
+						callback(false,is_nsfw,res,{});
+					}
+					else{
+						res.forEach(function(a){
+							characters.push(a);
+						});
+						doubleSplit(title,"[","]",function(res){
+							if(typeof res == "string"){
+								callback(false,is_nsfw,res,{});
+							}
+							else{
+								res.some(function(a){
+									if(voreTypes.some(function(vt){
+										return vorePrepends.some(function(vp){
+											return a == vp + " " + vt;
+										});
+									})){
+										if(content.length == 0){
+											types.push(a);
+											return true;
+										}
+										else{
+											callback(false,is_nsfw,"Vore Type tag ('"+a+"') found within content tags.",{});
+											return false
+										}
+									}
+									content.push(a);
+									return true;
+								});
+								callback(true,is_nsfw,"",{
+									"artists":artists,
+									"characters":characters,
+									"types":types,
+									"content":content
+								});
+							}
+						});
+					}
+				});
+			}
+		});
 	}
 	
 	fs.readFile("../redditSecrets.txt",function(err,res){
@@ -91,9 +163,10 @@
 										titleCheck(post.title,function(is_valid,nsfw,error,res){
 											if(is_valid){
 												// approve post
+												
 											}
 											else{
-												
+												console.log(error);
 											}
 										});
 									}
