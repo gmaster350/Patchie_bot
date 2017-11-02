@@ -38,7 +38,8 @@
 	const reddit = new rawjs("User Agent: dragon_vore_bot/1.0 by u/K-guy");
 
 	var getModQueue;	
-	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+ (\(.+\))+ ?(\{.+\})+ ?(\[.+\])+$/g);
+	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+( (\(.+\))+ ?(\{.+\})+ ?(\[.+\])+)?$/g);
+	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
 	
@@ -81,69 +82,110 @@
 		var types = [];
 		var content = [];
 		
-		if(title.startsWith("[")){
-			if(title.startsWith("[NSFW]")){
-				is_nsfw = true;
-			}
-			else{
-				callback(false,null,"Malformed [NSFW] tag.",{});
-			}
+		if(exceptions.some(function(ex){
+			return title.startsWith
+		})){
+		}
+
+		var check = true;
+		
+		var checkExceptions = title.replace(" ","").startsWith("[");
+		var exceptionsValid = false;
+		
+		// Check to see if the post is marked as NSFW
+		if(title.toLowerCase().replace(" ","").startsWith("[NSFW]")){
+			is_nsfw = true;
+			exceptionsValid = true;
 		}
 		
-		var opened = "";
-		var index = 0;
-
-		doubleSplit(title,"(",")",function(res){
-			if(typeof res == "string"){
-				callback(false,is_nsfw,res,{});
-			}
-			else{
-				res.forEach(function(a){
-					artists.push(a)
-				});
-				doubleSplit(title,"{","}",function(res){
-					if(typeof res == "string"){
-						callback(false,is_nsfw,res,{});
-					}
-					else{
-						res.forEach(function(a){
-							characters.push(a);
-						});
-						doubleSplit(title,"[","]",function(res){
-							if(typeof res == "string"){
-								callback(false,is_nsfw,res,{});
-							}
-							else{
-								res.some(function(a){
-									if(voreTypes.some(function(vt){
-										return vorePrepends.some(function(vp){
-											return a == vp + " " + vt;
-										});
-									})){
-										if(content.length == 0){
-											types.push(a);
-											return true;
+		// If the title begins with one of the exceptions, we do not need to check for tags set check as false.
+		else if(exceptions.some(function(ex){
+			return title.toLowerCase().replace(" ","").startsWith("[" + ex + "]");
+		})){
+			check = false;
+			exceptionsValid = true;
+			callback(true,is_nsfw,"",{
+				"artists":artists,
+				"characters":characters,
+				"types":types,
+				"content":content
+			});
+		}
+		
+		if(checkExceptions && !exceptionsValid){
+			callback(false,is_nsfw,"Bad tag at start of title.",{});
+		}
+		
+		else if(check){
+		
+			// Collect Artist tags
+			doubleSplit(title,"(",")",function(res){
+				if(typeof res == "string"){
+					console.log(res);
+				}
+				else{
+					res.forEach(function(a){
+						artists.push(a)
+					});
+					
+					// Collect character tags.
+					doubleSplit(title,"{","}",function(res){
+						if(typeof res == "string"){
+							console.log(res);
+						}
+						else{
+							res.forEach(function(a){
+								characters.push(a);
+							});
+							
+							// Collect type and content tags.
+							doubleSplit(title,"[","]",function(res){
+								if(typeof res == "string"){
+									console.log(res);
+								}
+								else{
+									if(checkExceptions){
+										res.shift();
+									}
+									var errorRes = "";
+									if(res.some(function(a){
+										if(voreTypes.some(function(vt){
+											return vorePrepends.some(function(vp){
+												return a == vp + " " + vt;
+											});
+										})){
+											if(content.length == 0){
+												types.push(a);
+												return false;
+											}
+											else{
+												//short circuit Array.some() if a vore tag is discovered after some content tags are added.
+												errorRes = "Vore Type tag ('"+a+"') found within content tags.";
+												return true; 
+											}
 										}
 										else{
-											callback(false,is_nsfw,"Vore Type tag ('"+a+"') found within content tags.",{});
-											return false
+											content.push(a);
+											return false;
 										}
+									})){
+										callback(false,is_nsfw,errorRes,{});
 									}
-									content.push(a);
-									return true;
-								});
-								callback(true,is_nsfw,"",{
-									"artists":artists,
-									"characters":characters,
-									"types":types,
-									"content":content
-								});
-							}
-						});
-					}
-				});
-			}
-		});
+									else{
+										callback(true,is_nsfw,"",{
+											"artists":artists,
+											"characters":characters,
+											"types":types,
+											"content":content
+										});
+									}
+								}
+							});
+						}
+					});
+				}
+			});
+		}
 	}
 	
 	fs.readFile("../redditSecrets.txt",function(err,res){
@@ -154,19 +196,85 @@
 				if(!err) {
 					console.log("Successfully logged into reddit.");
 					
-					getModQueue = setTimeout(function(){
-						reddit.unmoderated({"r":"dragonvore","limit":1},function(err,response){
+					getModQueue = setInterval(function(){
+						reddit.unmoderated({"r":"dragonvore","limit":5},function(err,response){
 							if(!err){
 								response.children.forEach(function(p){
 									var post = p.data;
 									if(post.title.match(titleMatch) != null){
 										titleCheck(post.title,function(is_valid,nsfw,error,res){
+											
+											var thing = post.name;
+											console.log(String(is_valid) + " ==> " + post.title);
+											
 											if(is_valid){
-												// approve post
-												console.log(res);
+												
+												// approve post //
+												if(nsfw){
+													reddit.nsfw(thing,function(err){
+														if(!err){
+															reddit.approve(thing,function(err){
+																if(err){
+																	console.log(err);
+																}
+															});
+														}
+														else{
+															console.log(err);
+														}
+													});
+												}
+												else{
+													reddit.approve(thing,function(err){
+														if(err){
+															console.log(err);
+														}
+													});
+												}
 											}
 											else{
-												console.log(error);
+												
+												// Remove post if it does not follow the guidelines.
+												reddit.remove(thing,function(err){
+													
+													// Send the user a message about why their post was removed.
+													if(!err){
+														reddit.message({
+															"to":post.author,
+															"subject":"Your post was automatically removed",
+															"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
+														},function(err){
+															if(err){
+																console.log(err);
+															}
+														});
+													}
+													else{
+														console.log(err);
+													}
+												});
+											}
+											
+											
+										});
+									}
+									else{
+										console.log("false ==> " + post.title);
+										// remove post is the title format is wrong.
+										reddit.remove(post.name,function(err){
+											if(!err){
+												reddit.message({
+													"to":post.author,
+													"subject":"Your post was automatically removed",
+													"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
+												},function(err){
+													if(err){
+														console.log(err);
+													}
+												});
+											}
+											else{
+												console.log(err);
 											}
 										});
 									}
@@ -176,7 +284,7 @@
 								console.log(err);
 							}
 						});
-					},10000);
+					},30000);
 					
 				}
 				else{
@@ -212,7 +320,9 @@
 
 	const Discord = require("Discord.js");
 	const bot = new Discord.Client();
+	const dvb = new Discord.Client();
 	const prefix = "~!";
+	const dvbPrefix = "!!";
 
 
 
@@ -360,7 +470,7 @@ var errorTimeout = 30000;
 bot.once("ready",function(){
 	bot.user.setPresence("online").then(function(user){
 		user.setGame("prefix: " + prefix).then(function(usr){
-			console.log("I'm ready!");
+			console.log("Patchie is ready!");
 		},
 		function(err){
 			console.log(err);
@@ -398,15 +508,82 @@ bot.on("message",function(message){
 		}
 	}
 	
-	/*
+/*
 	
 	submenu.evaluate(prefix,message,function(response){
 		message.channel.send(response);
 	});
 	
-	*/
+*/
 	
 	else if(message.content.startsWith(prefix)){
+		command(message,function(response){
+			if(typeof response == "string" && response.length > 0){
+				if(errorCodes.some(function(code){return response.startsWith(code)})){
+					send += response + "\n`this is a temporary message` `("+String(errorTimeout/1000)+" seconds)`";
+					message.channel.send(send).then(function(msg){
+						msg.delete(errorTimeout);
+					});
+				}
+				else{
+					send += response;
+					message.channel.send(send);
+				}
+			}
+		});
+	}
+});
+
+dvb.once("ready",function(){
+	dvb.user.setPresence("online").then(function(user){
+		user.setGame("prefix: " + dvbPrefix).then(function(usr){
+			console.log("Dragon vore dvb is ready!");
+		},
+		function(err){
+			console.log(err);
+		});
+	},function(err){
+		console.log(err);
+	});
+});
+
+
+dvb.on("message",function(message){
+	var send = "";
+	
+	if(message.content == (dvbPrefix + "ping")){
+		message.channel.send("pong");
+	}
+	
+	if(message.content == (dvbPrefix + "stop") && message.channel.type == "text"){
+		if(message.member.permissions.has("MANAGE_GUILD")){
+			message.channel.send("Bye!").then(function(msg){
+				setTimeout(function(){
+					msg.delete();
+						dvb.user.setStatus("invisible").then(function(user){
+							dvb.destroy().then(function(){
+							console.log("\n\n\n\n\n\n\nClean exit.");
+						},function(err){
+							console.log(err);
+						});
+					});
+				},1000);
+			});
+		}
+		else{
+			message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
+		}
+	}
+	
+/*
+	
+	submenu.evaluate(dvbPrefix,message,function(response){
+		message.channel.send(response);
+	});
+	
+*/
+	
+	else if(message.content.startsWith(dvbPrefix)){
 		command(message,function(response){
 			if(typeof response == "string" && response.length > 0){
 				if(errorCodes.some(function(code){return response.startsWith(code)})){
@@ -427,4 +604,8 @@ bot.on("message",function(message){
 // Login secret exists in a folder one level about the git folder.
 fs.readFile("../discordSecret.txt",function(err,secret){
 	bot.login(secret.toString());
+});
+
+fs.readFile("../dvbSecret.txt",function(err,secret){
+	dvb.login(secret.toString());
 });

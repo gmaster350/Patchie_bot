@@ -16,8 +16,8 @@ function evaluate(prefix,message,callback){
 	// of the menu tree
 	// contains a key
 	// matching the first parameter...*/
-	submenu.getTree(function(submenu_tree){
-		submenu.getActive(message.author.id,function(submenu_active){
+	getTree(function(submenu_tree){
+		getActive(message.author.id,function(submenu_active){
 			oh.subObject(submenu_tree,submenu_active,function(menu){
 				oh.hasKey(menu,parameters[0],function(has_key){
 					if(has_key){
@@ -27,7 +27,7 @@ function evaluate(prefix,message,callback){
 						// within the command tree
 						// is the submenu they gave*/
 						
-						submenu.down(message.author.id,parameters[0],function(response){
+						down(message.author.id,parameters[0],function(response){
 							
 							/* The response given is what the value of the 
 							// key-value pair in the subobject at the 
