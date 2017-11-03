@@ -5,7 +5,7 @@
 	Primarily, this bot is made to connect many services together, using
 	a range of APIs, including reddit and discord.
 */
-
+const version = "1.0.0";
 
 
 
@@ -293,15 +293,6 @@
 			});
 		}
 	});
-	
-
-
-
-
-
-
-
-
 
 
 
@@ -363,13 +354,12 @@ var commandTree = {
 	},
 	"back":submenu.up,
 	"help":submenu.list,
-	"whereami":submenu.place
+	"whereami":submenu.place,
+	"about":function(m,c){c("Made by: @Zapp#4885 \nSource: https://github.com/gmaster350/Patchie_bot \nversion: "+version)}
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
-	if(err){
-		console.log(err);
-	}
+	if(err) console.log(err);
 	else{
 		submenu.importActive(JSON.parse(data),function(){
 			console.log("Loaded Submenu data");
