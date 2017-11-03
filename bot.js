@@ -120,9 +120,7 @@
 		
 			// Collect Artist tags
 			doubleSplit(title,"(",")",function(res){
-				if(typeof res == "string"){
-					console.log(res);
-				}
+				if(typeof res == "string") console.log(res);
 				else{
 					res.forEach(function(a){
 						artists.push(a)
@@ -130,9 +128,7 @@
 					
 					// Collect character tags.
 					doubleSplit(title,"{","}",function(res){
-						if(typeof res == "string"){
-							console.log(res);
-						}
+						if(typeof res == "string") console.log(res);
 						else{
 							res.forEach(function(a){
 								characters.push(a);
@@ -140,9 +136,7 @@
 							
 							// Collect type and content tags.
 							doubleSplit(title,"[","]",function(res){
-								if(typeof res == "string"){
-									console.log(res);
-								}
+								if(typeof res == "string") console.log(res);
 								else{
 									if(checkExceptions){
 										res.shift();
@@ -190,15 +184,18 @@
 	
 	fs.readFile("../redditSecrets.txt",function(err,res){
 		var data = JSON.parse(res);
-		if(!err){
+		if(err) console.log("Could not read file: " +err);
+		else{
 			reddit.setupOAuth2(data.clientId, data.secret, "https://github.com/gmaster350/Patchie_bot");
 			reddit.auth({"username": data.username, "password": data.password}, function(err, response) {
-				if(!err) {
+				if(err) console.log("Unable to authenticate user: " + err);
+				else{
 					console.log("Successfully logged into reddit.");
 					
 					getModQueue = setInterval(function(){
 						reddit.unmoderated({"r":"dragonvore","limit":5},function(err,response){
-							if(!err){
+							if(err) console.log(err);
+							else{
 								response.children.forEach(function(p){
 									var post = p.data;
 									if(post.title.match(titleMatch) != null){
@@ -212,22 +209,42 @@
 												// approve post //
 												if(nsfw){
 													reddit.nsfw(thing,function(err){
-														if(!err){
+														if(err) console.log(err);
+														else{
 															reddit.approve(thing,function(err){
 																if(err){
 																	console.log(err);
 																}
 															});
 														}
-														else{
-															console.log(err);
-														}
 													});
 												}
 												else{
 													reddit.approve(thing,function(err){
-														if(err){
-															console.log(err);
+														if(err) console.log(err);
+													});
+												}
+												
+												// archive posts if it is a link type.
+												if(post.name.startsWith("t3")){
+													fs.readFile("./postHistory.txt",function(err,file){
+														if(err) console.log(err);
+														else{
+															data = JSON.parse(file);
+															data.push({
+																"fulldata":post,
+																"permalink":"http://www.reddit.com"+post.permalink,
+																"link":post.url,
+																"thumbnail":post.thumbnail,
+																"artists":res.artist,
+																"characters":res.characters,
+																"types":res.types,
+																"content":res.content,
+																"nsfw":nsfw
+															});
+															fs.writeFile("./postHistory",JSON.stringify(data),function(err){
+																if(err) console.log(err);
+															});
 														}
 													});
 												}
@@ -238,62 +255,42 @@
 												reddit.remove(thing,function(err){
 													
 													// Send the user a message about why their post was removed.
-													if(!err){
+													if(!err)console.log(err);
+													else{
 														reddit.message({
 															"to":post.author,
 															"subject":"Your post was automatically removed",
 															"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
 														},function(err){
-															if(err){
-																console.log(err);
-															}
+															if(err)console.log(err);
 														});
-													}
-													else{
-														console.log(err);
 													}
 												});
 											}
-											
-											
 										});
 									}
 									else{
 										console.log("false ==> " + post.title);
 										// remove post is the title format is wrong.
 										reddit.remove(post.name,function(err){
-											if(!err){
+											if(err) console.log(err);
+											else{
 												reddit.message({
 													"to":post.author,
 													"subject":"Your post was automatically removed",
 													"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
 												},function(err){
-													if(err){
-														console.log(err);
-													}
+													if(err) console.log(err);
 												});
-											}
-											else{
-												console.log(err);
 											}
 										});
 									}
 								});
 							}
-							else{
-								console.log(err);
-							}
 						});
 					},30000);
-					
-				}
-				else{
-					console.log("Unable to authenticate user: " + err);
 				}
 			});
-		}
-		else{
-			console.log("Could not read file: " +err);
 		}
 	});
 	
@@ -320,9 +317,7 @@
 
 	const Discord = require("Discord.js");
 	const bot = new Discord.Client();
-	const dvb = new Discord.Client();
-	const prefix = "~!";
-	const dvbPrefix = "!!";
+	const prefix = "!!";
 
 
 
@@ -470,7 +465,7 @@ var errorTimeout = 30000;
 bot.once("ready",function(){
 	bot.user.setPresence("online").then(function(user){
 		user.setGame("prefix: " + prefix).then(function(usr){
-			console.log("Patchie is ready!");
+			console.log("Dragon vore bot is ready!");
 		},
 		function(err){
 			console.log(err);
@@ -534,78 +529,8 @@ bot.on("message",function(message){
 	}
 });
 
-dvb.once("ready",function(){
-	dvb.user.setPresence("online").then(function(user){
-		user.setGame("prefix: " + dvbPrefix).then(function(usr){
-			console.log("Dragon vore dvb is ready!");
-		},
-		function(err){
-			console.log(err);
-		});
-	},function(err){
-		console.log(err);
-	});
-});
-
-
-dvb.on("message",function(message){
-	var send = "";
-	
-	if(message.content == (dvbPrefix + "ping")){
-		message.channel.send("pong");
-	}
-	
-	if(message.content == (dvbPrefix + "stop") && message.channel.type == "text"){
-		if(message.member.permissions.has("MANAGE_GUILD")){
-			message.channel.send("Bye!").then(function(msg){
-				setTimeout(function(){
-					msg.delete();
-						dvb.user.setStatus("invisible").then(function(user){
-							dvb.destroy().then(function(){
-							console.log("\n\n\n\n\n\n\nClean exit.");
-						},function(err){
-							console.log(err);
-						});
-					});
-				},1000);
-			});
-		}
-		else{
-			message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
-		}
-	}
-	
-/*
-	
-	submenu.evaluate(dvbPrefix,message,function(response){
-		message.channel.send(response);
-	});
-	
-*/
-	
-	else if(message.content.startsWith(dvbPrefix)){
-		command(message,function(response){
-			if(typeof response == "string" && response.length > 0){
-				if(errorCodes.some(function(code){return response.startsWith(code)})){
-					send += response + "\n`this is a temporary message` `("+String(errorTimeout/1000)+" seconds)`";
-					message.channel.send(send).then(function(msg){
-						msg.delete(errorTimeout);
-					});
-				}
-				else{
-					send += response;
-					message.channel.send(send);
-				}
-			}
-		});
-	}
-});
-
 // Login secret exists in a folder one level about the git folder.
-fs.readFile("../discordSecret.txt",function(err,secret){
-	bot.login(secret.toString());
-});
 
-fs.readFile("../dvbSecret.txt",function(err,secret){
-	dvb.login(secret.toString());
+fs.readFile("../botSecret.txt",function(err,secret){
+	bot.login(secret.toString());
 });
