@@ -426,7 +426,7 @@ bot.on("message",function(message){
 			message.channel.send(response);
 		});
 	}
-*/
+
 });
 
 // Login secret exists in a folder one level about the git folder.
