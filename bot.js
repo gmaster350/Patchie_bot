@@ -5,7 +5,7 @@
 	Primarily, this bot is made to connect many services together, using
 	a range of APIs, including reddit and discord.
 */
-const version = "1.0.0";
+const version = "1.0.2 BETA";
 
 
 
@@ -493,14 +493,14 @@ bot.on("message",function(message){
 		}
 	}
 	
+
+	else if(message.content.startsWith(prefix)){
+		submenu.evaluate(prefix,message,function(response){
+			message.channel.send(response);
+		});
+	}
+
 /*
-	
-	submenu.evaluate(prefix,message,function(response){
-		message.channel.send(response);
-	});
-	
-*/
-	
 	else if(message.content.startsWith(prefix)){
 		command(message,function(response){
 			if(typeof response == "string" && response.length > 0){
@@ -517,6 +517,7 @@ bot.on("message",function(message){
 			}
 		});
 	}
+*/
 });
 
 // Login secret exists in a folder one level about the git folder.
