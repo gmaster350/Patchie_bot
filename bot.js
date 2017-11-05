@@ -6,7 +6,7 @@
 	a range of APIs, including reddit and discord.
 */
 
-const version = "1.0.4";
+const version = "1.0.11";
 
 
 ////// Module import and setup //////
@@ -39,11 +39,13 @@ const version = "1.0.4";
 	const reddit = new rawjs("User Agent: dragon_vore_bot/"+version+" by u/K-guy");
 
 	var getModQueue;	
-	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+( (\(.+\))+ ?(\{.+\})+ ?(\[.+\])+)?$/g);
+	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+( (\(.+\))+ ?(\{.+\})+ ?\[[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*\] ?(\[.+\])+)?$/g);
 	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
 	
+	// Splits string using a pair of tokens. returns list of things between token pairs.
+	// nested token pairs will return outermost pair.
 	function doubleSplit(string,str1,str2,callback){
 		if(str1 != str2 && str1 !== undefined && str2 !== undefined){
 			str1_indices = [];
@@ -76,10 +78,39 @@ const version = "1.0.4";
 		}
 	}
 	
+	// Split by more than one token.
+	function multiSplit(string,tokens,callback){
+		if(tokens.length > 0){
+			var str = string.split(tokens[0]);
+			var r = [];
+			str.forEach(function(s){
+				multiSplit(s,tokens.slice(1),function(res){
+					r = r.concat(res);
+				});
+			});
+			callback(r);
+		}
+		else callback(string);
+	}
+	
 	function titleCheck(title,callback){
 		var is_nsfw = false;
 		var artists = [];
 		var characters = [];
+		var genders = {
+			"original":"",
+			"M":0,
+			"m":0,
+			"F":0,
+			"f":0,
+			"H":0,
+			"h":0,
+			"C":0,
+			"c":0,
+			"o":0,
+			"O":0,
+			"?":0
+		};
 		var types = [];
 		var content = [];
 		
@@ -108,6 +139,7 @@ const version = "1.0.4";
 			callback(true,is_nsfw,"",{
 				"artists":artists,
 				"characters":characters,
+				"genders":genders,
 				"types":types,
 				"content":content
 			});
@@ -139,40 +171,50 @@ const version = "1.0.4";
 							doubleSplit(title,"[","]",function(res){
 								if(typeof res == "string") console.log(res);
 								else{
-									if(checkExceptions){
-										res.shift();
-									}
-									var errorRes = "";
-									if(res.some(function(a){
-										if(voreTypes.some(function(vt){
-											return vorePrepends.some(function(vp){
-												return a.toLowerCase() == vp + " " + vt;
+									// Check to see that the first [] tag is a gender tag. This shouldn't fail
+									if(!res[0].match(/^[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*$/g))
+										callback(false,is_nsfw,"First [] tag did not contain a gender tag, or was malformed.");
+									else{
+										if(checkExceptions)res.shift();
+										
+										multiSplit(res[0],["/","\\"],function(gend){
+											gend.forEach(function(g){
+												genders.g++;
 											});
-										})){
-											if(content.length == 0){
-												types.push(a);
-												return false;
+										});
+										
+										var errorRes = "";
+										if(res.some(function(a){
+											if(voreTypes.some(function(vt){
+												return vorePrepends.some(function(vp){
+													return a.toLowerCase() == vp + " " + vt;
+												});
+											})){
+												if(content.length == 0){
+													types.push(a);
+													return false;
+												}
+												else{
+													//short circuit Array.some() if a vore tag is discovered after some content tags are added.
+													errorRes = "Bad tag ('"+a+"') found within content tags.";
+													return true; 
+												}
 											}
 											else{
-												//short circuit Array.some() if a vore tag is discovered after some content tags are added.
-												errorRes = "Bad tag ('"+a+"') found within content tags.";
-												return true; 
+												content.push(a);
+												return false;
 											}
+										})){
+											callback(false,is_nsfw,errorRes,{});
 										}
 										else{
-											content.push(a);
-											return false;
+											callback(true,is_nsfw,"",{
+												"artists":artists,
+												"characters":characters,
+												"types":types,
+												"content":content
+											});
 										}
-									})){
-										callback(false,is_nsfw,errorRes,{});
-									}
-									else{
-										callback(true,is_nsfw,"",{
-											"artists":artists,
-											"characters":characters,
-											"types":types,
-											"content":content
-										});
 									}
 								}
 							});
@@ -199,7 +241,11 @@ const version = "1.0.4";
 							else{
 								response.children.forEach(function(p){
 									var post = p.data;
+									
+									// Regex Filter
 									if(post.title.match(titleMatch) != null){
+										
+										// Collect and gather content.
 										titleCheck(post.title,function(is_valid,nsfw,error,res){
 											
 											var thing = post.name;
@@ -310,7 +356,15 @@ const version = "1.0.4";
 	const Discord = require("Discord.js");
 	const bot = new Discord.Client();
 	const prefix = "!!";
-
+	const about = 
+	"Info:\nMade by: @Zapp#4885"+
+	"\nRepository: https://github.com/gmaster350/Patchie_bot"+
+	"\nVersion: "+version+
+	"\n\n**Icon info**"+
+	"\nSource: "+"http://www.furaffinity.net/view/14462677/"+
+	"\nArtist: "+"http://www.furaffinity.net/user/sprout/"+
+	"\nCharacter: "+"Samael"+
+	"\nOwner: "+"http://www.furaffinity.net/user/macabredragon";
 
 
 /*
@@ -374,7 +428,7 @@ var commandTree = {
 	"back":submenu.up,
 	"help":submenu.list,
 	"whereami":submenu.place,
-	"about":function(m,c){c("Made by: @Zapp#4885 \nSource: https://github.com/gmaster350/Patchie_bot \nVersion: "+version+"b")},
+	"about":function(m,c){c(about)},
 	"reddit":{
 		"back":submenu.up,
 		"help":submenu.list,
@@ -448,9 +502,10 @@ bot.on("message",function(message){
 		submenu.evaluate(prefix,message,function(response){
 			if(typeof response == "string" && response.length > 0){
 				if(errorCodes.some(function(code){return response.startsWith(code)})){
-					send += response + "\n`this is a temporary message` `("+String(errorTimeout/1000)+" seconds)`";
+					send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
 					message.channel.send(send).then(function(msg){
 						msg.delete(errorTimeout);
+						message.delete(errorTimeout);
 					});
 				}
 				else{
