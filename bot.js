@@ -6,7 +6,7 @@
 	a range of APIs, including reddit and discord.
 */
 
-const version = "1.0.3";
+const version = "1.0.4";
 
 
 ////// Module import and setup //////
@@ -23,7 +23,7 @@ const version = "1.0.3";
 	const oh = require("./objectHelper");
 
 	
-/*	
+
 ///////////////////////////////////////////////
 //  _____               _       _   _   _    //
 // |  __ \             | |     | | (_) | |   //
@@ -323,7 +323,25 @@ const version = "1.0.3";
 	The callback must return a string. If string is non-empty, it will be sent to the
 	originating channel as a reply, otherwise it will do nothing.
 */
-	
+
+// Reddit integration
+
+function titlecheck(m,callback){
+	var title = m.content.substr(prefix.length+"titlecheck".length-1);
+	if(title.match(titleMatch) != null){
+		titleCheck(title,function(is_valid,nsfw,error,res){
+			if(is_valid){
+				callback("Your title contains no errors :white_check_mark:");
+			}
+			else{
+				callback(error + " :x:");
+			}
+		});
+	}
+	else{
+		callback("Title format did not match expected pattern.");
+	}
+}
 
 
 // Test Module
@@ -356,7 +374,12 @@ var commandTree = {
 	"back":submenu.up,
 	"help":submenu.list,
 	"whereami":submenu.place,
-	"about":function(m,c){c("Made by: @Zapp#4885 \nSource: https://github.com/gmaster350/Patchie_bot \nVersion: "+version+"b")}
+	"about":function(m,c){c("Made by: @Zapp#4885 \nSource: https://github.com/gmaster350/Patchie_bot \nVersion: "+version+"b")},
+	"reddit":{
+		"back":submenu.up,
+		"help":submenu.list,
+		"checkTitle":titlecheck
+	}
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -423,7 +446,18 @@ bot.on("message",function(message){
 
 	else if(message.content.startsWith(prefix)){
 		submenu.evaluate(prefix,message,function(response){
-			message.channel.send(response);
+			if(typeof response == "string" && response.length > 0){
+				if(errorCodes.some(function(code){return response.startsWith(code)})){
+					send += response + "\n`this is a temporary message` `("+String(errorTimeout/1000)+" seconds)`";
+					message.channel.send(send).then(function(msg){
+						msg.delete(errorTimeout);
+					});
+				}
+				else{
+					send += response;
+					message.channel.send(send);
+				}
+			}
 		});
 	}
 
