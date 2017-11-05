@@ -154,7 +154,7 @@ const version = "1.0.1";
 											}
 											else{
 												//short circuit Array.some() if a vore tag is discovered after some content tags are added.
-												errorRes = "Vore Type tag ('"+a+"') found within content tags.";
+												errorRes = "Bad tag ('"+a+"') found within content tags.";
 												return true; 
 											}
 										}
@@ -255,7 +255,7 @@ const version = "1.0.1";
 												reddit.remove(thing,function(err){
 													
 													// Send the user a message about why their post was removed.
-													if(!err)console.log(err);
+													if(err)console.log(err);
 													else{
 														reddit.message({
 															"to":post.author,
