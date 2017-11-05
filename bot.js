@@ -22,7 +22,6 @@ const version = "1.0.3 BETA";
 	const mysql = require("./mysql");
 	const oh = require("./objectHelper");
 
-	
 /*	
 ///////////////////////////////////////////////
 //  _____               _       _   _   _    //
