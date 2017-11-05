@@ -218,5 +218,6 @@ module.exports = {
 	"getActiveAll":getActiveAll,
 	"setTree":setTree,
 	"getTree":getTree,
-	"place":place
+	"place":place,
+	"evaluate":evaluate
 };
