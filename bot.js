@@ -38,8 +38,10 @@ const version = "1.0.11";
 	const rawjs = require("raw.js");
 	const reddit = new rawjs("User Agent: dragon_vore_bot/"+version+" by u/K-guy");
 
-	var getModQueue;	
-	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+( (\(.+\))+ ?(\{.+\})+ ?\[[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*\] ?(\[.+\])+)?$/g);
+	var getModQueue;
+	var getMail;
+	
+	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+ ((\(.+\))+ ?(\{.+\})+ ?( ?\[[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*\])+ ?(\[.+\])+)? *$/g);
 	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
@@ -98,7 +100,7 @@ const version = "1.0.11";
 		var artists = [];
 		var characters = [];
 		var genders = {
-			"original":"",
+			"originals":[],
 			"M":0,
 			"m":0,
 			"F":0,
@@ -171,50 +173,82 @@ const version = "1.0.11";
 							doubleSplit(title,"[","]",function(res){
 								if(typeof res == "string") console.log(res);
 								else{
-									// Check to see that the first [] tag is a gender tag. This shouldn't fail
-									if(!res[0].match(/^[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*$/g))
-										callback(false,is_nsfw,"First [] tag did not contain a gender tag, or was malformed.");
-									else{
-										if(checkExceptions)res.shift();
-										
-										multiSplit(res[0],["/","\\"],function(gend){
-											gend.forEach(function(g){
-												genders.g++;
-											});
-										});
-										
-										var errorRes = "";
-										if(res.some(function(a){
-											if(voreTypes.some(function(vt){
-												return vorePrepends.some(function(vp){
-													return a.toLowerCase() == vp + " " + vt;
+									// This section ensures tags are in the proper order. Order must be: gender, vore, content.
+									if(checkExceptions)res.shift();
+									
+									var errorRes = "";
+									if(res.some(function(a){
+										if(a.match(/^[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*$/g)){
+											
+											// If current tag matches gender tag pattern, 
+											// and neither vore tags nor content tags have been added
+											if(content.length == 0 && types.length == 0){
+												// ...then add gender tag details to 'genders' variable
+												genders.originals.push(a);
+												multiSplit(a,["/","\\"],function(gend){
+													gend.forEach(function(g){
+														genders.g++;
+													});
 												});
-											})){
-												if(content.length == 0){
-													types.push(a);
-													return false;
-												}
-												else{
-													//short circuit Array.some() if a vore tag is discovered after some content tags are added.
-													errorRes = "Bad tag ('"+a+"') found within content tags.";
-													return true; 
-												}
-											}
-											else{
-												content.push(a);
 												return false;
 											}
-										})){
-											callback(false,is_nsfw,errorRes,{});
+											
+											// Otherwise, set error Response, and short circuit Array.some()
+											else{
+												if(types.length == 0 && content.length > 0){
+													errorRes = "Gender tag ('"+a+"') found after content tags and content tags";
+												}
+												else if(types.length > 0 && content.length == 0){
+													errorRes = "Gender tag ('"+a+"') found after content tags";
+												}
+												else if(types.length > 0 && content.length > 0){
+													errorRes = "Gender tag ('"+a+"') found after vore tags and content tags";
+												}
+												return true;
+											}
 										}
-										else{
-											callback(true,is_nsfw,"",{
-												"artists":artists,
-												"characters":characters,
-												"types":types,
-												"content":content
+										
+										else if(voreTypes.some(function(vt){
+											return vorePrepends.some(function(vp){
+												return a.toLowerCase() == vp + " " + vt;
 											});
+										})){
+											// at least one gender tag should exist before vore tags, 
+											// but no content tags should exist
+											if(genders.originals.length > 0 && content.length == 0){
+												types.push(a);
+												return false;
+											}
+											//short circuit Array.some() if a gender or vore tag is discovered after some content tags are added.
+											else{
+												if(gender.originals.length > 0 && content.length > 0){
+													errorRes = "Vore tag ('"+a+"') found after content tags.";
+												}
+												else if(gender.originals.length == 0 && content.length == 0){
+													errorRes = "Vore tag ('"+a+"') found before gender tags";
+												}
+												else if(gender.originals.length == 0 && content.length > 0){
+													errorRes = "Vore tag ('"+a+"') found before gender tags, AND after content tags???? \nThis error message should never happen, so congrats on managing that.";
+												}
+												return true; 
+											}
 										}
+										
+										// If the tag is not a vore tag or a gender tag, it must be a content tag.
+										else{
+											content.push(a);
+											return false;
+										}
+									})){
+										callback(false,is_nsfw,errorRes,{});
+									}
+									else{
+										callback(true,is_nsfw,"",{
+											"artists":artists,
+											"characters":characters,
+											"types":types,
+											"content":content
+										});
 									}
 								}
 							});
@@ -336,6 +370,30 @@ const version = "1.0.11";
 							}
 						});
 					},30000);
+					/*
+					var getMail = setInterval(function(){
+						reddit.unread({"limit":5,"mark":"true"},function(err,response){
+							if(err)console.log(err);
+							response.children.forEach(function(mail){
+								var subject = mail.data.subject;
+								var body = mail.data.body;
+								var sender = mail.data.author;
+								
+								if(subject.toLowerCase() == "title check"){
+									titlecheck(body,function(errorRes){
+										reddit.message({
+											"to":sender,
+											"subject":"Title Evaluation",
+											"text":errorRes
+										},function(err){
+											if(err)console.log("messaged",err);
+										});
+									},true);
+								}
+							});
+						});
+					},10000);
+					*/
 				}
 			});
 		}
@@ -380,8 +438,8 @@ const version = "1.0.11";
 
 // Reddit integration
 
-function titlecheck(m,callback){
-	var title = m.content.substr(prefix.length+"titlecheck".length-1);
+function titlecheck(m,callback,fromReddit){
+	var title = fromReddit ? m : m.content.substr(prefix.length+"titlecheck".length-1);
 	if(title.match(titleMatch) != null){
 		titleCheck(title,function(is_valid,nsfw,error,res){
 			if(is_valid){
@@ -505,7 +563,8 @@ bot.on("message",function(message){
 					send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
 					message.channel.send(send).then(function(msg){
 						msg.delete(errorTimeout);
-						message.delete(errorTimeout);
+						if(message.channel.type == "text")
+							message.delete(errorTimeout);
 					});
 				}
 				else{
