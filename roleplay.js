@@ -2,8 +2,10 @@
 
 const mysql = require(./mysql);
 const oh = require(./objectHelper);
-var users = {};
-var items = {};
+
+var users = {}; // { discord_user_id : { character_hash : Character } }
+var items = {}; // { discord_user_id : { character_hash
+var tempchars = {};
 
 function hash(callback){
 	var h = "";
@@ -89,7 +91,7 @@ var reconstructItems = new Promise(res,rej){
 				items[item.ownerid] = {};
 			var ex = JSON.parse(item.extra);
 			var newItem = eval("new "+item.type+"(item.name, item.hash, ex)");
-			items[item.ownerid][item.charhash] = 
+			items[item.ownerid][item.charhash] = newItem;
 		});
 	});
 	res();
@@ -129,6 +131,9 @@ function updateItemTable(item){
 	mysql.query(sql);
 }
 
-function startCharacter(userid,name,callback){
-	var character = new Character(userid,name);
+function createCharacter(message,callback){
+	var parameters = message.content.split(" ");
+	var userid = message.author.id;
+	var name = parameters[1];
+	tempchars[userid] = new Character(userid,name);
 }
