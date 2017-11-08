@@ -433,10 +433,10 @@ const version = "1.0.11";
 	"\nArtist: "+"http://www.furaffinity.net/user/sprout/"+
 	"\nCharacter: "+"Samael"+
 	"\nOwner: "+"http://www.furaffinity.net/user/macabredragon";
-	const owner;
+	var owner;
 	fs.readFile("../discordBotOwnerId.txt",function(err,data){
 		if(err)console.log(err);
-		else owner = data.toString();
+		else{owner = data.toString();}
 	});
 
 
