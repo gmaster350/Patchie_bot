@@ -19,14 +19,16 @@ const oh = require("./objectHelper");
 		private channels group.
 */
 
-
+// Create Group Room, only visible to members of the group
 function create(guild,name,users,callback){
 	var roleSettings = {
-		"name":"privateChannel_"+name,
-		"permissions":[
-		]
+		"name":"privateChannel_"+name
 	}
 	guild.createRole(roleSettings).then(function(role){
-		guild.createChannel(name,'text')
+		guild.createChannel(name,'text').then(function(chan){
+			chan.overWritePermissions("everyone",{"READ_MESSAGES":false});
+			chan.overWritePermissions(role,{"READ_MESSAGES":true});
+		});
 	});
+	channel.overWritePermissions()
 }

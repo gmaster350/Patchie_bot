@@ -270,6 +270,7 @@ const version = "1.0.11";
 					console.log("Successfully logged into reddit.");
 					
 					getModQueue = setInterval(function(){
+
 						try{
 							reddit.unmoderated({"r":"dragonvore","limit":5},function(err,response){
 								if(err) console.log(err);
@@ -279,6 +280,7 @@ const version = "1.0.11";
 										
 										// Regex Filter
 										if(post.title.match(titleMatch) != null){
+
 											
 											// Collect and gather content.
 											titleCheck(post.title,function(is_valid,nsfw,error,res){
@@ -397,11 +399,13 @@ const version = "1.0.11";
 										},true);
 									}
 								});
+
 							});
 						}
 						catch(err){
 							alertOwner("please help, I am having problems.",err);
 						}
+
 					},10000);
 					*/
 				}
@@ -433,11 +437,13 @@ const version = "1.0.11";
 	"\nArtist: "+"http://www.furaffinity.net/user/sprout/"+
 	"\nCharacter: "+"Samael"+
 	"\nOwner: "+"http://www.furaffinity.net/user/macabredragon";
+
 	var owner;
 	fs.readFile("../discordBotOwnerId.txt",function(err,data){
 		if(err)console.log(err);
 		else{owner = data.toString();}
 	});
+
 
 
 /*
@@ -470,12 +476,14 @@ function titlecheck(m,callback,fromReddit){
 	}
 }
 
+
 function alertOwner(msg,error){
 	bot.fetchUser(owner).then(function(zapp){
 		bot.channels.get("360352337274863617").send(zapp + " " + msg);
 		owner.send(error);
 	});
 }
+
 
 
 // Test Module
@@ -600,8 +608,10 @@ bot.on("message",function(message){
 			});
 		}
 	}
+
 	catch(err){
 		message.channel.send("Something went wrong. Try again?");
+
 	}
 });
 
