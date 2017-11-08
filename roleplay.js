@@ -1,11 +1,11 @@
 //roleplaying module
 
-const mysql = require(./mysql);
-const oh = require(./objectHelper);
+const mysql = require("./mysql.js");
+const oh = require("./objectHelper.js");
 
 var users = {}; // { discord_user_id : { character_hash : Character } }
-var items = {}; // { discord_user_id : { character_hash
-var tempchars = {};
+var items = {};
+var tempchars = {}; // { discord_user_id : Character }
 
 function hash(callback){
 	var h = "";
@@ -131,7 +131,7 @@ function updateItemTable(item){
 	mysql.query(sql);
 }
 
-function createCharacter(message,callback){
+function startCreatingCharacter(message,callback){
 	var parameters = message.content.split(" ");
 	var userid = message.author.id;
 	var name = parameters[1];
