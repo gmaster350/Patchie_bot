@@ -270,128 +270,142 @@ const version = "1.0.11";
 					console.log("Successfully logged into reddit.");
 					
 					getModQueue = setInterval(function(){
-						reddit.unmoderated({"r":"dragonvore","limit":5},function(err,response){
-							if(err) console.log(err);
-							else{
-								response.children.forEach(function(p){
-									var post = p.data;
-									
-									// Regex Filter
-									if(post.title.match(titleMatch) != null){
+
+						try{
+							reddit.unmoderated({"r":"dragonvore","limit":5},function(err,response){
+								if(err) console.log(err);
+								else{
+									response.children.forEach(function(p){
+										var post = p.data;
 										
-										// Collect and gather content.
-										titleCheck(post.title,function(is_valid,nsfw,error,res){
+										// Regex Filter
+										if(post.title.match(titleMatch) != null){
+
 											
-											var thing = post.name;
-											console.log(String(is_valid) + " ==> " + post.title);
-											
-											if(is_valid){
+											// Collect and gather content.
+											titleCheck(post.title,function(is_valid,nsfw,error,res){
 												
-												// approve post //
-												if(nsfw){
-													reddit.nsfw(thing,function(err){
-														if(err) console.log(err);
-														else{
-															reddit.approve(thing,function(err){
-																if(err){
-																	console.log(err);
-																}
-															});
-														}
-													});
-												}
-												else{
-													reddit.approve(thing,function(err){
-														if(err) console.log(err);
-													});
-												}
+												var thing = post.name;
+												console.log(String(is_valid) + " ==> " + post.title);
 												
-												// archive posts if it is a link type.
-												if(post.name.startsWith("t3")){
-													fs.readFile("./postHistory.txt",function(err,file){
-														if(err) console.log(err);
-														else{
-															data = JSON.parse(file);
-															data.push({
-																"fulldata":post,
-																"permalink":"http://www.reddit.com"+post.permalink,
-																"link":post.url,
-																"thumbnail":post.thumbnail,
-																"artists":res.artist,
-																"characters":res.characters,
-																"types":res.types,
-																"content":res.content,
-																"nsfw":nsfw
-															});
-															fs.writeFile("./postHistory",JSON.stringify(data),function(err){
-																if(err) console.log(err);
-															});
-														}
-													});
-												}
-											}
-											else{
-												
-												// Remove post if it does not follow the guidelines.
-												reddit.remove(thing,function(err){
+												if(is_valid){
 													
-													// Send the user a message about why their post was removed.
-													if(err)console.log(err);
-													else{
-														reddit.message({
-															"to":post.author,
-															"subject":"Your post was automatically removed",
-															"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
-														},function(err){
-															if(err)console.log(err);
+													// approve post //
+													if(nsfw){
+														reddit.nsfw(thing,function(err){
+															if(err) console.log(err);
+															else{
+																reddit.approve(thing,function(err){
+																	if(err){
+																		console.log(err);
+																	}
+																});
+															}
 														});
 													}
-												});
-											}
-										});
-									}
-									else{
-										console.log("false ==> " + post.title);
-										// remove post is the title format is wrong.
-										reddit.remove(post.name,function(err){
-											if(err) console.log(err);
-											else{
-												reddit.message({
-													"to":post.author,
-													"subject":"Your post was automatically removed",
-													"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
-												},function(err){
-													if(err) console.log(err);
-												});
-											}
-										});
-									}
-								});
-							}
-						});
+													else{
+														reddit.approve(thing,function(err){
+															if(err) console.log(err);
+														});
+													}
+													
+													// archive posts if it is a link type.
+													if(post.name.startsWith("t3")){
+														fs.readFile("./postHistory.txt",function(err,file){
+															if(err) console.log(err);
+															else{
+																data = JSON.parse(file);
+																data.push({
+																	"fulldata":post,
+																	"permalink":"http://www.reddit.com"+post.permalink,
+																	"link":post.url,
+																	"thumbnail":post.thumbnail,
+																	"artists":res.artist,
+																	"characters":res.characters,
+																	"types":res.types,
+																	"content":res.content,
+																	"nsfw":nsfw
+																});
+																fs.writeFile("./postHistory",JSON.stringify(data),function(err){
+																	if(err) console.log(err);
+																});
+															}
+														});
+													}
+												}
+												else{
+													
+													// Remove post if it does not follow the guidelines.
+													reddit.remove(thing,function(err){
+														
+														// Send the user a message about why their post was removed.
+														if(err)console.log(err);
+														else{
+															reddit.message({
+																"to":post.author,
+																"subject":"Your post was automatically removed",
+																"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
+															},function(err){
+																if(err)console.log(err);
+															});
+														}
+													});
+												}
+											});
+										}
+										else{
+											console.log("false ==> " + post.title);
+											// remove post is the title format is wrong.
+											reddit.remove(post.name,function(err){
+												if(err) console.log(err);
+												else{
+													reddit.message({
+														"to":post.author,
+														"subject":"Your post was automatically removed",
+														"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
+													},function(err){
+														if(err) console.log(err);
+													});
+												}
+											});
+										}
+									});
+								}
+							});
+						}
+						catch(err){
+							alertOwner("please help, I'm having some problems.",err);
+						}
 					},30000);
 					/*
 					var getMail = setInterval(function(){
-						reddit.unread({"limit":5,"mark":"true"},function(err,response){
-							if(err)console.log(err);
-							response.children.forEach(function(mail){
-								var subject = mail.data.subject;
-								var body = mail.data.body;
-								var sender = mail.data.author;
-								
-								if(subject.toLowerCase() == "title check"){
-									titlecheck(body,function(errorRes){
-										reddit.message({
-											"to":sender,
-											"subject":"Title Evaluation",
-											"text":errorRes
-										},function(err){
-											if(err)console.log("messaged",err);
-										});
-									},true);
-								}
+						try{
+							reddit.unread({"limit":5,"mark":"true"},function(err,response){
+								if(err)console.log(err);
+								response.children.forEach(function(mail){
+									var subject = mail.data.subject;
+									var body = mail.data.body;
+									var sender = mail.data.author;
+									
+									if(subject.toLowerCase() == "title check"){
+										titlecheck(body,function(errorRes){
+											reddit.message({
+												"to":sender,
+												"subject":"Title Evaluation",
+												"text":errorRes
+											},function(err){
+												if(err)console.log("messaged",err);
+											});
+										},true);
+									}
+								});
+
 							});
-						});
+						}
+						catch(err){
+							alertOwner("please help, I am having problems.",err);
+						}
+
 					},10000);
 					*/
 				}
@@ -423,6 +437,13 @@ const version = "1.0.11";
 	"\nArtist: "+"http://www.furaffinity.net/user/sprout/"+
 	"\nCharacter: "+"Samael"+
 	"\nOwner: "+"http://www.furaffinity.net/user/macabredragon";
+
+	var owner;
+	fs.readFile("../discordBotOwnerId.txt",function(err,data){
+		if(err)console.log(err);
+		else{owner = data.toString();}
+	});
+
 
 
 /*
@@ -456,6 +477,15 @@ function titlecheck(m,callback,fromReddit){
 }
 
 
+function alertOwner(msg,error){
+	bot.fetchUser(owner).then(function(zapp){
+		bot.channels.get("360352337274863617").send(zapp + " " + msg);
+		owner.send(error);
+	});
+}
+
+
+
 // Test Module
 
 function echo(message,callback){
@@ -481,6 +511,7 @@ var commandTree = {
 		"reverse":reverse,
 		"back":submenu.up, //returns to upper command tree
 		"help":submenu.list, //print commands present at current location
+		"forceError":function(m,c){if(m.author.id == owner){c(UndefinedVariable);}}, // Will divide by zero.
 		"whereami":submenu.place
 	},
 	"back":submenu.up,
@@ -491,7 +522,8 @@ var commandTree = {
 		"back":submenu.up,
 		"help":submenu.list,
 		"checkTitle":titlecheck
-	}
+	},
+	"checkTitle":titlecheck
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -529,52 +561,58 @@ bot.on("ready",function(){
 
 
 bot.on("message",function(message){
-	var send = "";
-	
-	if(message.content == (prefix + "ping")){
-		message.channel.send("pong");
-	}
-	
-	if(message.content == (prefix + "stop") && message.channel.type == "text"){
-		if(message.member.permissions.has("MANAGE_GUILD")){
-			message.channel.send("Bye!").then(function(msg){
-				setTimeout(function(){
-					msg.delete();
-						bot.user.setStatus("invisible").then(function(user){
-							bot.destroy().then(function(){
-							console.log("\n\n\n\n\n\n\nClean exit.");
-						},function(err){
-							console.log(err);
+	try{
+		var send = "";
+		
+		if(message.content == (prefix + "ping")){
+			message.channel.send("pong");
+		}
+		
+		if(message.content == (prefix + "stop") && message.channel.type == "text"){
+			if(message.member.permissions.has("MANAGE_GUILD")){
+				message.channel.send("Bye!").then(function(msg){
+					setTimeout(function(){
+						msg.delete();
+							bot.user.setStatus("invisible").then(function(user){
+								bot.destroy().then(function(){
+								console.log("\n\n\n\n\n\n\nClean exit.");
+							},function(err){
+								console.log(err);
+							});
 						});
-					});
-				},1000);
+					},1000);
+				});
+			}
+			else{
+				message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
+			}
+		}
+		
+
+		else if(message.content.startsWith(prefix)){
+			submenu.evaluate(prefix,message,function(response){
+				if(typeof response == "string" && response.length > 0){
+					if(errorCodes.some(function(code){return response.startsWith(code)})){
+						send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
+						message.channel.send(send).then(function(msg){
+							msg.delete(errorTimeout);
+							if(message.channel.type == "text")
+								message.delete(errorTimeout);
+						});
+					}
+					else{
+						send += response;
+						message.channel.send(send);
+					}
+				}
 			});
 		}
-		else{
-			message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
-		}
-	}
-	
-
-	else if(message.content.startsWith(prefix)){
-		submenu.evaluate(prefix,message,function(response){
-			if(typeof response == "string" && response.length > 0){
-				if(errorCodes.some(function(code){return response.startsWith(code)})){
-					send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
-					message.channel.send(send).then(function(msg){
-						msg.delete(errorTimeout);
-						if(message.channel.type == "text")
-							message.delete(errorTimeout);
-					});
-				}
-				else{
-					send += response;
-					message.channel.send(send);
-				}
-			}
-		});
 	}
 
+	catch(err){
+		message.channel.send("Something went wrong. Try again?");
+
+	}
 });
 
 // Login secret exists in a folder one level about the git folder.
