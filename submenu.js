@@ -86,14 +86,25 @@ function down(user,destination,callback){
 		// contain the destination key.
 		oh.hasKey(result,destination,function(has_key){
 			if(has_key){
-				if(typeof result[destination] == "object"){
+				var dest = result[destination];
+				if(dest instanceof Array){ //Array
+					if(dest.length == 2 && (dest[0] instanceof Function) && (!(dest[1] instanceof Function) && !(dest[1] instanceof String) && !(dest[1] instanceof Number) && !(dest[1] instanceof Array) && (dest[1] instanceof Object))){
+						callback(dest[0]);
+						active[user].push(destination);
+						callback("Info: Entered submenu *" + destination + "*");
+					}
+					else{
+						console.log("Bad form of submenu!");
+					}
+				}
+				else if(dest instanceof Function){ //Function
+					callback(dest);
+				}
+				else if(dest instanceof Object){ // Object
 					active[user].push(destination);
 					callback("Info: Entered submenu *" + destination + "*");
 				}
-				else if(typeof result[destination] == "function"){
-					callback(result[destination]);
-				}
-				else{
+				else{ 
 					callback("Error: Not a submenu or command.");
 				}
 			}
