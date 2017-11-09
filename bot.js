@@ -33,6 +33,7 @@ const version = "1.0.11";
 // |_|  \_\  \___|  \__,_|  \__,_| |_|  \__| //
 //                                           //
 ///////////////////////////////////////////////
+/* // Remove when merging //
 
 
 	const rawjs = require("raw.js");
@@ -394,12 +395,13 @@ const version = "1.0.11";
 						});
 					},10000);
 					*/
+					/* // Remove when merging //
 				}
 			});
 		}
 	});
 
-
+*/ // Remove when merging //
 
 //////////////////////////////////////////////////////
 //  _____    _                                   _  //
@@ -413,7 +415,7 @@ const version = "1.0.11";
 
 	const Discord = require("Discord.js");
 	const bot = new Discord.Client();
-	const prefix = "!!";
+	const prefix = "~!";
 	const about = 
 	"Info:\nMade by: @Zapp#4885"+
 	"\nRepository: https://github.com/gmaster350/Patchie_bot"+
@@ -482,6 +484,9 @@ var commandTree = {
 		"back":submenu.up, //returns to upper command tree
 		"help":submenu.list, //print commands present at current location
 		"whereami":submenu.place
+	},
+	"character":{
+		"new":roleplay.startCreatingCharacter
 	},
 	"back":submenu.up,
 	"help":submenu.list,
