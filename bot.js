@@ -473,7 +473,10 @@ function reverse(message,callback){
 	callback(result);
 }
 
-
+var variable = false;
+function setVar(m,c){
+	variable = true;
+}
 
 // Submenu Module
 
@@ -483,10 +486,13 @@ var commandTree = {
 		"reverse":reverse,
 		"back":submenu.up, //returns to upper command tree
 		"help":submenu.list, //print commands present at current location
+		"dualFunction":[setVar,{
+			"testing":function(m,c){callback("testing variable: "+variable);},
+			"reset":function(m,c){variable = false; callback("reset testing variable");},
+			"help":submenu.list,
+			"back":submenu.up
+		}],
 		"whereami":submenu.place
-	},
-	"character":{
-		"new":roleplay.startCreatingCharacter
 	},
 	"back":submenu.up,
 	"help":submenu.list,
@@ -522,7 +528,7 @@ var errorTimeout = 30000;
 bot.on("ready",function(){
 	bot.user.setPresence("online").then(function(user){
 		user.setGame("prefix: " + prefix).then(function(usr){
-			console.log("Dragon vore bot is ready!");
+			console.log("Dragon vore (Beta) bot is ready!");
 		},
 		function(err){
 			console.log(err);
