@@ -425,7 +425,7 @@ const version = "1.0.11";
 //                                                  //
 //////////////////////////////////////////////////////
 
-	const Discord = require("Discord.js");
+	const Discord = require("discord.js");
 	const bot = new Discord.Client();
 	const prefix = "!!";
 	const about = 
