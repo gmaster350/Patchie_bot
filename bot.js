@@ -41,7 +41,7 @@ const version = "1.0.11";
 	var getModQueue;
 	var getMail;
 	
-	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+ ((\(.+\))+ ?(\{.+\})+ ?( ?\[[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*\])+ ?(\[.+\])+)? *$/g);
+	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+ ?((\(.+\))+ ?(\{.+\})+ ?( ?\[[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*\])+ ?(\[.+\])+)? *$/g);
 	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
@@ -460,7 +460,7 @@ const version = "1.0.11";
 // Reddit integration
 
 function titlecheck(m,callback,fromReddit){
-	var title = fromReddit ? m : m.content.substr(prefix.length+"titlecheck".length-1);
+	var title = fromReddit ? m : m.content.substr(prefix.length+"titlecheck".length+1);
 	if(title.match(titleMatch) != null){
 		titleCheck(title,function(is_valid,nsfw,error,res){
 			if(is_valid){
