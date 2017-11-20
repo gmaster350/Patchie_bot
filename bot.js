@@ -46,6 +46,9 @@ const version = "1.0.11";
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
 	
+	var voreChannel = "360355480490475522";
+	var nsfwChannel = "360355651119087618";
+	
 	// Splits string using a pair of tokens. returns list of things between token pairs.
 	// nested token pairs will return outermost pair.
 	function doubleSplit(string,str1,str2,callback){
@@ -331,6 +334,13 @@ const version = "1.0.11";
 																});
 															}
 														});
+														
+														if(nsfw){
+															bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+														}
+														else{
+															bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+														}														
 													}
 												}
 												else{
@@ -355,7 +365,7 @@ const version = "1.0.11";
 										}
 										else{
 											console.log("false ==> " + post.title);
-											// remove post is the title format is wrong.
+											// remove post if the title format is wrong.
 											reddit.remove(post.name,function(err){
 												if(err) console.log(err);
 												else{
