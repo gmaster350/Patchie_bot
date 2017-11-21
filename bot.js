@@ -185,7 +185,7 @@ const version = "1.0.11";
 											
 											// If current tag matches gender tag pattern, 
 											// and neither vore tags nor content tags have been added
-											if(content.length == 0 && types.length == 0){
+											if(content.length === 0 && types.length === 0){
 												// ...then add gender tag details to 'genders' variable
 												genders.originals.push(a);
 												multiSplit(a,["/","\\"],function(gend){
@@ -218,7 +218,7 @@ const version = "1.0.11";
 										})){
 											// at least one gender tag should exist before vore tags, 
 											// but no content tags should exist
-											if(genders.originals.length > 0 && content.length == 0){
+											if(genders.originals.length > 0 && content.length === 0){
 												types.push(a);
 												return false;
 											}
@@ -227,10 +227,10 @@ const version = "1.0.11";
 												if(gender.originals.length > 0 && content.length > 0){
 													errorRes = "Vore tag ('"+a+"') found after content tags.";
 												}
-												else if(gender.originals.length == 0 && content.length == 0){
+												else if(gender.originals.length === 0 && content.length === 0){
 													errorRes = "Vore tag ('"+a+"') found before gender tags";
 												}
-												else if(gender.originals.length == 0 && content.length > 0){
+												else if(gender.originals.length === 0 && content.length > 0){
 													errorRes = "Vore tag ('"+a+"') found before gender tags, AND after content tags???? \nThis error message should never happen, so congrats on managing that.";
 												}
 												return true; 
