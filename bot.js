@@ -198,10 +198,10 @@ const version = "1.0.11";
 											
 											// Otherwise, set error Response, and short circuit Array.some()
 											else{
-												if(types.length == 0 && content.length > 0){
+												if(types.length === 0 && content.length > 0){
 													errorRes = "Gender tag ('"+a+"') found after content tags and content tags";
 												}
-												else if(types.length > 0 && content.length == 0){
+												else if(types.length > 0 && content.length === 0){
 													errorRes = "Gender tag ('"+a+"') found after content tags";
 												}
 												else if(types.length > 0 && content.length > 0){
