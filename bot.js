@@ -42,7 +42,7 @@ const version = "1.0.11";
 	var getMail;
 	
 	// Master Regular Expression
-	var titleMatch = new RegExp(/^( *\[.{4}\].+( *[\(\[\{] *.+ *[\)\]\}])+ *)|(.+( *[\(\[\{] *.+ *[\)\]\}])+ *)$/g);
+	var titleMatch = new RegExp(/( *\[.+\].+( *[\(\[\{] *.+ *[\)\]\}])+ *)|(.+( *[\(\[\{] *.+ *[\)\]\}])+ *)|( *\[.+\].+)/g);
 	
 	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
 	var vorePrepends = ["implied","imminent"];
