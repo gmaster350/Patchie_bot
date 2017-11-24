@@ -41,7 +41,9 @@ const version = "1.0.11";
 	var getModQueue;
 	var getMail;
 	
-	var titleMatch = new RegExp(/^(\[.+\])? ?[^\[\]]+ ?((\(.+\))+ ?(\{.+\})+ ?( ?\[[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*\])+ ?(\[.+\])+)? *$/g);
+	// Master Regular Expression
+	var titleMatch = new RegExp(/^( *\[.{4}\].+( *[\(\[\{] *.+ *[\)\]\}])+ *)|(.+( *[\(\[\{] *.+ *[\)\]\}])+ *)$/g);
+	
 	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
@@ -120,7 +122,7 @@ const version = "1.0.11";
 		var content = [];
 		
 		if(exceptions.some(function(ex){
-			return title.startsWith
+			return title.startsWith(ex);
 		})){
 		}
 
@@ -130,7 +132,7 @@ const version = "1.0.11";
 		var exceptionsValid = false;
 		
 		// Check to see if the post is marked as NSFW
-		if(title.toLowerCase().replace(" ","").startsWith("[NSFW]")){
+		if(title.toLowerCase().replace(" ","").startsWith("[nsfw]")){
 			is_nsfw = true;
 			exceptionsValid = true;
 		}
@@ -155,7 +157,9 @@ const version = "1.0.11";
 		}
 		
 		else if(check){
-		
+			var allTagsPresent = true;
+			var ErrorMessage = "";
+			
 			// Collect Artist tags
 			doubleSplit(title,"(",")",function(res){
 				if(typeof res == "string") console.log(res);
@@ -163,6 +167,10 @@ const version = "1.0.11";
 					res.forEach(function(a){
 						artists.push(a)
 					});
+					if(res.length === 0){
+						allTagsPresent = false;
+						ErrorMessage += "\nNo artist tags found";
+					}
 					
 					// Collect character tags.
 					doubleSplit(title,"{","}",function(res){
@@ -171,87 +179,68 @@ const version = "1.0.11";
 							res.forEach(function(a){
 								characters.push(a);
 							});
+							if(res.length === 0){
+								allTagsPresent = false;
+								ErrorMessage += "\nNo character tags found";
+							}
 							
 							// Collect type and content tags.
 							doubleSplit(title,"[","]",function(res){
-								if(typeof res == "string") console.log(res);
+								if(typeof res == "string") {
+									console.log(res);
+								}
 								else{
 									// This section ensures tags are in the proper order. Order must be: gender, vore, content.
 									if(checkExceptions)res.shift();
-									
-									var errorRes = "";
-									if(res.some(function(a){
+									res.forEach(function(a){
 										if(a.match(/^[mMfFhHcCoO\?]([\/\\][mMfFhHcCoO\?])*$/g)){
-											
-											// If current tag matches gender tag pattern, 
-											// and neither vore tags nor content tags have been added
-											if(content.length === 0 && types.length === 0){
-												// ...then add gender tag details to 'genders' variable
-												genders.originals.push(a);
-												multiSplit(a,["/","\\"],function(gend){
-													gend.forEach(function(g){
-														genders.g++;
-													});
+											genders.originals.push(a);
+											multiSplit(a,["/","\\"],function(gend){
+												gend.forEach(function(g){
+													genders.g++;
 												});
-												return false;
-											}
-											
-											// Otherwise, set error Response, and short circuit Array.some()
-											else{
-												if(types.length === 0 && content.length > 0){
-													errorRes = "Gender tag ('"+a+"') found after content tags and content tags";
-												}
-												else if(types.length > 0 && content.length === 0){
-													errorRes = "Gender tag ('"+a+"') found after content tags";
-												}
-												else if(types.length > 0 && content.length > 0){
-													errorRes = "Gender tag ('"+a+"') found after vore tags and content tags";
-												}
-												return true;
-											}
+											});
 										}
 										
 										else if(voreTypes.some(function(vt){
-											return vorePrepends.some(function(vp){
-												return a.toLowerCase() == vp + " " + vt;
-											});
-										})){
-											// at least one gender tag should exist before vore tags, 
-											// but no content tags should exist
-											if(genders.originals.length > 0 && content.length === 0){
-												types.push(a);
-												return false;
+											if(a.toLowerCase() == vt){
+												return true;
 											}
-											//short circuit Array.some() if a gender or vore tag is discovered after some content tags are added.
 											else{
-												if(gender.originals.length > 0 && content.length > 0){
-													errorRes = "Vore tag ('"+a+"') found after content tags.";
-												}
-												else if(gender.originals.length === 0 && content.length === 0){
-													errorRes = "Vore tag ('"+a+"') found before gender tags";
-												}
-												else if(gender.originals.length === 0 && content.length > 0){
-													errorRes = "Vore tag ('"+a+"') found before gender tags, AND after content tags???? \nThis error message should never happen, so congrats on managing that.";
-												}
-												return true; 
+												return vorePrepends.some(function(vp){
+													return a.toLowerCase() == vp + " " + vt;
+												});
 											}
+										})){
+											types.push(a);
 										}
 										
 										// If the tag is not a vore tag or a gender tag, it must be a content tag.
 										else{
 											content.push(a);
-											return false;
 										}
-									})){
-										callback(false,is_nsfw,errorRes,{});
+									});
+									
+									
+									if(genders.originals.length === 0){
+										allTagsPresent = false;
+										ErrorMessage += "\nNo gender tags found.";
 									}
-									else{
+									if(types.length === 0){
+										allTagsPresent = false;
+										ErrorMessage += "\nNo vore tags found.";
+									}
+									
+									if(allTagsPresent){
 										callback(true,is_nsfw,"",{
 											"artists":artists,
 											"characters":characters,
 											"types":types,
 											"content":content
 										});
+									}
+									else{
+										callback(false,is_nsfw,ErrorMessage,{});
 									}
 								}
 							});
