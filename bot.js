@@ -426,6 +426,7 @@ const version = "1.0.11";
 
 	const Discord = require("discord.js");
 	const bot = new Discord.Client();
+	const spam = require("./spam.js");
 	const prefix = "!!";
 	const about = 
 	"Info:\nMade by: @Zapp#4885"+
@@ -605,6 +606,9 @@ bot.on("message",function(message){
 					}
 				}
 			});
+		}
+		else{
+			spam.process(message);
 		}
 	}
 
