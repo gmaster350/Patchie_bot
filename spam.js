@@ -5,18 +5,16 @@ const historyLength = 30;
 var strikeLength = 5;
 
 var history = {
-	<guildid>:{
-		<channelid>:{
-			<userid>:{
-				"messages":[
-					{
-						messageid:1234567890123456, 
-						content:"content", 
-						time:"hh:mm"
-					}
-				],
-				"strikes": 0
-			}
+	<channelid>:{
+		<userid>:{
+			"messages":[
+				{
+					messageid:1234567890123456, 
+					content:"content", 
+					time:"hh:mm"
+				}
+			],
+			"strikes": 0
 		}
 	}
 }
@@ -49,29 +47,31 @@ function meanLev(arr,callback){
 }
 
 function process(message){
-	if (!oh.hasKey(history,message.guild.id))
-		history[message.guild.id] = {};
-	if (!oh.hasKey(history[message.guild.id],message.channel.id))
-		history[message.guild.id][message.channel.id] = {};
-	if (!oh.hasKey(history[message.guild.id],[message.channel.id][message.author.id],message.author.id)){
-		history[message.guild.id][message.channel.id][message.author.id] = {};
-		history[message.guild.id][message.channel.id][message.author.id]["messages"] = [];
-		history[message.guild.id][message.channel.id][message.author.id]["strikes"] = 0;
+	if (!oh.hasKey(history,message.channel.id))
+		history[message.channel.id] = {};
+	if (!oh.hasKey(history[message.channel.id],message.author.id)){
+		history[message.channel.id][message.author.id] = {};
+		history[message.channel.id][message.author.id]["messages"] = [];
+		history[message.channel.id][message.author.id]["strikes"] = 0;
 	}
 	
 
-	var arr = history[message.guild.id][message.channel.id][message.author.id].messages;
-	var stks = history[message.guild.id][message.channel.id][message.author.id].strikes;
-	arr.push(
+	var messages = history[message.channel.id][message.author.id].messages;
+	var strikes = history[message.channel.id][message.author.id].strikes;
+	messages.push(
 		{
 			"messageid":message.id,
 			"userid":message.author.id,
 			"content":message.content
 		}
 	);
-	if(arr.length > historyLength){
-		arr.splice(0,1);
+	if(messages.length > historyLength){
+		messages.splice(0,1);
 	}
+	
+	meanLev(messages,function(diff){
+		console.log(diff);
+	});
 }
 
 module.exports = {
