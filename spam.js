@@ -5,18 +5,6 @@ const historyLength = 30;
 var strikeLength = 5;
 
 var history = {
-	<channelid>:{
-		<userid>:{
-			"messages":[
-				{
-					messageid:1234567890123456, 
-					content:"content", 
-					time:"hh:mm"
-				}
-			],
-			"strikes": 0
-		}
-	}
 }
 
 function lev(s1, s2, callback) {

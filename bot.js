@@ -614,7 +614,6 @@ bot.on("message",function(message){
 
 	catch(err){
 		message.channel.send("Something went wrong. Try again?");
-
 	}
 });
 
