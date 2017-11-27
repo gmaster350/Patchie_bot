@@ -650,6 +650,10 @@ bot.on("message",function(message){
 	}
 });
 
+bot.on("guildMemberAdd",function(member){
+	member.addRole(getRoleFromGuildByName(channel.guild,"Member"));
+});
+
 // Login secret exists in a folder one level about the git folder.
 
 fs.readFile("../botSecret.txt",function(err,secret){
