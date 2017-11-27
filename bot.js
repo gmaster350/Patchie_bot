@@ -33,7 +33,7 @@ const version = "1.0.11";
 // |_|  \_\  \___|  \__,_|  \__,_| |_|  \__| //
 //                                           //
 ///////////////////////////////////////////////
-
+/*
 
 	const rawjs = require("raw.js");
 	const reddit = new rawjs("User Agent: dragon_vore_bot/"+version+" by u/K-guy");
@@ -376,7 +376,7 @@ const version = "1.0.11";
 							alertOwner("please help, I'm having some problems.",err);
 						}
 					},30000);
-					/*
+					
 					var getMail = setInterval(function(){
 						try{
 							reddit.unread({"limit":5,"mark":"true"},function(err,response){
@@ -406,13 +406,13 @@ const version = "1.0.11";
 						}
 
 					},10000);
-					*/
+					
 				}
 			});
 		}
 	});
 
-
+*/
 
 //////////////////////////////////////////////////////
 //  _____    _                                   _  //
@@ -426,7 +426,7 @@ const version = "1.0.11";
 
 	const Discord = require("discord.js");
 	const bot = new Discord.Client();
-	//const spam = require("./spam.js");
+	const spam = require("./spam.js");
 	const prefix = "!!";
 	const about = 
 	"Info:\nMade by: @Zapp#4885"+
@@ -444,6 +444,14 @@ const version = "1.0.11";
 		else{owner = data.toString();}
 	});
 
+	function getRoleFromGuildByName(guild,name){
+		var res = undefined;
+		guild.roles.map(function(role,snowflake){
+			if(role.name == name)
+				res = role;
+		});
+		return res;
+	}
 
 
 /*
@@ -557,58 +565,83 @@ bot.on("ready",function(){
 	},function(err){
 		console.log(err);
 	});
+	
+	bot.channels.map(function(channel){
+		if(channel.type == "text"){
+			var role = getRoleFromGuildByName(channel.guild,"Member");
+			channel.members.map(function(member){
+				member.addRole(role);
+			});
+		}
+	});
 });
-
 
 bot.on("message",function(message){
 	try{
-		var send = "";
-		
-		if(message.content == (prefix + "ping")){
-			message.channel.send("pong");
-		}
-		
-		if(message.content == (prefix + "stop") && message.channel.type == "text"){
-			if(message.member.permissions.has("MANAGE_GUILD")){
-				message.channel.send("Bye!").then(function(msg){
-					setTimeout(function(){
-						msg.delete();
-							bot.user.setStatus("invisible").then(function(user){
-								bot.destroy().then(function(){
-								console.log("\n\n\n\n\n\n\nClean exit.");
-							},function(err){
-								console.log(err);
+		if(message.author.id != bot.id && !message.author.bot){
+			var send = "";
+			
+			if(message.content == (prefix + "ping")){
+				message.channel.send("pong");
+			}
+			
+			if(message.content == (prefix + "stop") && message.channel.type == "text"){
+				if(message.member.permissions.has("MANAGE_GUILD")){
+					message.channel.send("Bye!").then(function(msg){
+						setTimeout(function(){
+							msg.delete();
+								bot.user.setStatus("invisible").then(function(user){
+									bot.destroy().then(function(){
+									console.log("\n\n\n\n\n\n\nClean exit.");
+								},function(err){
+									console.log(err);
+								});
 							});
-						});
-					},1000);
+						},1000);
+					});
+				}
+				else{
+					message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
+				}
+			}
+			
+
+			else if(message.content.startsWith(prefix)){
+				submenu.evaluate(prefix,message,function(response){
+					if(typeof response == "string" && response.length > 0){
+						if(errorCodes.some(function(code){return response.startsWith(code)})){
+							send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
+							message.channel.send(send).then(function(msg){
+								msg.delete(errorTimeout);
+								if(message.channel.type == "text")
+									message.delete(errorTimeout);
+							});
+						}
+						else{
+							send += response;
+							message.channel.send(send);
+						}
+					}
 				});
 			}
 			else{
-				message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
+				spam.process(message,function(response){
+					if(typeof response == "string" && response.length > 0){
+						if(errorCodes.some(function(code){return response.startsWith(code)})){
+							send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
+							message.channel.send(send).then(function(msg){
+								msg.delete(errorTimeout);
+								if(message.channel.type == "text")
+									message.delete(errorTimeout);
+							});
+						}
+						else{
+							send += response;
+							message.channel.send(send);
+						}
+					}
+				});
 			}
-		}
-		
-
-		else if(message.content.startsWith(prefix)){
-			submenu.evaluate(prefix,message,function(response){
-				if(typeof response == "string" && response.length > 0){
-					if(errorCodes.some(function(code){return response.startsWith(code)})){
-						send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
-						message.channel.send(send).then(function(msg){
-							msg.delete(errorTimeout);
-							if(message.channel.type == "text")
-								message.delete(errorTimeout);
-						});
-					}
-					else{
-						send += response;
-						message.channel.send(send);
-					}
-				}
-			});
-		}
-		else{
-			//spam.process(message);
 		}
 	}
 
