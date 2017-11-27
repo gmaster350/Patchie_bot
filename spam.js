@@ -3,6 +3,10 @@ const ed = require('edit-distance');
 const oh = require("./objectHelper.js");
 const historyLength = 30;
 var strikeLength = 5;
+var muteTime = 30000;
+var coolOffPeriod = 3;
+
+function debug(str){if(true){console.log(str);}}
 
 var history = {
 }
@@ -31,34 +35,66 @@ function meanLev(arr,callback){
 			});
 		});
 	});
-	callback(total / (arr.length ** 2));
+	callback(arr.length > 0 ? total / (Math.pow(arr.length, 2)) : 0 );
 }
 
-function process(message){
-	if (!oh.hasKey(history,message.channel.id))
-		history[message.channel.id] = {};
-	if (!oh.hasKey(history[message.channel.id],message.author.id)){
-		history[message.channel.id][message.author.id] = {};
-		history[message.channel.id][message.author.id]["messages"] = [];
-		history[message.channel.id][message.author.id]["strikes"] = 0;
-	}
-	
+function getRoleFromGuildByName(guild,name){
+	var res = undefined;
+	guild.roles.map(function(role,snowflake){
+		if(role.name == name)
+			res = role;
+	});
+	return res;
+}
 
-	var messages = history[message.channel.id][message.author.id].messages;
-	var strikes = history[message.channel.id][message.author.id].strikes;
-	messages.push(
+function process(message,callback){
+	oh.hasKey(history,message.channel.id,function(f1){
+		if(!f1){
+			history[message.channel.id] = {};
+		}
+	});
+	oh.hasKey(history[message.channel.id],message.author.id,function(f2){
+		if(!f2){
+			history[message.channel.id][message.author.id] = {};
+			history[message.channel.id][message.author.id]["messages"] = [];
+			history[message.channel.id][message.author.id]["strikes"] = 0;
+			history[message.channel.id][message.author.id]["cooloff"] = 0;
+		}
+	});
+	
+	history[message.channel.id][message.author.id].messages.push(
 		{
 			"messageid":message.id,
 			"userid":message.author.id,
 			"content":message.content
 		}
 	);
-	if(messages.length > historyLength){
-		messages.splice(0,1);
+	if(history[message.channel.id][message.author.id].messages.length > historyLength){
+		history[message.channel.id][message.author.id].messages.splice(0,1);
 	}
-	
-	meanLev(messages,function(diff){
+	if(history[message.channel.id][message.author.id].cooloff > 0)
+		history[message.channel.id][message.author.id].cooloff--;
+	meanLev(history[message.channel.id][message.author.id].messages.slice(-5),function(diff){
 		console.log(diff);
+		if(history[message.channel.id][message.author.id].messages.length >= 5 && diff <= 4.0 && history[message.channel.id][message.author.id].cooloff === 0){
+			history[message.channel.id][message.author.id].strikes++;
+			history[message.channel.id][message.author.id].cooloff = coolOffPeriod;
+			if(message.channel.type == "text"){
+				var memRoles = message.member.roles; //remember what roles the user has
+				message.member.removeRoles(message.member.roles).then(function(member){
+					setTimeout(function(mem,reinstateRoles){
+						mem.addRoles(reinstateRoles);
+					},muteTime,member,memRoles);
+				}).catch(function(err){
+					console.log(err);
+				});
+				
+				callback("Warning: Please avoid spamming this channel.")
+			}
+			else{
+				callback("I cannot mute you here, but please stop");
+			}
+		}
 	});
 }
 
