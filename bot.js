@@ -447,7 +447,7 @@ const version = "1.1.0";
 	function getRoleFromGuildByName(guild,name){
 		var res = undefined;
 		guild.roles.map(function(role,snowflake){
-			if(role.name == name)
+			if(role.name.toLowerCase() == name.toLowerCase())
 				res = role;
 		});
 		return res;
@@ -509,6 +509,53 @@ function reverse(message,callback){
 	callback(result);
 }
 
+// Misc commands
+
+function giveRole(message,callback){
+	var parameters = message.content.substr(prefix.length).split(" ");
+	var roleToGive = parameters[1];
+	if(["pred","prey","switch"].some(function(r){
+		return roleToGive.toLowerCase() == r;
+	})){
+		if(getGuildRoleByName(roleToGive) != undefined){
+			var removedRole;
+			message.member.roles.map(function(role){
+				["pred","prey","switch"].forEach(function(r){
+					if(role.name.toLowerCase() == r){
+						removedRole = role.name;
+						message.member.removeRole(role);
+					}
+				});
+			});
+			message.member.addRole(getGuildRoleByName(roleToGive));
+			callback("Info: " + removeRole ? "Removed role "+removeRole+", added role "+roleToGive+"." : "Added role "+roleToGive+".");
+		}
+		else{
+			callback("Info: Could not find matching role");
+		}
+	}
+}
+
+function removeRole(message,callback){
+	var parameters = message.content.substr(prefix.length).split(" ");
+	var roleToRemove = parameters[1];
+	if(getGuildRoleByName(roleToTake) != undefined){
+		var removedRole;
+			message.member.roles.map(function(role){
+				["pred","prey","switch"].forEach(function(r){
+					if(role.name.toLowerCase() == r){
+						removedRole = role.name;
+						message.member.removeRole(role);
+					}
+				});
+				callback("Info: Removed role "+removeRole+".");
+			});
+	}
+	else{
+		callback("Info: Could not find matching role");
+	}
+}
+
 
 
 // Submenu Module
@@ -531,7 +578,9 @@ var commandTree = {
 		"help":submenu.list,
 		"checkTitle":titlecheck
 	},
-	"checkTitle":titlecheck
+	"checkTitle":titlecheck,
+	"addRole":giveRole,
+	"removeRole":removeRole
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
