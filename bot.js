@@ -250,163 +250,166 @@ const version = "1.1.0";
 			});
 		}
 	}
-	
-	fs.readFile("../redditSecrets.txt",function(err,res){
-		var data = JSON.parse(res);
-		if(err) console.log("Could not read file: " +err);
-		else{
-			reddit.setupOAuth2(data.clientId, data.secret, "https://github.com/gmaster350/Patchie_bot");
-			reddit.auth({"username": data.username, "password": data.password}, function(err, response) {
-				if(err) console.log("Unable to authenticate user: " + err);
+	fs.readFile("../testingCheck.txt",function(err,isTesting){
+		if(Boolean(JSON.parse(isTesting))){
+			fs.readFile("../redditSecrets.txt",function(err,res){
+				var data = JSON.parse(res);
+				if(err) console.log("Could not read file: " +err);
 				else{
-					console.log("Successfully logged into reddit.");
-					
-					getModQueue = setInterval(function(){
+					reddit.setupOAuth2(data.clientId, data.secret, "https://github.com/gmaster350/Patchie_bot");
+					reddit.auth({"username": data.username, "password": data.password}, function(err, response) {
+						if(err) console.log("Unable to authenticate user: " + err);
+						else{
+							console.log("Successfully logged into reddit.");
+							
+							getModQueue = setInterval(function(){
 
-						try{
-							reddit.unmoderated({"r":"dragonvore","limit":5},function(err,response){
-								if(err) console.log(err);
-								else{
-									response.children.forEach(function(p){
-										var post = p.data;
-										
-										// Regex Filter
-										if(post.title.match(titleMatch) != null){
+								try{
+									reddit.unmoderated({"r":"dragonvore","limit":5},function(err,response){
+										if(err) console.log(err);
+										else{
+											response.children.forEach(function(p){
+												var post = p.data;
+												
+												// Regex Filter
+												if(post.title.match(titleMatch) != null){
 
-											
-											// Collect and gather content.
-											titleCheck(post.title,function(is_valid,nsfw,error,res){
-												
-												var thing = post.name;
-												console.log(String(is_valid) + " ==> " + post.title);
-												
-												if(is_valid){
 													
-													// approve post //
-													if(nsfw){
-														reddit.nsfw(thing,function(err){
-															if(err) console.log(err);
-															else{
-																reddit.approve(thing,function(err){
-																	if(err){
-																		console.log(err);
+													// Collect and gather content.
+													titleCheck(post.title,function(is_valid,nsfw,error,res){
+														
+														var thing = post.name;
+														console.log(String(is_valid) + " ==> " + post.title);
+														
+														if(is_valid){
+															
+															// approve post //
+															if(nsfw){
+																reddit.nsfw(thing,function(err){
+																	if(err) console.log(err);
+																	else{
+																		reddit.approve(thing,function(err){
+																			if(err){
+																				console.log(err);
+																			}
+																		});
 																	}
 																});
 															}
-														});
-													}
-													else{
-														reddit.approve(thing,function(err){
-															if(err) console.log(err);
-														});
-													}
-													
-													// archive posts if it is a link type.
-													if(post.name.startsWith("t3")){
-														fs.readFile("./postHistory.txt",function(err,file){
-															if(err) console.log(err);
 															else{
-																data = JSON.parse(file);
-																data.push({
-																	"fulldata":post,
-																	"permalink":"http://www.reddit.com"+post.permalink,
-																	"link":post.url,
-																	"thumbnail":post.thumbnail,
-																	"artists":res.artist,
-																	"characters":res.characters,
-																	"types":res.types,
-																	"content":res.content,
-																	"nsfw":nsfw
-																});
-																fs.writeFile("./postHistory",JSON.stringify(data),function(err){
+																reddit.approve(thing,function(err){
 																	if(err) console.log(err);
 																});
 															}
-														});
-														
-														if(nsfw){
-															bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+															
+															// archive posts if it is a link type.
+															if(post.name.startsWith("t3")){
+																fs.readFile("./postHistory.txt",function(err,file){
+																	if(err) console.log(err);
+																	else{
+																		data = JSON.parse(file);
+																		data.push({
+																			"fulldata":post,
+																			"permalink":"http://www.reddit.com"+post.permalink,
+																			"link":post.url,
+																			"thumbnail":post.thumbnail,
+																			"artists":res.artist,
+																			"characters":res.characters,
+																			"types":res.types,
+																			"content":res.content,
+																			"nsfw":nsfw
+																		});
+																		fs.writeFile("./postHistory",JSON.stringify(data),function(err){
+																			if(err) console.log(err);
+																		});
+																	}
+																});
+																
+																if(nsfw){
+																	bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																}
+																else{
+																	bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																}														
+															}
 														}
 														else{
-															bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
-														}														
-													}
+															
+															// Remove post if it does not follow the guidelines.
+															reddit.remove(thing,function(err){
+																
+																// Send the user a message about why their post was removed.
+																if(err)console.log(err);
+																else{
+																	reddit.message({
+																		"to":post.author,
+																		"subject":"Your post was automatically removed",
+																		"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
+																	},function(err){
+																		if(err)console.log(err);
+																	});
+																}
+															});
+														}
+													});
 												}
 												else{
-													
-													// Remove post if it does not follow the guidelines.
-													reddit.remove(thing,function(err){
-														
-														// Send the user a message about why their post was removed.
-														if(err)console.log(err);
+													console.log("false ==> " + post.title);
+													// remove post if the title format is wrong.
+													reddit.remove(post.name,function(err){
+														if(err) console.log(err);
 														else{
 															reddit.message({
 																"to":post.author,
 																"subject":"Your post was automatically removed",
-																"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
+																"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
 															},function(err){
-																if(err)console.log(err);
+																if(err) console.log(err);
 															});
 														}
 													});
 												}
 											});
 										}
-										else{
-											console.log("false ==> " + post.title);
-											// remove post if the title format is wrong.
-											reddit.remove(post.name,function(err){
-												if(err) console.log(err);
-												else{
-													reddit.message({
-														"to":post.author,
-														"subject":"Your post was automatically removed",
-														"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
-													},function(err){
-														if(err) console.log(err);
-													});
-												}
-											});
-										}
 									});
 								}
-							});
-						}
-						catch(err){
-							alertOwner("please help, I'm having some problems.",err);
-						}
-					},30000);
-					
-					var getMail = setInterval(function(){
-						try{
-							reddit.unread({"limit":5,"mark":"true"},function(err,response){
-								if(err)console.log(err);
-								response.children.forEach(function(mail){
-									var subject = mail.data.subject;
-									var body = mail.data.body;
-									var sender = mail.data.author;
-									
-									if(subject.toLowerCase() == "title check"){
-										titlecheck(body,function(errorRes){
-											reddit.message({
-												"to":sender,
-												"subject":"Title Evaluation",
-												"text":errorRes
-											},function(err){
-												if(err)console.log("messaged",err);
-											});
-										},true);
-									}
-								});
+								catch(err){
+									alertOwner("please help, I'm having some problems.",err);
+								}
+							},30000);
+							
+							var getMail = setInterval(function(){
+								try{
+									reddit.unread({"limit":5,"mark":"true"},function(err,response){
+										if(err)console.log(err);
+										response.children.forEach(function(mail){
+											var subject = mail.data.subject;
+											var body = mail.data.body;
+											var sender = mail.data.author;
+											
+											if(subject.toLowerCase() == "title check"){
+												titlecheck(body,function(errorRes){
+													reddit.message({
+														"to":sender,
+														"subject":"Title Evaluation",
+														"text":errorRes
+													},function(err){
+														if(err)console.log("messaged",err);
+													});
+												},true);
+											}
+										});
 
-							});
-						}
-						catch(err){
-							alertOwner("please help, I am having problems.",err);
-						}
+									});
+								}
+								catch(err){
+									alertOwner("please help, I am having problems.",err);
+								}
 
-					},10000);
-					
+							},10000);
+							
+						}
+					});
 				}
 			});
 		}
