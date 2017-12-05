@@ -251,7 +251,7 @@ const version = "1.1.0";
 		}
 	}
 	fs.readFile("../testingCheck.txt",function(err,isTesting){
-		if(Boolean(JSON.parse(isTesting))){
+		if(!(Boolean(JSON.parse(isTesting)))){
 			fs.readFile("../redditSecrets.txt",function(err,res){
 				var data = JSON.parse(res);
 				if(err) console.log("Could not read file: " +err);
