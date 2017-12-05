@@ -377,7 +377,7 @@ const version = "1.1.0";
 									alertOwner("please help, I'm having some problems.",err);
 								}
 							},30000);
-							
+							/*
 							var getMail = setInterval(function(){
 								try{
 									reddit.unread({"limit":5,"mark":"true"},function(err,response){
@@ -407,7 +407,7 @@ const version = "1.1.0";
 								}
 
 							},10000);
-							
+							*/
 						}
 					});
 				}
