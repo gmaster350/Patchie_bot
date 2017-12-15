@@ -32,7 +32,7 @@ function generate(message,callback){
 			response = "Your skin starts to change color, gradually turning " + effects[index][jindex] + ".";
 			break;
 		case 9:
-			response = "You gain the ability to exhale " + effects[index][jindex].length)];
+			response = "You gain the ability to exhale " + effects[index][jindex];
 			break;
 		default:
 			response = effects[index];
