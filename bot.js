@@ -726,7 +726,7 @@ bot.on("message",function(message){
 });
 
 bot.on("guildMemberAdd",function(member){
-	member.addRole(getRoleFromGuildByName(channel.guild,"Member"));
+	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
 });
 
 bot.on("messageUpdate",function(message){
