@@ -722,6 +722,9 @@ bot.on("message",function(message){
 	}
 	catch(err){
 		message.channel.send("Something went wrong. Try again?");
+		bot.fetchUser("125576692646281216").then(function(user){
+			user.send("`"+message.content+"`\n"+err);
+		})
 	}
 });
 
