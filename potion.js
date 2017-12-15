@@ -138,8 +138,7 @@ function generate(message,callback){
 	});
 	var r = weightedRandom(effects,weights);
 	var response = r.speak1 + pick(r.options1) + r.speak2 + pick(r.options2) + r.speak3;
-//	callback(response);
-	console.log(response);
+	callback(response);
 }
 
 module.exports = {
