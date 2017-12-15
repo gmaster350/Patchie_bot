@@ -23,7 +23,7 @@ function generate(message,callback){
 	
 	switch(index){
 		case 2:
-			response = "Your" + effects[index][jindex] + " expands to " + String(rn(8)+2) + " times "+rn(2)?"larger":"smaller"+" than its current size.";
+			response = "Your " + effects[index][jindex] + " changes to be " + String(rn(8)+2) + " times " + (Boolean(rn(2)) ? "larger":"smaller") + " than its current size.";
 			break;
 		case 4:
 			response = "Your body gradually transforms into that of a" + effects[index][jindex];
