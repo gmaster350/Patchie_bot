@@ -15,7 +15,7 @@ var effects = [
 function generate(message,callback){
 	var index = Math.floor(Math.random()*effects.length);
 	var response;
-	switch(index):
+	switch(index){
 		case 2:
 			response = "Your" + effects[index][Math.floor(Math.random()*effects[index].length)] + " expands to " + String(Math.floor(Math.random()*8)+2) + " times "+Math.floor(Math.random()*2)?"larger":"smaller"+" than its current size.";
 			break;
@@ -28,6 +28,7 @@ function generate(message,callback){
 		default:
 			response = effects[index];
 			break;
+	}
 	callback(response);
 }
 
