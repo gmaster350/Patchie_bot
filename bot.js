@@ -567,13 +567,13 @@ function wipe(message,callback){
 	var mentions = message.mentions.members;
 	if(message.member.permissions.has("MANAGE_GUILD")){
 		message.guild.channels.map(function(channel,channelId){
-			channel.messages.map(msg,msgId){
+			channel.messages.map(function(msg,msgId){
 				if(mentions.some(function(m){
 					return m == msg.author;
 				})){
 					msg.delete();
 				}
-			}
+			});
 		});
 	}
 }
