@@ -565,7 +565,7 @@ function removeRole(message,callback){
 function wipe(message,callback){
 	var parameters = message.content.split(" ");
 	var mentions = message.mentions.members;
-	if(message.member.permissions.has("MANAGE_GUILD"){
+	if(message.member.permissions.has("MANAGE_GUILD")){
 		message.guild.channels.map(function(channel,channelId){
 			channel.messages.map(msg,msgId){
 				if(mentions.some(function(m){
