@@ -19,7 +19,7 @@ function rn(n){ //random number between 0 and n
 function generate(message,callback){
 	var index = rn(effects.length);
 	var response;
-	var jindex = effects[index] instanceof Array ? rn(effects[index].length) : -1);
+	var jindex = effects[index] instanceof Array ? rn(effects[index].length) : -1;
 	
 	switch(index){
 		case 2:
