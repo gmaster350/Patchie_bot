@@ -22,7 +22,7 @@ function generate(message,callback){
 		case 4:
 			response = "You become invisible to others","Your body gradually transforms into that of a" + effects[index][Math.floor(Math.random()*effects[index].length)];
 		case 5:
-			response "Your skin starts to change color, gradually turning " + effects[index][Math.floor(Math.random()*effects[index].length)] + ".";
+			response = "Your skin starts to change color, gradually turning " + effects[index][Math.floor(Math.random()*effects[index].length)] + ".";
 		case 9:
 			response = "You gain the ability to exhale " + effects[index][Math.floor(Math.random()*effects[index].length)];
 		default:
