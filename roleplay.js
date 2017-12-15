@@ -2,6 +2,7 @@
 
 const mysql = require("./mysql.js");
 const oh = require("./objectHelper.js");
+const submenu = require("./submenu.js");
 
 var users = {}; // { discord_user_id : { character_hash : Character } }
 var items = {};
@@ -136,4 +137,7 @@ function startCreatingCharacter(message,callback){
 	var userid = message.author.id;
 	var name = parameters[1];
 	tempchars[userid] = new Character(userid,name);
+	submenu.evaluate("~!",message,function(res){
+		callback(res);
+	});
 }

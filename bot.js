@@ -6,7 +6,7 @@
 	a range of APIs, including reddit and discord.
 */
 
-const version = "1.1.0";
+const version = "1.1.2";
 
 
 ////// Module import and setup //////
@@ -250,6 +250,7 @@ const version = "1.1.0";
 			});
 		}
 	}
+
 	fs.readFile("../testingCheck.txt",function(err,isTesting){
 		if(!(Boolean(JSON.parse(isTesting)))){
 			fs.readFile("../redditSecrets.txt",function(err,res){
@@ -377,6 +378,7 @@ const version = "1.1.0";
 									alertOwner("please help, I'm having some problems.",err);
 								}
 							},30000);
+
 							/*
 							var getMail = setInterval(function(){
 								try{
@@ -430,6 +432,7 @@ const version = "1.1.0";
 	const Discord = require("discord.js");
 	const bot = new Discord.Client();
 	const spam = require("./spam.js");
+	const potion = require("./potion.js");
 	const prefix = "!!";
 	const about = 
 	"Info:\nMade by: @Zapp#4885"+
@@ -559,7 +562,21 @@ function removeRole(message,callback){
 	}
 }
 
-
+function wipe(message,callback){
+	var parameters = message.content.split(" ");
+	var mentions = message.mentions.members;
+	if(message.member.permissions.has("MANAGE_GUILD"){
+		message.guild.channels.map(function(channel,channelId){
+			channel.messages.map(msg,msgId){
+				if(mentions.some(function(m){
+					return m == msg.author;
+				})){
+					msg.delete();
+				}
+			}
+		});
+	}
+}
 
 // Submenu Module
 
@@ -582,8 +599,9 @@ var commandTree = {
 		"checkTitle":titlecheck
 	},
 	"checkTitle":titlecheck,
-	"addRole":giveRole,
-	"removeRole":removeRole
+//	"addRole":giveRole,
+//	"removeRole":removeRole,
+	"potion":potion.generate
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -608,7 +626,7 @@ var errorTimeout = 30000;
 
 bot.on("ready",function(){
 	bot.user.setPresence("online").then(function(user){
-		user.setGame("prefix: " + prefix).then(function(usr){
+		user.setGame(prefix+"help").then(function(usr){
 			console.log("Dragon vore bot is ready!");
 		},
 		function(err){
@@ -694,8 +712,15 @@ bot.on("message",function(message){
 					}
 				});
 			}
+			/*
+			filter.evaluate(message,function(res){
+				send += res;
+				message.channel.send(send);
+			});
+			*/
 		}
 	}
+});
 
 	catch(err){
 		message.channel.send("Something went wrong. Try again?");
@@ -705,6 +730,19 @@ bot.on("message",function(message){
 bot.on("guildMemberAdd",function(member){
 	member.addRole(getRoleFromGuildByName(channel.guild,"Member"));
 });
+
+bot.on("messageUpdate",function(message){
+	filter.evaluate(message,function(res){
+		if(res){
+			var send = res + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
+			message.channel.send(send).then(function(msg){
+				msg.delete(errorTimeout);
+				if(message.channel.type == "text")
+					message.delete(errorTimeout);
+			});
+		}
+	});
+})
 
 // Login secret exists in a folder one level about the git folder.
 

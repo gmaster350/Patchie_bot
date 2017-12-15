@@ -1,6 +1,6 @@
 //Submenu Module
 
-const oh = require("./objectHelper");
+const oh = require("./objectHelper.js");
 const debug = true;
 const fs = require("fs");
 
@@ -11,70 +11,76 @@ var tree = {};
 function evaluate(prefix,message,callback){
 	var parameters = message.content.substr(prefix.length).split(" ");
 	
-	/* If the (sub)object 
-	// present at the user's active node 
-	// of the menu tree
-	// contains a key
-	// matching the first parameter...*/
-	getTree(function(submenu_tree){
-		getActive(message.author.id,function(submenu_active){
-			oh.subObject(submenu_tree,submenu_active,function(menu){
-				oh.hasKey(menu,parameters[0],function(has_key){
-					if(has_key){
-						
-						/* ...then move the user down the tree
-						// such that the user's new active node
-						// within the command tree
-						// is the submenu they gave*/
-						
-						down(message.author.id,parameters[0],function(response){
+	if(parameters[0] == "root"){ // Users should always have a way to return to root.
+		active[message.author.id] = [];
+		callback("Info: Returned to root");
+	}
+	else{
+		/* If the (sub)object 
+		// present at the user's active node 
+		// of the menu tree
+		// contains a key
+		// matching the first parameter...*/
+		getTree(function(submenu_tree){
+			getActive(message.author.id,function(submenu_active){
+				oh.subObject(submenu_tree,submenu_active,function(menu){
+					oh.hasKey(menu,parameters[0],function(has_key){
+						if(has_key){
 							
-							/* The response given is what the value of the 
-							// key-value pair in the subobject at the 
-							// current location, which will be either a 
-							// string or a function.
+							/* ...then move the user down the tree
+							// such that the user's new active node
+							// within the command tree
+							// is the submenu they gave*/
 							
-							// The string response exists for the purpose of responsiveness.
-							
-							// If the value of the key-value pair with the key whose string-value
-							// is equal to the first command parameter 
-							// is another sub-object, 
-							// it means that the command they entered was the name of a submenu, 
-							// and must then be moved down the subtree.
-							// Their active node will be changed 
-							// to reflect their current location
-							// in the submenu tree. */
-							
-							if(typeof response == "string"){
-								callback(response);
-							}	
-							
-							/* If however the response's type is a function
-							// it indicates that the value of the key-value pair 
-							// with the key whose string-value
-							// is equal to the first command parameter
-							// references a function.
-							// In this case, the user remains where they are in the submenu tree
-							// and the function is called.
-							
-							// The function will be defined above, likely to handle the imput,
-							// processing the raw Message object so that it can be used by another
-							// method or function, of which will likely have its own formal parameter format. */
-							
-							else if(typeof response == "function"){
-								response(message,function(res){
-									callback(res);
-								});
-							}
-						});
-					}
-					else{
-						callback("Error: No command or menu exists with that name.");
-					}
+							down(message.author.id,parameters[0],function(response){
+								
+								/* The response given is what the value of the 
+								// key-value pair in the subobject at the 
+								// current location, which will be either a 
+								// string or a function.
+								
+								// The string response exists for the purpose of responsiveness.
+								
+								// If the value of the key-value pair with the key whose string-value
+								// is equal to the first command parameter 
+								// is another sub-object, 
+								// it means that the command they entered was the name of a submenu, 
+								// and must then be moved down the subtree.
+								// Their active node will be changed 
+								// to reflect their current location
+								// in the submenu tree. */
+								
+								if(typeof response == "string"){
+									callback(response);
+								}	
+								
+								/* If however the response's type is a function
+								// it indicates that the value of the key-value pair 
+								// with the key whose string-value
+								// is equal to the first command parameter
+								// references a function.
+								// In this case, the user remains where they are in the submenu tree
+								// and the function is called.
+								
+								// The function will be defined above, likely to handle the imput,
+								// processing the raw Message object so that it can be used by another
+								// method or function, of which will likely have its own formal parameter format. */
+								
+								else if(typeof response == "function"){
+									response(message,function(res){
+										callback(res);
+									});
+								}
+							});
+						}
+						else{
+							callback("Error: No command or menu exists with that name.");
+						}
+					});
 				});
 			});
 		});
-	});
+	}
 }
 
 
@@ -86,14 +92,25 @@ function down(user,destination,callback){
 		// contain the destination key.
 		oh.hasKey(result,destination,function(has_key){
 			if(has_key){
-				if(typeof result[destination] == "object"){
+				var dest = result[destination];
+				if(dest instanceof Array){ //Array
+					if(dest.length == 2 && dest[0] instanceof Function && dest[1] instanceof Object){
+						callback(dest[0]);
+						active[user].push(destination);
+						callback("Info: Entered submenu *" + destination + "*");
+					}
+					else{
+						console.log("Bad form of submenu!");
+					}
+				}
+				else if(dest instanceof Function){ //Function
+					callback(dest);
+				}
+				else if(dest instanceof Object){ // Object
 					active[user].push(destination);
 					callback("Info: Entered submenu *" + destination + "*");
 				}
-				else if(typeof result[destination] == "function"){
-					callback(result[destination]);
-				}
-				else{
+				else{ 
 					callback("Error: Not a submenu or command.");
 				}
 			}
@@ -126,6 +143,25 @@ function up(message,callback){
 	}
 }
 
+// modified subObject function from objectHelper.js
+function subObject(arr,nodes,callback){
+	if(nodes.length >= 1){
+		if(arr[nodes[0]] instanceof Array){
+			subObject(arr[nodes[0]][1],nodes.slice(1),function(res){
+				callback(res);
+			});
+		}
+		else{
+			subObject(arr[nodes[0]],nodes.slice(1),function(res){
+				callback(res);
+			});
+		}
+	}
+	else{
+		callback(arr);
+	}
+}
+
 function list(message,callback){
 	var user;
 	if(message.mentions.users.length > 0){
@@ -144,7 +180,7 @@ function list(message,callback){
 	response += "\n\n**Available:**";
 	
 	var makeResponse = new Promise(function(res,rej){
-		oh.subObject(tree,active[user],function(menu){
+		subObject(tree,active[user],function(menu){
 			var index = 0;
 			var max = Object.keys(menu).length-1;
 			oh.forEach(menu,function(value,key,self){
