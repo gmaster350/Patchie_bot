@@ -601,7 +601,11 @@ var commandTree = {
 	"checkTitle":titlecheck,
 //	"addRole":giveRole,
 //	"removeRole":removeRole,
-	"potion":potion.generate
+	"potion":function(m,c){
+		for(let i=0;i<100;i++){
+			potion.generate(m,c);
+		}
+	}
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
