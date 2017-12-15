@@ -431,6 +431,7 @@ const version = "1.1.1";
 	const Discord = require("discord.js");
 	const bot = new Discord.Client();
 	const spam = require("./spam.js");
+	const potion = require("./potion.js");
 	const prefix = "!!";
 	const about = 
 	"Info:\nMade by: @Zapp#4885"+
@@ -598,9 +599,9 @@ var commandTree = {
 		"checkTitle":titlecheck
 	},
 	"checkTitle":titlecheck,
-	"addRole":giveRole,
-	"removeRole":removeRole,
-	"wipe":
+//	"addRole":giveRole,
+//	"removeRole":removeRole,
+	"potion":potion.generate
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -625,7 +626,7 @@ var errorTimeout = 30000;
 
 bot.on("ready",function(){
 	bot.user.setPresence("online").then(function(user){
-		user.setGame("prefix: " + prefix).then(function(usr){
+		user.setGame(prefix+"help").then(function(usr){
 			console.log("Dragon vore bot is ready!");
 		},
 		function(err){
@@ -711,12 +712,12 @@ bot.on("message",function(message){
 					}
 				});
 			}
+			/*
 			filter.evaluate(message,function(res){
 				send += res;
 				message.channel.send(send);
 			});
-			
-			
+			*/
 		}
 	}
 
