@@ -23,8 +23,10 @@ function generate(message,callback){
 			break;
 		case 4:
 			response = "You become invisible to others","Your body gradually transforms into that of a" + effects[index][rn(effects[index].length)];
+			break;
 		case 5:
 			response = "Your skin starts to change color, gradually turning " + effects[index][rn(effects[index].length)] + ".";
+			break;
 		case 9:
 			response = "You gain the ability to exhale " + effects[index][rn(effects[index].length)];
 		default:
