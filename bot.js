@@ -565,15 +565,15 @@ function removeRole(message,callback){
 function wipe(message,callback){
 	var parameters = message.content.split(" ");
 	var mentions = message.mentions.members;
-	if(message.member.permissions.has("MANAGE_GUILD"){
+	if(message.member.permissions.has("MANAGE_GUILD")){
 		message.guild.channels.map(function(channel,channelId){
-			channel.messages.map(msg,msgId){
+			channel.messages.map(function(msg,msgId){
 				if(mentions.some(function(m){
 					return m == msg.author;
 				})){
 					msg.delete();
 				}
-			}
+			});
 		});
 	}
 }
@@ -648,7 +648,7 @@ bot.on("ready",function(){
 
 bot.on("message",function(message){
 	try{
-		if(message.author.id != bot.id && !message.author.bot){
+		if((message.author.id != bot.user.id) && !(message.author.bot)){
 			var send = "";
 			
 			if(message.content == (prefix + "ping")){
@@ -720,15 +720,16 @@ bot.on("message",function(message){
 			*/
 		}
 	}
-});
-
 	catch(err){
 		message.channel.send("Something went wrong. Try again?");
+		bot.fetchUser("125576692646281216").then(function(user){
+			user.send("`"+message.content+"`\n\nError:\n"+err+"\n\nStack Trace:\n"+err.stack);
+		})
 	}
 });
 
 bot.on("guildMemberAdd",function(member){
-	member.addRole(getRoleFromGuildByName(channel.guild,"Member"));
+	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
 });
 
 bot.on("messageUpdate",function(message){
