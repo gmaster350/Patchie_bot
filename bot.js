@@ -6,7 +6,7 @@
 	a range of APIs, including reddit and discord.
 */
 
-const version = "1.1.1";
+const version = "1.1.2";
 
 
 ////// Module import and setup //////
@@ -250,9 +250,9 @@ const version = "1.1.1";
 			});
 		}
 	}
-	
+
 	fs.readFile("../testingCheck.txt",function(err,isTesting){
-		if(Boolean(JSON.parse(isTesting))){
+		if(!(Boolean(JSON.parse(isTesting)))){
 			fs.readFile("../redditSecrets.txt",function(err,res){
 				var data = JSON.parse(res);
 				if(err) console.log("Could not read file: " +err);
@@ -378,7 +378,8 @@ const version = "1.1.1";
 									alertOwner("please help, I'm having some problems.",err);
 								}
 							},30000);
-							
+
+							/*
 							var getMail = setInterval(function(){
 								try{
 									reddit.unread({"limit":5,"mark":"true"},function(err,response){
@@ -408,7 +409,7 @@ const version = "1.1.1";
 								}
 
 							},10000);
-							
+							*/
 						}
 					});
 				}
@@ -577,7 +578,6 @@ function wipe(message,callback){
 	}
 }
 
-
 // Submenu Module
 
 var commandTree = {
@@ -720,6 +720,7 @@ bot.on("message",function(message){
 			*/
 		}
 	}
+});
 
 	catch(err){
 		message.channel.send("Something went wrong. Try again?");
