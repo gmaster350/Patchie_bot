@@ -648,7 +648,7 @@ bot.on("ready",function(){
 
 bot.on("message",function(message){
 	try{
-		if(message.author.id != bot.id && !message.author.bot){
+		if((message.author.id != bot.user.id) && (message.author.bot == false)){
 			var send = "";
 			
 			if(message.content == (prefix + "ping")){
