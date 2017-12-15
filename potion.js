@@ -10,21 +10,23 @@ var effects = [
 "Your tongue turns numb, leaving you unable to speak coherently",
 "You have a compulsion to dance",["tea","coffee","water","cola soda","deodorant","molten nickel","magma","candy","rosemary and thyme","paprika","parsley","mcdonald's fries","old sneakers","dulux paint","sand","gravel","salt","small plastic toys","powerful pheromones","sleeping gas","shredded paper","propane","pennies"]];
 
-
+function rn(n){ //random number between 0 and n
+	return Math.floor(Math.random()*n);
+}
 
 function generate(message,callback){
-	var index = Math.floor(Math.random()*effects.length);
+	var index = rn(effects.length);
 	var response;
 	switch(index){
 		case 2:
-			response = "Your" + effects[index][Math.floor(Math.random()*effects[index].length)] + " expands to " + String(Math.floor(Math.random()*8)+2) + " times "+Math.floor(Math.random()*2)?"larger":"smaller"+" than its current size.";
+			response = "Your" + effects[index][rn(effects[index].length)] + " expands to " + String(rn(8)+2) + " times "+rn(2)?"larger":"smaller"+" than its current size.";
 			break;
 		case 4:
-			response = "You become invisible to others","Your body gradually transforms into that of a" + effects[index][Math.floor(Math.random()*effects[index].length)];
+			response = "You become invisible to others","Your body gradually transforms into that of a" + effects[index][rn(effects[index].length)];
 		case 5:
-			response = "Your skin starts to change color, gradually turning " + effects[index][Math.floor(Math.random()*effects[index].length)] + ".";
+			response = "Your skin starts to change color, gradually turning " + effects[index][rn(effects[index].length)] + ".";
 		case 9:
-			response = "You gain the ability to exhale " + effects[index][Math.floor(Math.random()*effects[index].length)];
+			response = "You gain the ability to exhale " + effects[index][rn(effects[index].length)];
 		default:
 			response = effects[index];
 			break;
