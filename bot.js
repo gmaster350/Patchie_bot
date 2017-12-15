@@ -636,10 +636,11 @@ bot.on("ready",function(){
 		console.log(err);
 	});
 	
-	bot.channels.map(function(channel){
+	bot.channels.map(function(channel,channelIndex,channelArray){
 		if(channel.type == "text"){
 			var role = getRoleFromGuildByName(channel.guild,"Member");
-			channel.members.map(function(member){
+			channel.members.map(function(member,memberIndex,memberArray){
+				submenu.addUser(member.id);
 				member.addRole(role);
 			});
 		}
@@ -703,6 +704,8 @@ bot.on("message",function(message){
 								msg.delete(errorTimeout);
 								if(message.channel.type == "text")
 									message.delete(errorTimeout);
+							}).catch(function(err){
+								console.log(err);
 							});
 						}
 						else{
@@ -724,14 +727,18 @@ bot.on("message",function(message){
 		message.channel.send("Something went wrong. Try again?");
 		bot.fetchUser("125576692646281216").then(function(user){
 			user.send("`"+message.content+"`\n\nError:\n"+err+"\n\nStack Trace:\n"+err.stack);
-		})
+		}).catch(function(err){
+			console.log(err);
+		});
 	}
 });
 
 bot.on("guildMemberAdd",function(member){
 	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
+	submenu.addUser(member.id);
 });
 
+/*
 bot.on("messageUpdate",function(message){
 	filter.evaluate(message,function(res){
 		if(res){
@@ -744,7 +751,7 @@ bot.on("messageUpdate",function(message){
 		}
 	});
 })
-
+*/
 // Login secret exists in a folder one level about the git folder.
 
 fs.readFile("../botSecret.txt",function(err,secret){
