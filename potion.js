@@ -120,6 +120,14 @@ var effects = [
 		"speak2":"",
 		"options2":[],
 		"speak3":""
+	},
+	{
+		"chance":2,
+		"speak1":"You suddenly sprout a / an extra ",
+		"options1":["tail","penis","head","pair of ears","pair of horns","tongue"],
+		"speak2":"",
+		"options2":[],
+		"speak3":""
 	}
 ];
 
