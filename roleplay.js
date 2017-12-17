@@ -97,7 +97,7 @@ var reconstructItems = new Promise(res,rej){
 	});
 	res();
 }
-
+/*
 // After rebuilding characters and items, add all items to the inventory or hand of the relevant character.
 reconstructCharacters.then(function(){
 	reconstructItems.then(function(){
@@ -121,7 +121,7 @@ reconstructCharacters.then(function(){
 		});
 	});
 })
-
+*/
 function updateRoleplayTable(user){
 	var sql = "UPDATE Roleplay SET "+" WHERE userid = "+user.id;
 	mysql.query(sql);

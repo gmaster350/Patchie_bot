@@ -4,16 +4,100 @@ const oh = require("./objectHelper.js");
 const debug = true;
 const fs = require("fs");
 
+Object.prototype.classOf = function(){
+	let x = String(this.constructor).split(' ')[1];
+	return x.substr(0,x.indexOf("("));
+};
+
+Object.prototype.classIs = function(str){
+	return this.classOf() == str;
+}
+
 var active = {}; //{'userid':['node','node','node']}
 var tree = {};
 
+function hasKey(obj,key,callback,recurse=false){
+	if(obj.classIs("Object")){
+		var object = obj;
+		if(Object.keys(object).some(function(k){
+			
+			// If 'key' is a RegExp Object, perform a the relevant 
+			// RegExp match on each key of the object.
+			// Otherwise, do a simple string equality check.
+			return (key instanceof RegExp) ? k.match(key) : k == key;
+		})){
+			callback(true);
+		}
+		else if(recurse){
+			if(Object.keys(object).some(function(k){return object[k] instanceof Object || object[k] instanceof Array})){
+				Object.keys(object).forEach(function(k){
+					if(object[k].classIs("Object")){
+						hasKey(object[k],key,function(res){
+							callback(res);
+						},true);
+					}
+					else if(object[k].classIs("Array")){
+						hasKey(object[k][1],key,function(res){
+							callback(res);
+						},true);
+					}
+				});
+			}
+			else{
+				callback(false);
+			}
+		}
+		else{
+			callback(false);
+		}
+	}
+	else if(obj.classIs("Array")){
+		var object = obj[1];
+		if(Object.keys(object).some(function(k){
+			
+			// If 'key' is a RegExp Object, perform a the relevant 
+			// RegExp match on each key of the object.
+			// Otherwise, do a simple string equality check.
+			return (key instanceof RegExp) ? k.match(key) : k == key;
+		})){
+			callback(true);
+		}
+		else if(recurse){
+			if(Object.keys(object).some(function(k){return object[k] instanceof Object || object[k] instanceof Array})){
+				Object.keys(object).forEach(function(k){
+					if(object[k].classIs("Object")){
+						hasKey(object[k],key,function(res){
+							callback(res);
+						},true);
+					}
+					else if(object[k].classIs("Array")){
+						hasKey(object[k],key,function(res){
+							callback(res);
+						},true);
+					}
+				});
+			}
+			else{
+				callback(false);
+			}
+		}
+		else{
+			callback(false);
+		}
+		
+	}
+}
 
 function evaluate(prefix,message,callback){
 	var parameters = message.content.substr(prefix.length).split(" ");
 	
-	if(parameters[0] == "root"){ // Users should always have a way to return to root.
+	// Globally accessible commands
+	if(parameters[0] == "root"){ 
 		active[message.author.id] = [];
 		callback("Info: Returned to root");
+	}
+	else if(parameters == "help"){
+		list(message,function(res){callback(res);});
 	}
 	else{
 		/* If the (sub)object 
@@ -24,7 +108,7 @@ function evaluate(prefix,message,callback){
 		getTree(function(submenu_tree){
 			getActive(message.author.id,function(submenu_active){
 				oh.subObject(submenu_tree,submenu_active,function(menu){
-					oh.hasKey(menu,parameters[0],function(has_key){
+					hasKey(menu,parameters[0],function(has_key){
 						if(has_key){
 							
 							/* ...then move the user down the tree
@@ -83,18 +167,17 @@ function evaluate(prefix,message,callback){
 	}
 }
 
-
 function down(user,destination,callback){ 
 	// Get User's current tree position
 	oh.subObject(tree,active[user],function(result){
 		// Check to see if the branches immediately 
 		// below the current tree position
 		// contain the destination key.
-		oh.hasKey(result,destination,function(has_key){
+		hasKey(result,destination,function(has_key){
 			if(has_key){
 				var dest = result[destination];
 				if(dest instanceof Array){ //Array
-					if(dest.length == 2 && dest[0] instanceof Function && dest[1] instanceof Object){
+					if(dest.length == 2 && dest[0].classIs("Function") && dest[1].classIs("Object")){
 						callback(dest[0]);
 						active[user].push(destination);
 						callback("Info: Entered submenu *" + destination + "*");
@@ -145,7 +228,8 @@ function up(message,callback){
 
 // modified subObject function from objectHelper.js
 function subObject(arr,nodes,callback){
-	if(nodes.length >= 1){
+	console.log(arr[nodes[0]] instanceof Array);
+	if(nodes.length > 0){
 		if(arr[nodes[0]] instanceof Array){
 			subObject(arr[nodes[0]][1],nodes.slice(1),function(res){
 				callback(res);
@@ -177,7 +261,7 @@ function list(message,callback){
 		response += "> " + node;
 	});
 	
-	response += "\n\n**Available:**";
+	response += "\n\n**Available:**\nroot";
 	
 	var makeResponse = new Promise(function(res,rej){
 		subObject(tree,active[user],function(menu){
