@@ -65,7 +65,7 @@ function pickEffect(message,callback){
 		case "text":
 			members = [];
 			message.guild.members.map(function(m,id){
-				if(m.presence.status == "online" && settings[m.id] == false && !m.user.bot && m.id != message.author.id){
+				if(m.presence.status == "online" && settings[m.id] == false && m.id != message.author.id){
 					members.push(m.user);
 				}
 			});
@@ -77,7 +77,7 @@ function pickEffect(message,callback){
 		case "group":
 			members = [];
 			message.channel.recipients.map(function(m,id){
-				if(m.presence.status == "online" && settings[m.id] == false && !m.user.bot && m.id != message.author.id){
+				if(m.presence.status == "online" && settings[m.id] == false && m.id != message.author.id){
 					members.push(m.user);
 				}
 			});
