@@ -586,23 +586,7 @@ var commandTree = {
 		"reverse":reverse,
 		"back":submenu.up, //returns to upper command tree
 		"help":submenu.list, //print commands present at current location
-		"forceError":function(m,c){if(m.author.id == owner){c(UndefinedVariable);}}, // Will try to reference an undefined variable.
-//		"dual":[function(m,c){c("Successfully called function");},{
-//			"help":submenu.list,
-//			"back":submenu.up
-//		}],
-//		"one":{
-//			"two":{
-//				"three":{
-//					"back":submenu.up,
-//					"help":submenu.list
-//				},
-//				"back":submenu.up,
-//				"help":submenu.list
-//			},
-//			"back":submenu.up,
-//			"help":submenu.list
-//		},
+		"forceError":function(m,c){if(m.author.id == owner){c(UndefinedVariable);}}, // Will divide by zero.
 		"whereami":submenu.place
 	},
 	"back":submenu.up,
@@ -617,11 +601,7 @@ var commandTree = {
 	"checkTitle":titlecheck,
 //	"addRole":giveRole,
 //	"removeRole":removeRole,
-	"potion":function(m,c){
-		potion.generate(m,bot,function(r){
-			c(r);
-		});
-	}
+	"potion":potion.generate
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
