@@ -239,7 +239,7 @@ function importSettings(json){
 }
 
 function addCustom(message,callback){
-	if(message.split(" ").length > 1){
+	if(message.content.split(" ").length > 1){
 		var c = message.split(" ").slice(1).join(" ");
 		customs.push(c);
 		callback("Added custom potion to queue");
