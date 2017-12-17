@@ -38,14 +38,24 @@ function pickEffect(message,callback){
 		case "text":
 			members = [];
 			message.guild.members.map(function(m,id){
-				members.push(m.user);
+				if(m.presence.status == "online"){
+					members.push(m.user);
+				}
 			});
 			break;
 		case "dm":
-			members = [message.channel.recipient];
+			members = [];
+			if(message.channel.recipient.presence.status == "online"){
+				members.push(message.channel.recipient);
+			}
 			break;
 		case "group":
-			members = message.channel.recipients;
+			members = [];
+			message.channel.recipients.map(function(m,id){
+				if(m.presence.status == "online"){
+					members.push(m.user);
+				}
+			});
 			break;
 	}
 	
