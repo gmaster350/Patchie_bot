@@ -602,7 +602,8 @@ var commandTree = {
 //	"addRole":giveRole,
 //	"removeRole":removeRole,
 	"potion":potion.generate,
-	"potionIgnore":potion.changeSetting
+	"potionIgnore":potion.changeSetting,
+	"potionCustom":potion.addCustom
 }
 
 fs.readFile("../submenuData.txt",function(err,data){

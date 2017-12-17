@@ -3,6 +3,7 @@
 const fs = require("fs");
 
 var settings;
+var customs = [];
 
 function sum(arr){
 	var t = 0;
@@ -222,17 +223,30 @@ function pick(array){
 }
 
 function generate(message,callback){
-	pickEffect(message,function(response){
-		callback(response);
-	});
+	if(customs.length > 0){
+		callback(customs[0]);
+		customs.shift();
+	}
+	else{
+		pickEffect(message,function(response){
+			callback(response);
+		});
+	}
 }
 
 function importSettings(json){
 	settings = json;
 }
 
+function addCustom(message,callback){
+	var c = message.split(" ").slice(1).join(" ");
+	customs.push(c);
+	callback("Added custom potion to queue");
+}
+
 module.exports = {
 	"generate":generate,
 	"importSettings":importSettings,
-	"changeSetting":changeSetting
+	"changeSetting":changeSetting,
+	"addCustom":addCustom
 }
