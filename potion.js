@@ -147,7 +147,7 @@ function pickEffect(message,callback){
 			"speak3":""
 		},
 		{
-			"chance":1000,
+			"chance":1,
 			"speak1":"Your mind and ",
 			"options1":members,
 			"speak2":"'s mind are switched.",
