@@ -163,6 +163,7 @@ function pickEffect(message,callback){
 	var response = r.speak1 + pick(r.options1) + r.speak2 + pick(r.options2) + r.speak3;
 	callback(response);
 }
+
 function rn(n){ //random number between 0 and n
 	return Math.floor(Math.random()*n);
 }
