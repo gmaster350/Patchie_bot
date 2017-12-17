@@ -239,9 +239,14 @@ function importSettings(json){
 }
 
 function addCustom(message,callback){
-	var c = message.split(" ").slice(1).join(" ");
-	customs.push(c);
-	callback("Added custom potion to queue");
+	if(message.split(" ").length > 1){
+		var c = message.split(" ").slice(1).join(" ");
+		customs.push(c);
+		callback("Added custom potion to queue");
+	}
+	else{
+		callback("Add a custom potion to a queue, which will be used the next time 'potion' is called.");
+	}
 }
 
 module.exports = {
