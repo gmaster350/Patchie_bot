@@ -32,7 +32,23 @@ function weightedRandom(array,weights){
 	return ret;
 }
 
-function pickEffect(message,bot,callback){
+function pickEffect(message,callback){
+	var members;
+	switch(message.channel.type){
+		case "text":
+			members = [];
+			message.guild.members.map(function(m,id){
+				members.push(m.user);
+			});
+			break;
+		case "dm":
+			members = [message.channel.recipient];
+			break;
+		case "group":
+			members = message.channel.recipients;
+			break;
+	}
+	
 	var effects = [
 		{
 			"chance":1,
@@ -131,9 +147,9 @@ function pickEffect(message,bot,callback){
 			"speak3":""
 		},
 		{
-			"chance":1,
+			"chance":1000,
 			"speak1":"Your mind and ",
-			"options1":message.channel.type == "text" ? bot.guilds[message.guild].members : message.channel.type == "dm" ? [message.channel.recipient] : message.channel.recipients,
+			"options1":members,
 			"speak2":"'s mind are switched.",
 			"options2":[],
 			"speak3":""
@@ -155,8 +171,8 @@ function pick(array){
 	return array.length > 0 ? array[rn(array.length)] : "";
 }
 
-function generate(message,bot,callback){
-	pickEffect(message,bot,function(response){
+function generate(message,callback){
+	pickEffect(message,function(response){
 		callback(response);
 	});
 }
