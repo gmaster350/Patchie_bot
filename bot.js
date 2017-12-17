@@ -603,7 +603,7 @@ var commandTree = {
 //	"removeRole":removeRole,
 	"potion":potion.generate,
 	"potionIgnore":potion.changeSetting,
-	"potionCustom":potion.addCustom
+//	"potionCustom":potion.addCustom
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
