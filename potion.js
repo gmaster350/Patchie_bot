@@ -1,5 +1,9 @@
 // Bot random potion module //
 
+const fs = require("fs");
+
+var settings;
+
 function sum(arr){
 	var t = 0;
 	for(i=0;i<arr.length;i++)t+=arr[i];
@@ -32,21 +36,59 @@ function weightedRandom(array,weights){
 	return ret;
 }
 
+function changeSetting(message,callback){
+	var s = message.content.split(" ");
+	if(s.length > 1){
+		var r = s[1].toLowerCase();
+		if(r == "true" || r == "false"){
+			settings[message.author.id] = Boolean(message.content.split(" ")[1]);
+			if(r == "true"){
+				callback("You will no longer be selected for potion effects.");
+			}
+			else{
+				callback("You can now be selected for potion effects.");
+			}
+			fs.writeFile("./potionSettings.txt",JSON.stringify(settings));
+		}
+		else{
+			callback("Error: Please specify `true` or `false`");
+		}
+	}
+	else{
+		callback("Usage: potionIgnore `true`|`false`\nCurrent setting: "+settings[message.author.id]);
+	}
+}
+
+function startsWithVowel(str1){
+	return (str1.startsWith("a") || str1.startsWith("e") || str1.startsWith("i") || str1.startsWith("o") || str1.startsWith("u"));
+}
+
 function pickEffect(message,callback){
 	var members;
 	switch(message.channel.type){
 		case "text":
 			members = [];
 			message.guild.members.map(function(m,id){
-				members.push(m.user);
+				if(m.presence.status == "online" && settings[m.id] == false && m.id != message.author.id){
+					members.push(m.user);
+				}
 			});
 			break;
 		case "dm":
-			members = [message.channel.recipient];
+			members = [];
+			members.push(message.channel.recipient);
 			break;
 		case "group":
-			members = message.channel.recipients;
+			members = [];
+			message.channel.recipients.map(function(m,id){
+				if(m.presence.status == "online" && settings[m.id] == false && m.id != message.author.id){
+					members.push(m.user);
+				}
+			});
 			break;
+	}
+	if (members.length == 0){
+		members = ["`[nobody]`"];
 	}
 	
 	var effects = [
@@ -84,7 +126,7 @@ function pickEffect(message,callback){
 		},
 		{
 			"chance":4,
-			"speak1":"Your body gradually transforms into that of a(n) ",
+			"speak1":"Your body gradually transforms into that of a",
 			"options1":["rabbit","human","wolf","fish","bear","fox","dragon","cat","dog","mouse","rat","pig","sheep","giraffe","zebra","horse","hippopotamus","bird","eagle","shark","whale","sloth","chicken"],
 			"speak2":"",
 			"options2":[],
@@ -140,7 +182,7 @@ function pickEffect(message,callback){
 		},
 		{
 			"chance":2,
-			"speak1":"You suddenly sprout a / an extra ",
+			"speak1":"You suddenly sprout a",
 			"options1":["tail","penis","head","pair of ears","pair of horns","tongue"],
 			"speak2":"",
 			"options2":[],
@@ -160,7 +202,14 @@ function pickEffect(message,callback){
 		weights.push(obj.chance);
 	});
 	var r = weightedRandom(effects,weights);
-	var response = r.speak1 + pick(r.options1) + r.speak2 + pick(r.options2) + r.speak3;
+	var r2 = pick(r.options1);
+	var r4 = pick(r.options2);
+	
+	var r1 = r.speak1 + (r.speak1.endsWith("a") && startsWithVowel(r2) ? "n " : " ");
+	var r3 = r.speak2 + (r.speak2.endsWith("a") && startsWithVowel(r4) ? "n " : " ");		
+	var r5 = r.speak3;
+	
+	var response = r1 + r2 + r3 + r4 + r5;
 	callback(response);
 }
 
@@ -178,6 +227,12 @@ function generate(message,callback){
 	});
 }
 
+function importSettings(json){
+	settings = json;
+}
+
 module.exports = {
-	"generate":generate
+	"generate":generate,
+	"importSettings":importSettings,
+	"changeSetting":changeSetting
 }
