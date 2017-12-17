@@ -1,5 +1,9 @@
 // Bot random potion module //
 
+const fs = require("fs");
+
+var settings;
+
 function sum(arr){
 	var t = 0;
 	for(i=0;i<arr.length;i++)t+=arr[i];
@@ -32,31 +36,55 @@ function weightedRandom(array,weights){
 	return ret;
 }
 
+function changeSetting(message,callback){
+	var s = message.content.split(" ");
+	if(s.length > 1){
+		var r = s[1].toLowerCase();
+		if(r == "true" || r == "false"){
+			settings[message.author.id] = Boolean(message.content.split(" ")[1]);
+			if(r == "true"){
+				callback("You will no longer be selected for potion effects.");
+			}
+			else{
+				callback("You can now be selected for potion effects.");
+			}
+			fs.writeFile("./potionSettings.txt",JSON.stringify(settings));
+		}
+		else{
+			callback("Error: Please specify `true` or `false`");
+		}
+	}
+	else{
+		callback("Usage: potionIgnore `true`|`false`\nCurrent setting: "+settings[message.author.id]);
+	}
+}
+
 function pickEffect(message,callback){
 	var members;
 	switch(message.channel.type){
 		case "text":
 			members = [];
 			message.guild.members.map(function(m,id){
-				if(m.presence.status == "online"){
+				if(m.presence.status == "online" && settings[m.id] == false && !m.user.bot && m.id != message.author.id){
 					members.push(m.user);
 				}
 			});
 			break;
 		case "dm":
 			members = [];
-			if(message.channel.recipient.presence.status == "online"){
-				members.push(message.channel.recipient);
-			}
+			members.push(message.channel.recipient);
 			break;
 		case "group":
 			members = [];
 			message.channel.recipients.map(function(m,id){
-				if(m.presence.status == "online"){
+				if(m.presence.status == "online" && settings[m.id] == false && !m.user.bot && m.id != message.author.id){
 					members.push(m.user);
 				}
 			});
 			break;
+	}
+	if (members.length == 0){
+		members = ["`[nobody]`"];
 	}
 	
 	var effects = [
@@ -157,7 +185,7 @@ function pickEffect(message,callback){
 			"speak3":""
 		},
 		{
-			"chance":1,
+			"chance":100000,
 			"speak1":"Your mind and ",
 			"options1":members,
 			"speak2":"'s mind are switched.",
@@ -188,6 +216,12 @@ function generate(message,callback){
 	});
 }
 
+function importSettings(json){
+	settings = json;
+}
+
 module.exports = {
-	"generate":generate
+	"generate":generate,
+	"importSettings":importSettings,
+	"changeSetting":changeSetting
 }

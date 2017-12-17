@@ -601,7 +601,8 @@ var commandTree = {
 	"checkTitle":titlecheck,
 //	"addRole":giveRole,
 //	"removeRole":removeRole,
-	"potion":potion.generate
+	"potion":potion.generate,
+	"potionIgnore":potion.changeSetting
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -643,6 +644,24 @@ bot.on("ready",function(){
 				submenu.addUser(member.id);
 				member.addRole(role);
 			});
+		}
+	});
+	
+	fs.readFile("./potionSettings.txt",function(err,data){
+		if(err)console.log(err);
+		else{
+			var s = JSON.parse(data);
+			bot.guilds.map(function(g){
+				g.members.map(function(m,id){
+					if(Object.keys(s).every(function(mid){
+						return mid != id;
+					})){ //if member does not exist in settings.
+						s[m.id] = false;
+					}
+				});
+			});
+			fs.writeFile("./potionSettings.txt",JSON.stringify(s));
+			potion.importSettings(s);
 		}
 	});
 });
