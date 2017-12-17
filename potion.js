@@ -59,6 +59,10 @@ function changeSetting(message,callback){
 	}
 }
 
+function startsWithVowel(str1){
+	return (str1.startsWith("a") || str1.startsWith("e") || str1.startsWith("i") || str1.startsWith("o") || str1.startsWith("u"));
+}
+
 function pickEffect(message,callback){
 	var members;
 	switch(message.channel.type){
@@ -122,7 +126,7 @@ function pickEffect(message,callback){
 		},
 		{
 			"chance":4,
-			"speak1":"Your body gradually transforms into that of a(n) ",
+			"speak1":"Your body gradually transforms into that of a",
 			"options1":["rabbit","human","wolf","fish","bear","fox","dragon","cat","dog","mouse","rat","pig","sheep","giraffe","zebra","horse","hippopotamus","bird","eagle","shark","whale","sloth","chicken"],
 			"speak2":"",
 			"options2":[],
@@ -178,7 +182,7 @@ function pickEffect(message,callback){
 		},
 		{
 			"chance":2,
-			"speak1":"You suddenly sprout a / an extra ",
+			"speak1":"You suddenly sprout a",
 			"options1":["tail","penis","head","pair of ears","pair of horns","tongue"],
 			"speak2":"",
 			"options2":[],
@@ -198,7 +202,14 @@ function pickEffect(message,callback){
 		weights.push(obj.chance);
 	});
 	var r = weightedRandom(effects,weights);
-	var response = r.speak1 + pick(r.options1) + r.speak2 + pick(r.options2) + r.speak3;
+	var r2 = pick(r.options1);
+	var r4 = pick(r.options2);
+	
+	var r1 = r.speak1 + (r.speak1.endsWith("a") && startsWithVowel(r2) ? "n " : " ");
+	var r3 = r.speak2 + (r.speak2.endsWith("a") && startsWithVowel(r4) ? "n " : " ");		
+	var r5 = r.speak3;
+	
+	var response = r1 + r2 + r3 + r4 + r5;
 	callback(response);
 }
 
