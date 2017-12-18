@@ -433,6 +433,7 @@ const version = "1.1.2";
 	const bot = new Discord.Client();
 	const spam = require("./spam.js");
 	const potion = require("./potion.js");
+	const privateRoom = require("./privateRoom.js");
 	const prefix = "!!";
 	const about = 
 	"Info:\nMade by: @Zapp#4885"+
@@ -497,7 +498,6 @@ function alertOwner(msg,error){
 		owner.send(error);
 	});
 }
-
 
 
 // Test Module
@@ -603,6 +603,8 @@ var commandTree = {
 //	"removeRole":removeRole,
 	"potion":potion.generate,
 	"potionIgnore":potion.changeSetting,
+	"createRoom":privateRoom.create,
+	"leaveRoom":privateRoom.leave
 //	"potionCustom":potion.addCustom
 }
 
