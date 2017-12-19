@@ -604,7 +604,8 @@ var commandTree = {
 	"potion":potion.generate,
 	"potionIgnore":potion.changeSetting,
 	"createRoom":privateRoom.create,
-	"leaveRoom":privateRoom.leave
+	"leaveRoom":privateRoom.leave,
+	"inviteToRoom":privateRoom.inviteToRoom
 //	"potionCustom":potion.addCustom
 }
 

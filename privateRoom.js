@@ -67,40 +67,64 @@ function hash(){
 */
 
 function getRoleFromGuildByName(guild,name){
-		var res = undefined;
-		guild.roles.map(function(role,snowflake){
-			if(role.name.toLowerCase() == name.toLowerCase())
-				res = role;
-		});
-		return res;
-	}
+	var res = undefined;
+	guild.roles.map(function(role,snowflake){
+		if(role.name.toLowerCase() == name.toLowerCase())
+			res = role;
+	});
+	return res;
+}
 
 // Create Group Room, only visible to members of the group
 function create(message,callback){
 	if(message.content.split(" ").length == 1){
-		callback("Usage: createRoom *room_name* \@user \@user ...\ncreates a private room for you and any mentioned users. Room will be a text channel visible only to users");
+		callback("Usage: createRoom *room_name* \@user \@user ...\nCreates a private room for you and any mentioned users (You are automatically included). Room will be a text channel visible only to you and your mentioned users. Room is destroyed when all participants leave the room via `leaveRoom`");
+	}
+	else if(message.channel.type != "text"){
+		callback("You cannot call this command outside of a server.");
 	}
 	else{
 		var name = message.content.split(" ")[1];
-		var id = hash();
-		
-		//create role,
-		//create channel,
-		//give role to mentioned users 
-		
-		message.guild.createRole({"name":id},"Created via command").then(function(newRole){
-			message.guild.createChannel("P_" + name,"text").then(function(newChannel){
-				newChannel.setTopic("{" + id + "}");
-				newChannel.overwritePermissions(message.guild.id,{"VIEW_CHANNEL":false}).then(function(){
-					newChannel.overwritePermissions(newRole.id,{"VIEW_CHANNEL":true}).then(function(){
-						message.mentions.members.map(function(mentionedMember,mid){
-							mentionedMember.addRole(newRole);
-						});
-						message.member.addRole(newRole);
+		if(name.length > 98){
+			callback("Channel names must not exceed 98 characters!");
+		}
+		else{
+			var id = hash();
+			message.guild.createRole({"name":id},"Created via command").then(function(newRole){
+				message.guild.createChannel("P_" + name,"text").then(function(newChannel){
+					newChannel.setTopic("{" + id + "}");
+					newChannel.setPosition(2,false);
+					newChannel.overwritePermissions(message.guild.id,{"VIEW_CHANNEL":false}).then(function(){
+						newChannel.overwritePermissions(newRole.id,{"VIEW_CHANNEL":true}).then(function(){
+							message.mentions.members.map(function(mentionedMember,mid){
+								mentionedMember.addRole(newRole);
+							});
+							message.member.addRole(newRole);
+						}).catch(function(err){console.log(err);});
 					}).catch(function(err){console.log(err);});
 				}).catch(function(err){console.log(err);});
 			}).catch(function(err){console.log(err);});
-		}).catch(function(err){console.log(err);});
+		}
+	}
+}
+
+function inviteToRoom(message,callback){
+	if(message.channel.topic.match(/^\{[1234567890abcdef]{4}\}.*$/)){
+		var newRole = getRoleFromGuildByName(message.guild,message.channel.topic.substring(1,5));
+		
+		if(message.mentions.users.size > 0){
+			message.mentions.users.map(function(mentionedUser,uid){
+				message.guild.fetchMember(mentionedUser).then(function(m){
+					m.addRole(newRole);
+				});
+			});
+		}
+		else{
+			callback("Usage: inviteToRoom @user @user ...\nAdds another user to your private room.");
+		}
+	}
+	else{
+		callback("This channel doesn't seem to be a private room. Call this command from within the room you want to invite someone to.");
 	}
 }
 
@@ -111,24 +135,57 @@ function leave(message,callback){
 		callback("Couldn't find appropriate role. Are you sure this is a private channel?");
 	}
 	else{
-		message.member.removeRole(role);
-		var membersWithRole = 0;
-		
-		message.guild.members.map(function(member){
-			if(member.roles.some(function(r){
-				return r.name == topic;
-			})){
-				membersWithRole++;
+		if(message.mentions.members.length > 0){  //Let moderators remove people from a private room.
+			if(message.member.hasPermission("MANAGE_ROLES")){
+				message.mentions.members.map(function(member){
+					member.removeRole(role).then(function(mem){
+						var membersWithRole = 0;
+						
+						message.guild.members.map(function(member){
+							if(member.roles.some(function(r){
+								return r.name == topic;
+							})){
+								membersWithRole++;
+							}
+						});
+						
+						if(membersWithRole == 0){
+							message.channel.delete("Room is now empty").then(function(channel){
+								message.guild.roles.map(function(role,id){
+									if(role.name == topic){
+										role.delete().then(function(deletedRole){});
+									}
+								});
+							});
+						}
+					});
+				});
 			}
-		});
-		
-		if(membersWithRole == 0){
-			message.channel.delete("Room is now empty").then(function(channel){
-				message.guild.roles.map(function(role,id){
-					if(role.name == topic){
-						role.delete().then(function(deletedRole){});
+			else{
+				callback("You cannot make others leave.");
+			}
+		}
+		else{
+			message.member.removeRole(role).then(function(mem){
+				var membersWithRole = 0;
+				
+				message.guild.members.map(function(member){
+					if(member.roles.some(function(r){
+						return r.name == topic;
+					})){
+						membersWithRole++;
 					}
 				});
+				
+				if(membersWithRole == 0){
+					message.channel.delete("Room is now empty").then(function(channel){
+						message.guild.roles.map(function(role,id){
+							if(role.name == topic){
+								role.delete().then(function(deletedRole){});
+							}
+						});
+					});
+				}
 			});
 		}
 	}
@@ -136,5 +193,6 @@ function leave(message,callback){
 
 module.exports = {
 	"create":create,
-	"leave":leave
+	"leave":leave,
+	"inviteToRoom":inviteToRoom
 }
