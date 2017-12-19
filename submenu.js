@@ -164,7 +164,7 @@ function subObject(arr,nodes,callback){
 
 function list(message,callback){
 	var user;
-	if(message.mentions.users.length > 0){
+	if(message.mentions.users.size > 0){
 		user = message.mentions.users[0].id;
 	}
 	else{
@@ -203,7 +203,7 @@ function list(message,callback){
 
 function place(message,callback){
 	var user;
-	if(message.mentions.users.length > 0){
+	if(message.mentions.users.size > 0){
 		user = message.mentions.users[0].id;
 	}
 	else{
