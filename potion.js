@@ -183,103 +183,129 @@ function pickEffect(message,effects,callback){
 	}
 	
 	var response = "";
-	if(effects.constructor == Object){
-		effects.options.forEach(function(o){
-			if(o instanceof String){
-				if(o == "%members%"){
-					pick(members);
-				}
-				else{
-					response += o;
-				}
-			}
-			else if(o instanceof Array){
-				response += pick(o);
-			}
-			else if(o instanceof Object){
-				pickEffect(message,o,function(res){
-					response += res;
-				});
-			}
-		});
-	}
-	else if(effects.constructor == Array){
-		console.log(typeof effects);
-		if(effects.every(function(e){
-			var isObject = e.constructor == Object;
-			var hasOptions = false;
-			var hasChance = false;
-			if(isObject){
-				hasOptions = Object.keys(e).some(function(k){
-					return k == "options";
-				});
-				hasChance = Object.keys(e).some(function(k){
-					return k == "chance";
-				});
-			}
-			return (isObject && hasOptions && hasChance);
-		})){
-			// all objects in the array have the correct format for a weighted random selection //
-			var weights = [];
-			effects.forEach(function(obj){
-				weights.push(obj.chance);
-			});
-			weightedRandom(effects,weights,function(selectedObject){
-				pickEffect(message,selectedObject,function(res){
-					response += res
-				});
-			});
-			
-		}
-		else if(effects.every(function(e){return e.constructor == Object;})){
-			// The first if-statement was not matched, therefore there may be an object not containing the needed keys. //
-			
-			effects.some(function(e){
-				if(!("options" in Object.keys(e))){
-					throw "'options' key missing from "+e;
-				}
-				if(!("chance" in Object.keys(e))){
-					throw "'chance' key missing from "+e;
-				}
-			});
-		}
-		else if(effects.some(function(e){
+	
+	// we deal ONLY with arrays.
+	if (effects.constructor != Array) throw "An array was expected for effects."
+	
+	
+	//valid formats: all objects, or mix of other arrays and string.
+	if(effects.every(
+		function(e){
+			// Check to see if all array elements are objects
+			objCount++;
 			return e.constructor == Object;
-		}) && effects.some(function(e){
-			return e.constructor != Object;
-		})){
-			// The format of array elements is inconsistent //
-			
-			throw "The elements of an array is inconsistent! Either all of, or none of the elements should be objects."
-			
 		}
-		else{
-			var picked = pick(effects);
-			if(picked instanceof Array){
-				pickEffect(message,picked,function(res){
-					response += res;
+	)){
+		// All array elements are objects.
+		if(effects.every(
+			function(e){
+				// Check to see if all objects contain the keys 'chance' and 'options'
+				return ("chance" in e) && ("options" in e);
+			}
+		)){
+			// Each object in the array has the required keys, but the values of the key-value pairs must now checked.
+			if(effects.every(
+				function(e){
+					// Check to see if the key-value pairs have the correct values.
+					return (e.chance.constructor == Number) && (e.options.constructor == Array);
+				}
+			)){
+				// All objects meet the criteria. A weighted random selection is permitted to be performed.
+				
+				var weights = [];
+				effects.forEach(function(obj){
+					weights.push(obj.chance);
+				});
+				weightedRandom(effects,weights,function(selectedObject){
+					pickEffect(message,selectedObject.options,function(res){
+						response += res;
+					});
 				});
 			}
 			else{
-				response += picked;
+				// One or more element in the array has the correct keys, but wrong values.
+				throw "One or more element in the array has the correct keys, but wrong values. 'options' must be an array, and 'chance' must be a number; integer or floating point.";
 			}
 		}
+		else{
+			// The array has one or more objects missing the needed keys
+			throw "One or more objects in array are missing a needed key. Array given: "+e;
+		}
+	}
+	// If some elements are objects, and some aren't, throw an error, as the array must be consistent.
+	else if(
+		effects.some(function(e){
+			return e.constructor != Object;
+		})
+		&&
+		effects.some(function(e){
+			return e.constructor == Object;
+		})
+	){
+		// The array is inconsistent.
+		throw "Array is inconsistent. Array must contain either all objects, or all non-objects. Array given: "+e;
 	}
 	else{
-		throw "The evaluated object was neither an object nor an array. something's gone wrong here.";
+		// The array must therefore be appropriate to have a standard random selection performed.
+		effects.forEach(
+			function(e){
+				switch(e.constructor){
+					case String:
+						switch(e){
+							case "%members%":
+								//special case, picks a random member from the guild, which is online, and willing to participate
+								response += pick(members);
+								break;
+							default:
+								if(e.match(/^%-?\d?, ?-?\d%$/)){
+									//Special case, picks a random number between two integers inclusively
+									var s = e.substring(1,e.length-1).replace(" ","").split(",");
+									var low = Number(s[0]);
+									var high = Number(s[1]);
+									if(low < high){
+										reponse += String(randbetween(low,high));
+									}
+									else{
+										throw "Low limit was higher than High limit.";
+									}
+								}
+								else{
+									response += e;
+								}
+								break;
+						}
+						break;
+					
+					case Array:
+						if(e.every(function(e1){
+							if(e1.constructor == Object){
+								return Object.keys(e1).every(function(e2){
+									return ["chance","options"].some(function(e3){
+										return e2 == e3;
+									})
+								});
+							}
+							else{
+								return false;
+							}
+						})){
+							pickEffect(message,e,function(res){
+								response += res;
+							});
+						}
+						else{
+							response += pick(e);
+						}
+						break;
+					
+					case Number:
+						response += String(e);
+						
+				}
+			}
+		);
 	}
 	
-	//return response;
-	
-	//var r = weightedRandom(effects,weights);
-	//var r2 = pick(r.options1);
-	//var r4 = pick(r.options2);
-	
-	//var r1 = r.speak1 + (r.speak1.endsWith("a") && startsWithVowel(r2) ? "n " : " ");
-	//var r3 = r.speak2 + (r.speak2.endsWith("a") && startsWithVowel(r4) ? "n " : " ");		
-	//var r5 = r.speak3;
-	
-	//var response = r1 + r2 + r3 + r4 + r5;
 	callback(response);
 }
 
@@ -287,8 +313,15 @@ function rn(n){ //random number between 0 and n
 	return Math.floor(Math.random()*n);
 }
 
+function randbetween(a,b){
+	return Math.floor(Math.random()*((b+1)-a)+a);
+}
+
 function pick(array){
-	return array.length > 0 ? array[rn(array.length)] : "";
+	var chosen = array.length > 0 ? array[rn(array.length)] : "";
+	if(chosen instanceof Array){
+		return pick(chosen);
+	}
 }
 
 function generate(message,callback){
