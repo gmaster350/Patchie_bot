@@ -4,6 +4,96 @@ const fs = require("fs");
 
 var settings;
 var customs = [];
+var importedPotions = [
+	{
+		"chance":1,
+		"options":[
+			"You feel many times stronger."
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You feel much more agile."
+		]
+	},
+	{
+		"chance":5,
+		"options":[
+			"Your ",
+			["penis","head","tongue","legs","tail","ears","wings","whole body","ears","snout"],
+			" changes to be many times ",
+			["larger","smaller"],
+			" than its current size."
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You are able to see greater distances."
+		]
+	},
+	{
+		"chance":4,
+		"options":[
+			"Your body gradually transforms into that of a",
+			["rabbit","human","wolf","fish","bear","fox","dragon","cat","dog","mouse","rat","pig","sheep","giraffe","zebra","horse","hippopotamus","bird","eagle","shark","whale","sloth","chicken"]
+		]
+	},
+	{
+		"chance":3,
+		"options":[
+			"Your skin starts to change color, gradually turning ",
+			["red","orange","yellow","green","blue","purple","pink","black","white","grey","transparent","stripey","spotted"]
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"Your skin is immune to any acids"
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"Your tongue turns numb, leaving you unable to speak coherently"
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You have a compulsion to dance"
+		]
+	},
+	{
+		"chance":6,
+		"options":[
+			"You gain the ability to exhale ",
+			["tea","coffee","water","cola soda","deodorant","molten nickel","magma","candy","rosemary and thyme","paprika","parsley","mcdonald's fries","old sneakers","dulux paint","sand","gravel","salt","small plastic toys","powerful pheromones","sleeping gas","shredded paper","propane","pennies"]
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You become invisible to others."
+		]
+	},
+	{
+		"chance":2,
+		"options":[
+			"You suddenly sprout an extra ",
+			["tail","penis","head","pair of ears","pair of horns","tongue"]
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"Your mind and ",
+			"%members%",
+			"'s mind are switched."
+		]
+	}
+];
 
 function sum(arr){
 	var t = 0;
@@ -64,7 +154,7 @@ function startsWithVowel(str1){
 	return (str1.startsWith("a") || str1.startsWith("e") || str1.startsWith("i") || str1.startsWith("o") || str1.startsWith("u"));
 }
 
-function pickEffect(message,callback){
+function pickEffect(message,effects,callback){
 	var members;
 	switch(message.channel.type){
 		case "text":
@@ -92,125 +182,104 @@ function pickEffect(message,callback){
 		members = ["`[nobody]`"];
 	}
 	
-	var effects = [
-		{
-			"chance":1,
-			"speak1":"You feel many times stronger.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"You feel much more agile.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":5,
-			"speak1":"Your ",
-			"options1":["penis","head","tongue","legs","tail","ears","wings","whole body","ears","snout"],
-			"speak2":" changes to be many times ",
-			"options2":["larger","smaller"],
-			"speak3":" than its current size."
-		},
-		{
-			"chance":1,
-			"speak1":"You are able to see greater distances.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":4,
-			"speak1":"Your body gradually transforms into that of a",
-			"options1":["rabbit","human","wolf","fish","bear","fox","dragon","cat","dog","mouse","rat","pig","sheep","giraffe","zebra","horse","hippopotamus","bird","eagle","shark","whale","sloth","chicken"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":3,
-			"speak1":"Your skin starts to change color, gradually turning ",
-			"options1":["red","orange","yellow","green","blue","purple","pink","black","white","grey","transparent","stripey","spotted"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"Your skin is immune to any acids",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"Your tongue turns numb, leaving you unable to speak coherently",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"You have a compulsion to dance",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":6,
-			"speak1":"You gain the ability to exhale ",
-			"options1":["tea","coffee","water","cola soda","deodorant","molten nickel","magma","candy","rosemary and thyme","paprika","parsley","mcdonald's fries","old sneakers","dulux paint","sand","gravel","salt","small plastic toys","powerful pheromones","sleeping gas","shredded paper","propane","pennies"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"You become invisible to others.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":2,
-			"speak1":"You suddenly sprout an extra ",
-			"options1":["tail","penis","head","pair of ears","pair of horns","tongue"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"Your mind and ",
-			"options1":members,
-			"speak2":"'s mind are switched.",
-			"options2":[],
-			"speak3":""
+	var response = "";
+	if(effects.constructor == Object){
+		effects.options.forEach(function(o){
+			if(o instanceof String){
+				if(o == "%members%"){
+					pick(members);
+				}
+				else{
+					response += o;
+				}
+			}
+			else if(o instanceof Array){
+				response += pick(o);
+			}
+			else if(o instanceof Object){
+				pickEffect(message,o,function(res){
+					response += res;
+				});
+			}
+		});
+	}
+	else if(effects.constructor == Array){
+		console.log(typeof effects);
+		if(effects.every(function(e){
+			var isObject = e.constructor == Object;
+			var hasOptions = false;
+			var hasChance = false;
+			if(isObject){
+				hasOptions = Object.keys(e).some(function(k){
+					return k == "options";
+				});
+				hasChance = Object.keys(e).some(function(k){
+					return k == "chance";
+				});
+			}
+			return (isObject && hasOptions && hasChance);
+		})){
+			// all objects in the array have the correct format for a weighted random selection //
+			var weights = [];
+			effects.forEach(function(obj){
+				weights.push(obj.chance);
+			});
+			weightedRandom(effects,weights,function(selectedObject){
+				pickEffect(message,selectedObject,function(res){
+					response += res
+				});
+			});
+			
 		}
-	];
-	var weights = [];
-	effects.forEach(function(obj){
-		weights.push(obj.chance);
-	});
-	var r = weightedRandom(effects,weights);
-	var r2 = pick(r.options1);
-	var r4 = pick(r.options2);
+		else if(effects.every(function(e){return e.constructor == Object;})){
+			// The first if-statement was not matched, therefore there may be an object not containing the needed keys. //
+			
+			effects.some(function(e){
+				if(!("options" in Object.keys(e))){
+					throw "'options' key missing from "+e;
+				}
+				if(!("chance" in Object.keys(e))){
+					throw "'chance' key missing from "+e;
+				}
+			});
+		}
+		else if(effects.some(function(e){
+			return e.constructor == Object;
+		}) && effects.some(function(e){
+			return e.constructor != Object;
+		})){
+			// The format of array elements is inconsistent //
+			
+			throw "The elements of an array is inconsistent! Either all of, or none of the elements should be objects."
+			
+		}
+		else{
+			var picked = pick(effects);
+			if(picked instanceof Array){
+				pickEffect(message,picked,function(res){
+					response += res;
+				});
+			}
+			else{
+				response += picked;
+			}
+		}
+	}
+	else{
+		throw "The evaluated object was neither an object nor an array. something's gone wrong here.";
+	}
 	
-	var r1 = r.speak1 + (r.speak1.endsWith("a") && startsWithVowel(r2) ? "n " : " ");
-	var r3 = r.speak2 + (r.speak2.endsWith("a") && startsWithVowel(r4) ? "n " : " ");		
-	var r5 = r.speak3;
+	//return response;
 	
-	var response = r1 + r2 + r3 + r4 + r5;
+	//var r = weightedRandom(effects,weights);
+	//var r2 = pick(r.options1);
+	//var r4 = pick(r.options2);
+	
+	//var r1 = r.speak1 + (r.speak1.endsWith("a") && startsWithVowel(r2) ? "n " : " ");
+	//var r3 = r.speak2 + (r.speak2.endsWith("a") && startsWithVowel(r4) ? "n " : " ");		
+	//var r5 = r.speak3;
+	
+	//var response = r1 + r2 + r3 + r4 + r5;
 	callback(response);
 }
 
@@ -228,7 +297,7 @@ function generate(message,callback){
 		customs.shift();
 	}
 	else{
-		pickEffect(message,function(response){
+		pickEffect(message,importedPotions,function(response){
 			callback(response);
 		});
 	}
