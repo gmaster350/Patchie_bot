@@ -580,6 +580,20 @@ function wipe(message,callback){
 	}
 }
 
+function setRole(message,callback){
+	manageRoles.setRole(message,function(resp){
+		callback(resp);
+	},function(error){
+		if(error){
+			bot.fetchUser("125576692646281216").then(function(user){
+				user.send(error);
+			}).catch(function(err){
+				console.log(err);
+			});
+		}
+	});
+}
+
 // Submenu Module
 
 var commandTree = {
@@ -609,7 +623,7 @@ var commandTree = {
 	"leaveRoom":privateRoom.leave,
 	"inviteToRoom":privateRoom.inviteToRoom,
 //	"potionCustom":potion.addCustom,
-	"setRole":manageRoles.setRole,
+	"setRole":setRole,
 	"removeRole":manageRoles.removeRole
 }
 

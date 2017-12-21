@@ -17,7 +17,7 @@ function getRoleFromGuildByName(guild,name){
 	return res;
 }
 
-function setRole(message,callback){
+function setRole(message,callback,errorCallback){
 	var parameters = message.content.split(" ");
 
 	
@@ -42,12 +42,16 @@ function setRole(message,callback){
 				genderRoles.forEach(function(gr){
 					user.roles.map(function(r){
 						if(gr == r.name){
-							user.removeRole(getRoleFromGuildByName(server,r));
+							user.removeRole(getRoleFromGuildByName(server,gr));
 							replaced = ", replacing "+gr+".";
 						}
 					});
 				});
-				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				var role = getRoleFromGuildByName(server,roleGiven);
+				if(role === undefined) errorCallback("The role was not found. You should add it.");
+				else{
+					user.addRole(role);
+				}
 				callback("Added role "+roleGiven+replaced);
 			}
 			else if(voreRoles.some(function(vr){return vr == roleGiven;})){
@@ -61,7 +65,11 @@ function setRole(message,callback){
 						}
 					});
 				});
-				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				var role = getRoleFromGuildByName(server,roleGiven);
+				if(role === undefined) errorCallback("The role was not found. You should add it.");
+				else{
+					user.addRole(role);
+				}
 				callback("Added role "+roleGiven+replaced);
 			}
 			else if(speciesRoles.some(function(sr){return sr == roleGiven;})){
@@ -74,7 +82,11 @@ function setRole(message,callback){
 						}
 					});
 				});
-				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				var role = getRoleFromGuildByName(server,roleGiven);
+				if(role === undefined) errorCallback("The role was not found. You should add it.");
+				else{
+					user.addRole(role);
+				}
 				callback("Added role "+roleGiven+replaced);
 			}
 			else if(descRoles.some(function(dr){return dr == roleGiven;})){
@@ -87,7 +99,11 @@ function setRole(message,callback){
 						}
 					});
 				});
-				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				var role = getRoleFromGuildByName(server,roleGiven);
+				if(role === undefined) errorCallback("The role was not found. You should add it.");
+				else{
+					user.addRole(role);
+				}
 				callback("Added role "+roleGiven+replaced);
 			}
 			else if(feetRoles.some(function(fr){return fr == roleGiven;})){
@@ -100,7 +116,11 @@ function setRole(message,callback){
 						}
 					});
 				});
-				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				var role = getRoleFromGuildByName(server,roleGiven);
+				if(role === undefined) errorCallback("The role was not found. fix something.");
+				else{
+					user.addRole(role);
+				}
 				callback("Added role "+roleGiven+replaced);
 			}
 			else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
