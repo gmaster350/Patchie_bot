@@ -17,7 +17,7 @@ function getRoleFromGuildByName(guild,name){
 
 function setRole(message,callback){
 	var parameters = message.content.split(" ");
-	console.log(parameters);
+
 	
 	if(parameters.length == 1){
 		callback("Set a role for yourself. \n**Roles:**\nPrey | Pred | Switch\nMale | Female | Other\nDragon | Human | Furry | Scalie | Avian\nDisposal");
