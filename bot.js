@@ -434,6 +434,8 @@ const version = "1.2.0";
 	const spam = require("./spam.js");
 	const potion = require("./potion.js");
 	const privateRoom = require("./privateRoom.js");
+	const manageRoles = require("./manageRoles.js");
+	
 	const prefix = "!!";
 	const about = 
 	"Made by: @Zapp#4885"+
@@ -605,8 +607,10 @@ var commandTree = {
 	"potionIgnore":potion.changeSetting,
 	"createRoom":privateRoom.create,
 	"leaveRoom":privateRoom.leave,
-	"inviteToRoom":privateRoom.inviteToRoom
-//	"potionCustom":potion.addCustom
+	"inviteToRoom":privateRoom.inviteToRoom,
+//	"potionCustom":potion.addCustom,
+	"setRole":manageRoles.setRole,
+	"removeRole":manageRoles.removeRole
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
