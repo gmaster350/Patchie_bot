@@ -4,96 +4,11 @@ const fs = require("fs");
 
 var settings;
 var customs = [];
-var importedPotions = [
-	{
-		"chance":1,
-		"options":[
-			"You feel many times stronger."
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"You feel much more agile."
-		]
-	},
-	{
-		"chance":5,
-		"options":[
-			"Your ",
-			["penis","head","tongue","legs","tail","ears","wings","whole body","ears","snout"],
-			" changes to be many times ",
-			["larger","smaller"],
-			" than its current size."
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"You are able to see greater distances."
-		]
-	},
-	{
-		"chance":4,
-		"options":[
-			"Your body gradually transforms into that of a",
-			["rabbit","human","wolf","fish","bear","fox","dragon","cat","dog","mouse","rat","pig","sheep","giraffe","zebra","horse","hippopotamus","bird","eagle","shark","whale","sloth","chicken"]
-		]
-	},
-	{
-		"chance":3,
-		"options":[
-			"Your skin starts to change color, gradually turning ",
-			["red","orange","yellow","green","blue","purple","pink","black","white","grey","transparent","stripey","spotted"]
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"Your skin is immune to any acids"
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"Your tongue turns numb, leaving you unable to speak coherently"
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"You have a compulsion to dance"
-		]
-	},
-	{
-		"chance":6,
-		"options":[
-			"You gain the ability to exhale ",
-			["tea","coffee","water","cola soda","deodorant","molten nickel","magma","candy","rosemary and thyme","paprika","parsley","mcdonald's fries","old sneakers","dulux paint","sand","gravel","salt","small plastic toys","powerful pheromones","sleeping gas","shredded paper","propane","pennies"]
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"You become invisible to others."
-		]
-	},
-	{
-		"chance":2,
-		"options":[
-			"You suddenly sprout an extra ",
-			["tail","penis","head","pair of ears","pair of horns","tongue"]
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"Your mind and ",
-			"%members%",
-			"'s mind are switched."
-		]
-	}
-];
+var importedPotions;
+fs.readFile("potions.json",function(err,data){
+	if(err)console.log(err);
+	importedPotions = JSON.parse(data);
+});
 
 function sum(arr){
 	var t = 0;
@@ -103,7 +18,6 @@ function sum(arr){
 
 function weightedRandom(array,weights,callback){
 	var total = 0;
-	console.log("weighted random weights:",weights);
 	if(weights.some(function(w){
 		if(w.constructor == Number){
 			total += w;
@@ -129,7 +43,6 @@ function weightedRandom(array,weights,callback){
 		}
 		min = sum(weights.slice(0,i+1));
 	}
-	console.log("weight random choice:",ret);
 	callback(ret);
 }
 
@@ -160,9 +73,7 @@ function startsWithVowel(str1){
 	return (str1.startsWith("a") || str1.startsWith("e") || str1.startsWith("i") || str1.startsWith("o") || str1.startsWith("u"));
 }
 
-function pickEffect(message,effects,members,callback,iteration=0){
-	iteration++;
-	console.log("iteration:",iteration);
+function pickEffect(message,effects,members,callback){
 	var process = new Promise(function(resolve,reject){
 		
 		// we deal ONLY with arrays.
@@ -202,7 +113,7 @@ function pickEffect(message,effects,members,callback,iteration=0){
 					weightedRandom(effs,weights,function(selectedObject){
 						pickEffect(message,selectedObject,members,function(res){
 							resolve(res);
-						},iteration);
+						});
 					});
 				}
 				else{
@@ -233,7 +144,6 @@ function pickEffect(message,effects,members,callback,iteration=0){
 			var response = "";
 			effects.forEach(
 				function(e){
-					console.log("array value:",e);
 					switch(e.constructor){
 						case String:
 							switch(e){
@@ -267,14 +177,12 @@ function pickEffect(message,effects,members,callback,iteration=0){
 							if(e.every(function(e1){
 								return (e1.constructor == Object) && ("chance" in e1) && ("options" in e1);
 							})){
-								console.log("Array contains objects of the appropriate format, recurse this function.");
 								pickEffect(message,e,members,function(res){
 									response += res;
-								},iteration);
+								});
 							}
 							else{
 								pick(e,function(r){
-									console.log("Chosen value:",r);
 									response += r;
 								});
 							}
@@ -290,7 +198,6 @@ function pickEffect(message,effects,members,callback,iteration=0){
 		}
 	});
 	process.then(function(r){
-		console.log("processed",r);
 		callback(r);
 	}).catch(function(error){
 		callback(error);

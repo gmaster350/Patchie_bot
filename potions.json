@@ -1,0 +1,90 @@
+[
+	{
+		"chance":1,
+		"options":[
+			"You feel many times stronger."
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You feel much more agile."
+		]
+	},
+	{
+		"chance":5,
+		"options":[
+			"Your ",
+			["penis","head","tongue","legs","tail","ears","wings","whole body","ears","snout"],
+			" changes to be many times ",
+			["larger","smaller"],
+			" than its current size."
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You are able to see greater distances."
+		]
+	},
+	{
+		"chance":4,
+		"options":[
+			"Your body gradually transforms into that of a ",
+			["rabbit","human","wolf","fish","bear","fox","dragon","cat","dog","mouse","rat","pig","sheep","giraffe","zebra","horse","hippopotamus","bird","eagle","shark","whale","sloth","chicken"]
+		]
+	},
+	{
+		"chance":3,
+		"options":[
+			"Your skin starts to change color, gradually turning ",
+			["red","orange","yellow","green","blue","purple","pink","black","white","grey","transparent","stripey","spotted"]
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"Your skin is immune to any acids"
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"Your tongue turns numb, leaving you unable to speak coherently"
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You have a compulsion to dance"
+		]
+	},
+	{
+		"chance":6,
+		"options":[
+			"You gain the ability to exhale ",
+			["tea","coffee","water","cola soda","deodorant","molten nickel","magma","candy","rosemary and thyme","paprika","parsley","mcdonald's fries","old sneakers","dulux paint","sand","gravel","salt","small plastic toys","powerful pheromones","sleeping gas","shredded paper","propane","pennies"]
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"You become invisible to others."
+		]
+	},
+	{
+		"chance":2,
+		"options":[
+			"You suddenly sprout an extra ",
+			["tail","penis","head","pair of ears","pair of horns","tongue"]
+		]
+	},
+	{
+		"chance":1,
+		"options":[
+			"Your mind and ",
+			"%members%",
+			"'s mind are switched."
+		]
+	}
+]
