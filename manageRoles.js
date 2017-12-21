@@ -64,26 +64,19 @@ function setRole(message,callback){
 			}
 			else if(speciesRoles.some(function(sr){return sr == roleGiven;})){
 				var replaced = ".";
-				speciesRoles.forEach(function(sr){
-					user.roles.map(function(r){
-						if(sr == r.name){
-							user.removeRole(getRoleFromGuildByName(server,sr));
-							replaced = ", replacing "+sr+".";
-						}
-					});
-				});
+//				speciesRoles.forEach(function(sr){
+//					user.roles.map(function(r){
+//						if(sr == r.name){
+//							user.removeRole(getRoleFromGuildByName(server,sr));
+//							replaced = ", replacing "+sr+".";
+//						}
+//					});
+//				});
 				user.addRole(getRoleFromGuildByName(server,roleGiven));
 				callback("Added role "+roleGiven+replaced);
 			}
 			else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
 				// misc roles are not mutually exclusive, and will be added.
-				miscRoles.forEach(function(mr){
-					user.roles.map(function(r){
-						if(mr == r.name){
-							callback("You already have the role "+roleGiven+".");
-						}
-					});
-				});
 				
 				user.addRole(getRoleFromGuildByName(server,roleGiven));
 				callback("Added role "+roleGiven);
