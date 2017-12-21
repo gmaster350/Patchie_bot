@@ -41,6 +41,7 @@ function setRole(message,callback){
 				});
 			});
 			user.addRole(getRoleFromGuildByName(server,roleGiven));
+			callback("Added role "+roleGiven+replaced);
 		}
 		else if(voreRoles.some(function(vr){return vr == roleGiven;})){
 			// removes any and all vore roles, then adds the new one.
