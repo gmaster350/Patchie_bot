@@ -27,64 +27,70 @@ function setRole(message,callback){
 		var user = message.member;
 		var server = message.guild;
 		
-		if(genderRoles.some(function(gr){return gr == roleGiven;})){
-			// removes any and all gender roles, then adds the new one.
-			var replaced = ".";
-			genderRoles.forEach(function(gr){
-				user.roles.map(function(r){
-					if(r.name == roleGiven){
-						callback("You already have the role "+roleGiven+".");
-					}
-					if(gr == r.name){
-						user.removeRole(getRoleFromGuildByName(server,r));
-					}
-				});
-			});
-			user.addRole(getRoleFromGuildByName(server,roleGiven));
-			callback("Added role "+roleGiven+replaced);
-		}
-		else if(voreRoles.some(function(vr){return vr == roleGiven;})){
-			// removes any and all vore roles, then adds the new one.
-			var replaced = ".";
-			voreRoles.forEach(function(vr){
-				user.roles.map(function(r){
-					if(vr == r.name){
-						user.removeRole(getRoleFromGuildByName(server,vr));
-						replaced = ", replacing "+vr+".";
-					}
-				});
-			});
-			user.addRole(getRoleFromGuildByName(server,roleGiven));
-			callback("Added role "+roleGiven+replaced);
-		}
-		else if(speciesRoles.some(function(sr){return sr == roleGiven;})){
-			var replaced = ".";
-			speciesRoles.forEach(function(sr){
-				user.roles.map(function(r){
-					if(sr == r.name){
-						user.removeRole(getRoleFromGuildByName(server,sr));
-						replaced = ", replacing "+sr+".";
-					}
-				});
-			});
-			user.addRole(getRoleFromGuildByName(server,roleGiven));
-			callback("Added role "+roleGiven+replaced);
-		}
-		else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
-			// misc roles are not mutually exclusive, and will be added.
-			miscRoles.forEach(function(mr){
-				user.roles.map(function(r){
-					if(mr == r.name){
-						callback("You already have the role "+roleGiven+".");
-					}
-				});
-			});
-			
-			user.addRole(getRoleFromGuildByName(server,roleGiven));
-			callback("Added role "+roleGiven);
+		if(user.roles.some(function(r){
+			return r.name == roleGiven;
+		})){
+			callback("You already have the role "+roleGiven+".");
 		}
 		else{
-			callback("Error: No role by that name found.");
+			if(genderRoles.some(function(gr){return gr == roleGiven;})){
+				// removes any and all gender roles, then adds the new one.
+				var replaced = ".";
+				
+				genderRoles.forEach(function(gr){
+					user.roles.map(function(r){
+						if(gr == r.name){
+							user.removeRole(getRoleFromGuildByName(server,r));
+							replaced = ", replacing "+gr+".";
+						}
+					});
+				});
+				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				callback("Added role "+roleGiven+replaced);
+			}
+			else if(voreRoles.some(function(vr){return vr == roleGiven;})){
+				// removes any and all vore roles, then adds the new one.
+				var replaced = ".";
+				voreRoles.forEach(function(vr){
+					user.roles.map(function(r){
+						if(vr == r.name){
+							user.removeRole(getRoleFromGuildByName(server,vr));
+							replaced = ", replacing "+vr+".";
+						}
+					});
+				});
+				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				callback("Added role "+roleGiven+replaced);
+			}
+			else if(speciesRoles.some(function(sr){return sr == roleGiven;})){
+				var replaced = ".";
+				speciesRoles.forEach(function(sr){
+					user.roles.map(function(r){
+						if(sr == r.name){
+							user.removeRole(getRoleFromGuildByName(server,sr));
+							replaced = ", replacing "+sr+".";
+						}
+					});
+				});
+				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				callback("Added role "+roleGiven+replaced);
+			}
+			else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
+				// misc roles are not mutually exclusive, and will be added.
+				miscRoles.forEach(function(mr){
+					user.roles.map(function(r){
+						if(mr == r.name){
+							callback("You already have the role "+roleGiven+".");
+						}
+					});
+				});
+				
+				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				callback("Added role "+roleGiven);
+			}
+			else{
+				callback("Error: No role by that name found.");
+			}
 		}
 	}
 }
