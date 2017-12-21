@@ -2,7 +2,9 @@
 
 var genderRoles = ["Male","Female","Other"];
 var voreRoles = ["Pred","Prey","Switch"];
-var speciesRoles = ["Dragon","Human","Furry","Scalie","Avian"];
+var speciesRoles = ["Dragon","Human"];
+var descRoles = ["Furry","Scalie","Avian"];
+var feetRoles = ["Anthro","Feral"];
 var miscRoles = ["Disposal"];
 
 
@@ -20,7 +22,7 @@ function setRole(message,callback){
 
 	
 	if(parameters.length == 1){
-		callback("Set a role for yourself. \n**Roles:**\nPrey | Pred | Switch\nMale | Female | Other\nDragon | Human | Furry | Scalie | Avian\nDisposal");
+		callback("Set a role for yourself. \n**Roles:**\nPrey | Pred | Switch\nMale | Female | Other\nDragon | Human\nFurry | Scalie | Avian\nAnthro | Feral\nDisposal");
 	}
 	else{
 		var roleGiven = capitalize(parameters[1].toLowerCase());
@@ -64,14 +66,40 @@ function setRole(message,callback){
 			}
 			else if(speciesRoles.some(function(sr){return sr == roleGiven;})){
 				var replaced = ".";
-//				speciesRoles.forEach(function(sr){
-//					user.roles.map(function(r){
-//						if(sr == r.name){
-//							user.removeRole(getRoleFromGuildByName(server,sr));
-//							replaced = ", replacing "+sr+".";
-//						}
-//					});
-//				});
+				speciesRoles.forEach(function(sr){
+					user.roles.map(function(r){
+						if(sr == r.name){
+							user.removeRole(getRoleFromGuildByName(server,sr));
+							replaced = ", replacing "+sr+".";
+						}
+					});
+				});
+				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				callback("Added role "+roleGiven+replaced);
+			}
+			else if(descRoles.some(function(dr){return dr == roleGiven;})){
+				var replaced = ".";
+				descRoles.forEach(function(dr){
+					user.roles.map(function(r){
+						if(dr == r.name){
+							user.removeRole(getRoleFromGuildByName(server,dr));
+							replaced = ", replacing "+dr+".";
+						}
+					});
+				});
+				user.addRole(getRoleFromGuildByName(server,roleGiven));
+				callback("Added role "+roleGiven+replaced);
+			}
+			else if(feetRoles.some(function(fr){return fr == roleGiven;})){
+				var replaced = ".";
+				feetRoles.forEach(function(fr){
+					user.roles.map(function(r){
+						if(fr == r.name){
+							user.removeRole(getRoleFromGuildByName(server,fr));
+							replaced = ", replacing "+fr+".";
+						}
+					});
+				});
 				user.addRole(getRoleFromGuildByName(server,roleGiven));
 				callback("Added role "+roleGiven+replaced);
 			}
