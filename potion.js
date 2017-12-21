@@ -101,11 +101,17 @@ function sum(arr){
 	return t;
 }
 
-function weightedRandom(array,weights){
+function weightedRandom(array,weights,callback){
 	var total = 0;
+	console.log("weighted random weights:",weights);
 	if(weights.some(function(w){
-		total += w;
-		return false;
+		if(w.constructor == Number){
+			total += w;
+			return false;
+		}
+		else{
+			return true;
+		}
 	})){
 		throw "ALL weights must be numbers; integers or floats.";
 	};
@@ -123,8 +129,8 @@ function weightedRandom(array,weights){
 		}
 		min = sum(weights.slice(0,i+1));
 	}
-	
-	return ret;
+	console.log("weight random choice:",ret);
+	callback(ret);
 }
 
 function changeSetting(message,callback){
@@ -154,7 +160,166 @@ function startsWithVowel(str1){
 	return (str1.startsWith("a") || str1.startsWith("e") || str1.startsWith("i") || str1.startsWith("o") || str1.startsWith("u"));
 }
 
-function pickEffect(message,effects,callback){
+function pickEffect(message,effects,members,callback,iteration=0){
+	iteration++;
+	console.log("iteration:",iteration);
+	var process = new Promise(function(resolve,reject){
+		
+		// we deal ONLY with arrays.
+		if (effects.constructor != Array) throw "An array was expected for effects."
+		
+		
+		//valid formats: all objects, or mix of other arrays and string.
+		if(effects.every(
+			function(e){
+				// Check to see if all array elements are objects
+				return e.constructor == Object;
+			}
+		)){
+			// All array elements are objects.
+			if(effects.every(
+				function(e){
+					// Check to see if all objects contain the keys 'chance' and 'options'
+					return ("chance" in e) && ("options" in e);
+				}
+			)){
+				// Each object in the array has the required keys, but the values of the key-value pairs must now checked.
+				if(effects.every(
+					function(e){
+						// Check to see if the key-value pairs have the correct values.
+						return (e.chance.constructor == Number) && (e.options.constructor == Array);
+					}
+				)){
+					// All objects meet the criteria. A weighted random selection is permitted to be performed.
+					
+					var weights = [];
+					var effs = [];
+					effects.forEach(function(obj){
+						weights.push(obj.chance);
+						effs.push(obj.options);
+					});
+					
+					weightedRandom(effs,weights,function(selectedObject){
+						pickEffect(message,selectedObject,members,function(res){
+							resolve(res);
+						},iteration);
+					});
+				}
+				else{
+					// One or more element in the array has the correct keys, but wrong values.
+					reject("One or more element in the array has the correct keys, but wrong values. 'options' must be an array, and 'chance' must be a number; integer or floating point.");
+				}
+			}
+			else{
+				// The array has one or more objects missing the needed keys
+				reject("One or more objects in array are missing a needed key. Array given: "+e);
+			}
+		}
+		// If some elements are objects, and some aren't, throw an error, as the array must be consistent.
+		else if(
+			effects.some(function(e){
+				return e.constructor != Object;
+			})
+			&&
+			effects.some(function(e){
+				return e.constructor == Object;
+			})
+		){
+			// The array is inconsistent.
+			reject("Array is inconsistent. Array must contain either all objects, or all non-objects. Array given: "+e);
+		}
+		else{
+			// The array must therefore be appropriate to have a standard random selection performed.
+			var response = "";
+			effects.forEach(
+				function(e){
+					console.log("array value:",e);
+					switch(e.constructor){
+						case String:
+							switch(e){
+								case "%members%":
+									//special case, picks a random member from the guild, which is online, and willing to participate
+									pick(members,function(r){
+										response += r;
+									});
+									break;
+								default:
+									if(e.match(/^%-?\d?, ?-?\d%$/)){
+										//Special case, picks a random number between two integers inclusively
+										var s = e.substring(1,e.length-1).replace(" ","").split(",");
+										var low = Number(s[0]);
+										var high = Number(s[1]);
+										if(low < high){
+											reponse += String(randbetween(low,high));
+										}
+										else{
+											reject("Low limit was higher than High limit.");
+										}
+									}
+									else{
+										response += e;
+									}
+									break;
+							}
+							break;
+						
+						case Array:
+							if(e.every(function(e1){
+								return (e1.constructor == Object) && ("chance" in e1) && ("options" in e1);
+							})){
+								console.log("Array contains objects of the appropriate format, recurse this function.");
+								pickEffect(message,e,members,function(res){
+									response += res;
+								},iteration);
+							}
+							else{
+								pick(e,function(r){
+									console.log("Chosen value:",r);
+									response += r;
+								});
+							}
+							break;
+						
+						case Number:
+							response += String(e);
+						
+					}
+				}
+			);
+			resolve(response);
+		}
+	});
+	process.then(function(r){
+		console.log("processed",r);
+		callback(r);
+	}).catch(function(error){
+		callback(error);
+	});
+}
+
+function rn(n){ //random number between 0 and n
+	return Math.floor(Math.random()*n);
+}
+
+function randbetween(a,b){
+	return Math.floor(Math.random()*((b+1)-a)+a);
+}
+
+function pick(array,callback){
+	var chosen = array.length > 0 ? array[rn(array.length)] : "";
+	if(chosen instanceof Array){
+		pick(chosen,function(r){
+			callback(r);
+		});
+	}
+	else{
+		callback(chosen);
+	}
+}
+
+function generate(message,callback){
+	
+	//it is more efficient to determine valid members before-hand, and then pass the array down through each recursion step.
 	var members;
 	switch(message.channel.type){
 		case "text":
@@ -182,156 +347,14 @@ function pickEffect(message,effects,callback){
 		members = ["`[nobody]`"];
 	}
 	
-	var response = "";
 	
-	// we deal ONLY with arrays.
-	if (effects.constructor != Array) throw "An array was expected for effects."
-	
-	
-	//valid formats: all objects, or mix of other arrays and string.
-	if(effects.every(
-		function(e){
-			// Check to see if all array elements are objects
-			objCount++;
-			return e.constructor == Object;
-		}
-	)){
-		// All array elements are objects.
-		if(effects.every(
-			function(e){
-				// Check to see if all objects contain the keys 'chance' and 'options'
-				return ("chance" in e) && ("options" in e);
-			}
-		)){
-			// Each object in the array has the required keys, but the values of the key-value pairs must now checked.
-			if(effects.every(
-				function(e){
-					// Check to see if the key-value pairs have the correct values.
-					return (e.chance.constructor == Number) && (e.options.constructor == Array);
-				}
-			)){
-				// All objects meet the criteria. A weighted random selection is permitted to be performed.
-				
-				var weights = [];
-				effects.forEach(function(obj){
-					weights.push(obj.chance);
-				});
-				weightedRandom(effects,weights,function(selectedObject){
-					pickEffect(message,selectedObject.options,function(res){
-						response += res;
-					});
-				});
-			}
-			else{
-				// One or more element in the array has the correct keys, but wrong values.
-				throw "One or more element in the array has the correct keys, but wrong values. 'options' must be an array, and 'chance' must be a number; integer or floating point.";
-			}
-		}
-		else{
-			// The array has one or more objects missing the needed keys
-			throw "One or more objects in array are missing a needed key. Array given: "+e;
-		}
-	}
-	// If some elements are objects, and some aren't, throw an error, as the array must be consistent.
-	else if(
-		effects.some(function(e){
-			return e.constructor != Object;
-		})
-		&&
-		effects.some(function(e){
-			return e.constructor == Object;
-		})
-	){
-		// The array is inconsistent.
-		throw "Array is inconsistent. Array must contain either all objects, or all non-objects. Array given: "+e;
-	}
-	else{
-		// The array must therefore be appropriate to have a standard random selection performed.
-		effects.forEach(
-			function(e){
-				switch(e.constructor){
-					case String:
-						switch(e){
-							case "%members%":
-								//special case, picks a random member from the guild, which is online, and willing to participate
-								response += pick(members);
-								break;
-							default:
-								if(e.match(/^%-?\d?, ?-?\d%$/)){
-									//Special case, picks a random number between two integers inclusively
-									var s = e.substring(1,e.length-1).replace(" ","").split(",");
-									var low = Number(s[0]);
-									var high = Number(s[1]);
-									if(low < high){
-										reponse += String(randbetween(low,high));
-									}
-									else{
-										throw "Low limit was higher than High limit.";
-									}
-								}
-								else{
-									response += e;
-								}
-								break;
-						}
-						break;
-					
-					case Array:
-						if(e.every(function(e1){
-							if(e1.constructor == Object){
-								return Object.keys(e1).every(function(e2){
-									return ["chance","options"].some(function(e3){
-										return e2 == e3;
-									})
-								});
-							}
-							else{
-								return false;
-							}
-						})){
-							pickEffect(message,e,function(res){
-								response += res;
-							});
-						}
-						else{
-							response += pick(e);
-						}
-						break;
-					
-					case Number:
-						response += String(e);
-						
-				}
-			}
-		);
-	}
-	
-	callback(response);
-}
-
-function rn(n){ //random number between 0 and n
-	return Math.floor(Math.random()*n);
-}
-
-function randbetween(a,b){
-	return Math.floor(Math.random()*((b+1)-a)+a);
-}
-
-function pick(array){
-	var chosen = array.length > 0 ? array[rn(array.length)] : "";
-	if(chosen instanceof Array){
-		return pick(chosen);
-	}
-}
-
-function generate(message,callback){
 	if(customs.length > 0){
 		callback(customs[0]);
 		customs.shift();
 	}
 	else{
-		pickEffect(message,importedPotions,function(response){
-			callback(response);
+		pickEffect(message,importedPotions,members,function(resp){
+			callback(resp);
 		});
 	}
 }
