@@ -6,7 +6,7 @@
 	a range of APIs, including reddit and discord.
 */
 
-const version = "1.1.2";
+const version = "1.2.0";
 
 
 ////// Module import and setup //////
@@ -436,7 +436,7 @@ const version = "1.1.2";
 	const privateRoom = require("./privateRoom.js");
 	const prefix = "!!";
 	const about = 
-	"Info:\nMade by: @Zapp#4885"+
+	"Made by: @Zapp#4885"+
 	"\nRepository: https://github.com/gmaster350/Patchie_bot"+
 	"\nVersion: "+version+
 	"\n\n**Icon info**"+
