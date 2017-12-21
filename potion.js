@@ -4,6 +4,11 @@ const fs = require("fs");
 
 var settings;
 var customs = [];
+var importedPotions;
+fs.readFile("potions.json",function(err,data){
+	if(err)console.log(err);
+	importedPotions = JSON.parse(data);
+});
 
 function sum(arr){
 	var t = 0;
@@ -11,11 +16,16 @@ function sum(arr){
 	return t;
 }
 
-function weightedRandom(array,weights){
+function weightedRandom(array,weights,callback){
 	var total = 0;
 	if(weights.some(function(w){
-		total += w;
-		return false;
+		if(w.constructor == Number){
+			total += w;
+			return false;
+		}
+		else{
+			return true;
+		}
 	})){
 		throw "ALL weights must be numbers; integers or floats.";
 	};
@@ -33,8 +43,7 @@ function weightedRandom(array,weights){
 		}
 		min = sum(weights.slice(0,i+1));
 	}
-	
-	return ret;
+	callback(ret);
 }
 
 function changeSetting(message,callback){
@@ -64,7 +73,160 @@ function startsWithVowel(str1){
 	return (str1.startsWith("a") || str1.startsWith("e") || str1.startsWith("i") || str1.startsWith("o") || str1.startsWith("u"));
 }
 
-function pickEffect(message,callback){
+function pickEffect(message,effects,members,callback){
+	var process = new Promise(function(resolve,reject){
+		
+		// we deal ONLY with arrays.
+		if (effects.constructor != Array) throw "An array was expected for effects."
+		
+		
+		//valid formats: all objects, or mix of other arrays and string.
+		if(effects.every(
+			function(e){
+				// Check to see if all array elements are objects
+				return e.constructor == Object;
+			}
+		)){
+			// All array elements are objects.
+			if(effects.every(
+				function(e){
+					// Check to see if all objects contain the keys 'chance' and 'options'
+					return ("chance" in e) && ("options" in e);
+				}
+			)){
+				// Each object in the array has the required keys, but the values of the key-value pairs must now checked.
+				if(effects.every(
+					function(e){
+						// Check to see if the key-value pairs have the correct values.
+						return (e.chance.constructor == Number) && (e.options.constructor == Array);
+					}
+				)){
+					// All objects meet the criteria. A weighted random selection is permitted to be performed.
+					
+					var weights = [];
+					var effs = [];
+					effects.forEach(function(obj){
+						weights.push(obj.chance);
+						effs.push(obj.options);
+					});
+					
+					weightedRandom(effs,weights,function(selectedObject){
+						pickEffect(message,selectedObject,members,function(res){
+							resolve(res);
+						});
+					});
+				}
+				else{
+					// One or more element in the array has the correct keys, but wrong values.
+					reject("One or more element in the array has the correct keys, but wrong values. 'options' must be an array, and 'chance' must be a number; integer or floating point.");
+				}
+			}
+			else{
+				// The array has one or more objects missing the needed keys
+				reject("One or more objects in array are missing a needed key. Array given: "+e);
+			}
+		}
+		// If some elements are objects, and some aren't, throw an error, as the array must be consistent.
+		else if(
+			effects.some(function(e){
+				return e.constructor != Object;
+			})
+			&&
+			effects.some(function(e){
+				return e.constructor == Object;
+			})
+		){
+			// The array is inconsistent.
+			reject("Array is inconsistent. Array must contain either all objects, or all non-objects. Array given: "+e);
+		}
+		else{
+			// The array must therefore be appropriate to have a standard random selection performed.
+			var response = "";
+			effects.forEach(
+				function(e){
+					switch(e.constructor){
+						case String:
+							switch(e){
+								case "%members%":
+									//special case, picks a random member from the guild, which is online, and willing to participate
+									pick(members,function(r){
+										response += r;
+									});
+									break;
+								default:
+									if(e.match(/^%-?\d?, ?-?\d%$/)){
+										//Special case, picks a random number between two integers inclusively
+										var s = e.substring(1,e.length-1).replace(" ","").split(",");
+										var low = Number(s[0]);
+										var high = Number(s[1]);
+										if(low < high){
+											reponse += String(randbetween(low,high));
+										}
+										else{
+											reject("Low limit was higher than High limit.");
+										}
+									}
+									else{
+										response += e;
+									}
+									break;
+							}
+							break;
+						
+						case Array:
+							if(e.every(function(e1){
+								return (e1.constructor == Object) && ("chance" in e1) && ("options" in e1);
+							})){
+								pickEffect(message,e,members,function(res){
+									response += res;
+								});
+							}
+							else{
+								pick(e,function(r){
+									response += r;
+								});
+							}
+							break;
+						
+						case Number:
+							response += String(e);
+						
+					}
+				}
+			);
+			resolve(response);
+		}
+	});
+	process.then(function(r){
+		callback(r);
+	}).catch(function(error){
+		callback(error);
+	});
+}
+
+function rn(n){ //random number between 0 and n
+	return Math.floor(Math.random()*n);
+}
+
+function randbetween(a,b){
+	return Math.floor(Math.random()*((b+1)-a)+a);
+}
+
+function pick(array,callback){
+	var chosen = array.length > 0 ? array[rn(array.length)] : "";
+	if(chosen instanceof Array){
+		pick(chosen,function(r){
+			callback(r);
+		});
+	}
+	else{
+		callback(chosen);
+	}
+}
+
+function generate(message,callback){
+	
+	//it is more efficient to determine valid members before-hand, and then pass the array down through each recursion step.
 	var members;
 	switch(message.channel.type){
 		case "text":
@@ -92,144 +254,14 @@ function pickEffect(message,callback){
 		members = ["`[nobody]`"];
 	}
 	
-	var effects = [
-		{
-			"chance":1,
-			"speak1":"You feel many times stronger.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"You feel much more agile.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":5,
-			"speak1":"Your ",
-			"options1":["penis","head","tongue","legs","tail","ears","wings","whole body","ears","snout"],
-			"speak2":" changes to be many times ",
-			"options2":["larger","smaller"],
-			"speak3":" than its current size."
-		},
-		{
-			"chance":1,
-			"speak1":"You are able to see greater distances.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":4,
-			"speak1":"Your body gradually transforms into that of a",
-			"options1":["rabbit","human","wolf","fish","bear","fox","dragon","cat","dog","mouse","rat","pig","sheep","giraffe","zebra","horse","hippopotamus","bird","eagle","shark","whale","sloth","chicken"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":3,
-			"speak1":"Your skin starts to change color, gradually turning ",
-			"options1":["red","orange","yellow","green","blue","purple","pink","black","white","grey","transparent","stripey","spotted"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"Your skin is immune to any acids",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"Your tongue turns numb, leaving you unable to speak coherently",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"You have a compulsion to dance",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":6,
-			"speak1":"You gain the ability to exhale ",
-			"options1":["tea","coffee","water","cola soda","deodorant","molten nickel","magma","candy","rosemary and thyme","paprika","parsley","mcdonald's fries","old sneakers","dulux paint","sand","gravel","salt","small plastic toys","powerful pheromones","sleeping gas","shredded paper","propane","pennies"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"You become invisible to others.",
-			"options1":[],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":2,
-			"speak1":"You suddenly sprout an extra ",
-			"options1":["tail","penis","head","pair of ears","pair of horns","tongue"],
-			"speak2":"",
-			"options2":[],
-			"speak3":""
-		},
-		{
-			"chance":1,
-			"speak1":"Your mind and ",
-			"options1":members,
-			"speak2":"'s mind are switched.",
-			"options2":[],
-			"speak3":""
-		}
-	];
-	var weights = [];
-	effects.forEach(function(obj){
-		weights.push(obj.chance);
-	});
-	var r = weightedRandom(effects,weights);
-	var r2 = pick(r.options1);
-	var r4 = pick(r.options2);
 	
-	var r1 = r.speak1 + (r.speak1.endsWith("a") && startsWithVowel(r2) ? "n " : " ");
-	var r3 = r.speak2 + (r.speak2.endsWith("a") && startsWithVowel(r4) ? "n " : " ");		
-	var r5 = r.speak3;
-	
-	var response = r1 + r2 + r3 + r4 + r5;
-	callback(response);
-}
-
-function rn(n){ //random number between 0 and n
-	return Math.floor(Math.random()*n);
-}
-
-function pick(array){
-	return array.length > 0 ? array[rn(array.length)] : "";
-}
-
-function generate(message,callback){
 	if(customs.length > 0){
 		callback(customs[0]);
 		customs.shift();
 	}
 	else{
-		pickEffect(message,function(response){
-			callback(response);
+		pickEffect(message,importedPotions,members,function(resp){
+			callback(resp);
 		});
 	}
 }
