@@ -5,6 +5,7 @@ var voreRoles = ["Pred","Prey","Switch"];
 var speciesRoles = ["Dragon","Human"];
 var descRoles = ["Furry","Scalie","Avian"];
 var feetRoles = ["Anthro","Feral"];
+var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
 var miscRoles = ["Disposal"];
 
 
@@ -22,7 +23,7 @@ function setRole(message,callback,errorCallback){
 
 	
 	if(parameters.length == 1){
-		callback("Set a role for yourself. \n**Roles:**\nPrey | Pred | Switch\nMale | Female | Other\nDragon | Human\nFurry | Scalie | Avian\nAnthro | Feral\nDisposal");
+		callback("Set a role for yourself. \n**Roles:**\nPrey | Pred | Switch\nMale | Female | Other\nDragon | Human\nFurry | Scalie | Avian\nAnthro | Feral\nFine | Diminutve | Tiny | Small | Medium | Large | Huge | Gargantuan | Colossal\nDisposal");
 	}
 	else{
 		var roleGiven = capitalize(parameters[1].toLowerCase());
@@ -113,6 +114,23 @@ function setRole(message,callback,errorCallback){
 						if(fr == r.name){
 							user.removeRole(getRoleFromGuildByName(server,fr));
 							replaced = ", replacing "+fr+".";
+						}
+					});
+				});
+				var role = getRoleFromGuildByName(server,roleGiven);
+				if(role === undefined) errorCallback("The role was not found. fix something.");
+				else{
+					user.addRole(role);
+				}
+				callback("Added role "+roleGiven+replaced);
+			}
+			else if(sizeRoles.some(function(zr){return zr == roleGiven;})){
+				var replaced = ".";
+				sizeRoles.forEach(function(zr){
+					user.roles.map(function(r){
+						if(zr == r.name){
+							user.removeRole(getRoleFromGuildByName(server,zr));
+							replaced = ", replacing "+zr+".";
 						}
 					});
 				});
