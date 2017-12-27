@@ -206,5 +206,6 @@ function hasRole(message,callback){
 
 module.exports = {
 	"setRole":setRole,
-	"removeRole":removeRole
+	"removeRole":removeRole,
+	"hasRole":hasRole
 }
