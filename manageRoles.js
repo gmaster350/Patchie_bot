@@ -30,17 +30,17 @@ function setRole(message,callback,errorCallback){
 		var server = message.guild;
 		var roleGiven;
 		if(parameters[1].startsWith("species:")){
-			roleGiven = capitalize(parameters[1].substring(7));
+			roleGiven = capitalize(parameters[1].substring(8));
 			if(user.roles.some(function(r1){
 				return r1.name == roleGiven;
 			})){
 				callback("You already have the role "+roleGiven+".");
 			}
 			else{
-				if(guild.roles.some(function(role){
+				if(server.roles.some(function(role){
 					return role.name == roleGiven;
 				})){
-					var newRole = getRoleFromGuildByName(roleGiven);
+					var newRole = getRoleFromGuildByName(server,roleGiven);
 					user.addRole(newRole);
 				}
 				else{
