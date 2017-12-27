@@ -46,8 +46,10 @@ function setRole(message,callback,errorCallback){
 				else{
 					server.createRole({"name":roleGiven},"Created via command").then(function(newRole){
 						newRole.setColor([231,76,60]).then(function(coloredRole){
-							user.addRole(coloredRole).then(function(member){
-								callback("Added role "+roleGiven+".");
+							coloredRole.setPosition(23).then(function(positionedRole){
+								user.addRole(positionedRole).then(function(member){
+									callback("Added role "+roleGiven+".");
+								});
 							});
 						});
 					});
