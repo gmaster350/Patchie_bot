@@ -176,89 +176,32 @@ function removeRole(message,callback){
 }
 
 function capitalize(str){
-	var ret = str.substring(1);
-	var chr;
-	switch(str.charAt(0)){
-		case "a":
-			chr = "A";
-			break;
-		case "b":
-			chr = "B";
-			break;
-		case "c":
-			chr = "C";
-			break;
-		case "d":
-			chr = "D";
-			break;
-		case "e":
-			chr = "E";
-			break;
-		case "f":
-			chr = "F";
-			break;
-		case "g":
-			chr = "G";
-			break;
-		case "h":
-			chr = "H";
-			break;
-		case "i":
-			chr = "I";
-			break;
-		case "j":
-			chr = "J";
-			break;
-		case "k":
-			chr = "K";
-			break;
-		case "l":
-			chr = "L";
-			break;
-		case "m":
-			chr = "M";
-			break;
-		case "n":
-			chr = "N";
-			break;
-		case "o":
-			chr = "O";
-			break;
-		case "p":
-			chr = "P";
-			break;
-		case "q":
-			chr = "Q";
-			break;
-		case "r":
-			chr = "R";
-			break;
-		case "s":
-			chr = "S";
-			break;
-		case "t":
-			chr = "T";
-			break;
-		case "u":
-			chr = "U";
-			break;
-		case "v":
-			chr = "V";
-			break;
-		case "w":
-			chr = "W";
-			break;
-		case "x":
-			chr = "X";
-			break;
-		case "y":
-			chr = "Y";
-			break;
-		case "z":
-			chr = "Z";
-			break;
-	}
-	return chr + ret;
+	var a = str.charAt(0).toUpperCase();
+	var b = str.substring(1).toLowerCase();
+	return a + b;
+}
+
+function hasRole(message,callback){
+	var found = [];
+	var guild = message.guild;
+	var roles = message.content.split(" ").slice(1);
+	
+	roles.forEach(function(r){
+		var r1 = getRoleFromGuildByName(guild,capitalize(r));
+		if(r1 !== undefined){
+			guild.members.map(function(member){
+				member.roles.map(function(r2){
+					if(r1 == r2){
+						found.push(member.displayName);
+					}
+				});
+			});
+		}
+		else{
+			callback("Could not find role '"+role+"'.");
+		}
+	});
+	callback(found.join("\n"));
 }
 
 module.exports = {

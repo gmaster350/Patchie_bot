@@ -624,7 +624,8 @@ var commandTree = {
 	"inviteToRoom":privateRoom.inviteToRoom,
 //	"potionCustom":potion.addCustom,
 	"setRole":setRole,
-	"removeRole":manageRoles.removeRole
+	"removeRole":manageRoles.removeRole,
+	"hasRole":manageRoles.hasRole
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
