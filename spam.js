@@ -5,6 +5,7 @@ const historyLength = 30;
 var strikeLength = 5;
 var muteTime = 30000;
 var coolOffPeriod = 3;
+var sensitivity = 2.5;
 
 function debug(str){if(true){console.log(str);}}
 
@@ -76,7 +77,7 @@ function process(message,callback){
 		history[message.channel.id][message.author.id].cooloff--;
 	meanLev(history[message.channel.id][message.author.id].messages.slice(-5),function(diff){
 		console.log(diff);
-		if(history[message.channel.id][message.author.id].messages.length >= 5 && diff <= 4.0 && history[message.channel.id][message.author.id].cooloff === 0){
+		if(history[message.channel.id][message.author.id].messages.length >= 5 && diff <= sensitivity && history[message.channel.id][message.author.id].cooloff === 0){
 			history[message.channel.id][message.author.id].strikes++;
 			history[message.channel.id][message.author.id].cooloff = coolOffPeriod;
 			if(message.channel.type == "text"){
