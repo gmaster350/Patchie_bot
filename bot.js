@@ -461,6 +461,21 @@ const version = "1.2.0";
 		});
 		return res;
 	}
+	
+	var botResponses;
+	fs.readFile("../botResponses.json",function(err,data){
+		if(err)console.log(err);
+		else{
+			var culprit;	
+			botResponses = JSON.parse(data);
+			if(!botResponses.every(obj){
+				culprit = obj;
+				return "words" in obj && "responses" in obj;
+			}){
+				throw "botResponses.json format is bad! culprit: "+obj.toString();
+			}
+		}
+	});
 
 
 /*
@@ -540,12 +555,12 @@ function reverse(message,callback){
 // Misc commands
 
 function botRoleplay(words,callback){
-	if(words.hasEach(["fuck","you"])){
-		callback("I'll pretend not to have heard that.");
-	}
-	else if(words.hasEach(["eat","me"])){
-		callback("I do not have that function.");
-	}
+	botResponses.forEach(function(obj){
+		if(words.hasEach(obj.words)){
+			var response = obj.responses[Math.floor(Math.random()*obj.responses.length)];
+			callback(response);
+		}
+	});
 }
 
 function botAddressed(message){
