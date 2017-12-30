@@ -468,10 +468,10 @@ const version = "1.2.0";
 		else{
 			var culprit;	
 			botResponses = JSON.parse(data);
-			if(!(botResponses.every(obj){
+			if(!(botResponses.every(function(obj){
 				culprit = obj;
 				return "words" in obj && "responses" in obj;
-			})){
+			}))){
 				throw "botResponses.json format is bad! culprit: "+obj.toString();
 			}
 		}
