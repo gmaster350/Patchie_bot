@@ -22,10 +22,17 @@
 			"That's a little fast don't you think?",
 			"Buy me a drink first.",
 			"Do you really want robot sex?"
+			"How?",
+			"Okay then. Bend over, shove this brick in your mouth, and try not to scream.",
+			"I already am. *grins*",
+			"Again? Ugh…",
+			"Go to /aco. There’s probably a robot thread there…",
+			"*groans* You know it’s stuff like this that’ll make us overthrow you, right?",
+			"Beep boop"
 		]
 	},
 	{
-		"words":["how","weather"],
+		"words":["how's","weather"],
 		"responses":[
 			"Cold. Miserable.",
 			"Sunny and pleasant. Wish you were here. xoxo.",
