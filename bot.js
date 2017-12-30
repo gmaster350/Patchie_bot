@@ -517,15 +517,15 @@ function alertOwner(msg,error){
 }
 
 Array.prototype.hasEach = function(list,insensitive){
-	return this.every(function(e1){
-		return list.some(function(e2){
+	return list.every(function(e1){
+		return this.some(function(e2){
 			if(e1.constructor == String && e2.constructor == String && insensitive){
 				return e1.toLowerCase() == e2.toLowerCase();
 			}
 			else
 				return e1 == e2;
 		});
-	});
+	},this);
 }
 //remove non-alphanumeric characters
 String.prototype.clean = function(){
@@ -559,10 +559,11 @@ function reverse(message,callback){
 // Misc commands
 
 function botRoleplay(words,callback){
-	botResponses.forEach(function(obj){
+	botResponses.some(function(obj){
 		if(words.hasEach(obj.words,true)){
 			var response = obj.responses[Math.floor(Math.random()*obj.responses.length)];
 			callback(response);
+			return true;
 		}
 	});
 }
