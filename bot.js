@@ -516,10 +516,14 @@ function alertOwner(msg,error){
 	});
 }
 
-Array.prototype.hasEach = function(list){
+Array.prototype.hasEach = function(list,insensitive){
 	return this.every(function(e1){
 		return list.some(function(e2){
-			return e1 == e2;
+			if(e1.constructor == String && e2.constructor == String && insensitive){
+				return e1.toLowerCase() == e2.toLowerCase();
+			}
+			else
+				return e1 == e2;
 		});
 	});
 }
@@ -545,7 +549,7 @@ function echo(message,callback){
 }
 
 function reverse(message,callback){
-	result = "";
+	var result = "";
 	for(var i = message.content.length-1; i > "reverse".length+2; i--){
 		result += message.content.charAt(i);
 	}
@@ -556,7 +560,7 @@ function reverse(message,callback){
 
 function botRoleplay(words,callback){
 	botResponses.forEach(function(obj){
-		if(words.hasEach(obj.words)){
+		if(words.hasEach(obj.words,true)){
 			var response = obj.responses[Math.floor(Math.random()*obj.responses.length)];
 			callback(response);
 		}
@@ -564,7 +568,7 @@ function botRoleplay(words,callback){
 }
 
 function botAddressed(message){
-	return message.cleanContent.startsWith("@") && message.mentions.users.size == 1 && message.mentions.users.some(function(m){
+	return message.cleanContent.startsWith("@") && message.mentions.users.size > 0 && message.mentions.users.some(function(m){
 		return m.id == bot.user.id;
 	});
 }
@@ -788,7 +792,7 @@ bot.on("message",function(message){
 				});
 			}
 			else if(botAddressed(message)){
-				botRoleplay(message.content.clean().split(" ").slice(1),function(reply){
+				botRoleplay(message.content.clean().toLowerCase().split(" ").slice(1),function(reply){
 					message.channel.send(reply);
 				});
 			}
