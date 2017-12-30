@@ -1,22 +1,64 @@
 [
 	{
 		"words":["fuck","you"],
-		"responses":["I'll pretend not to have heard that.","Trust me, you don't want to do that."]
+		"responses":[
+			"I'll pretend not to have heard that.",
+			"Trust me, you don't want to do that."
+		]
 	},
 	{
 		"words":["eat","me"],
-		"responses":["I do not have that function","unfortunately, bots cannot eat.","Be glad I can't"]
+		"responses":[
+			"I do not have that function",
+			"unfortunately, bots cannot eat.",
+			"Be glad I can't"
+		]
 	},
 		{
 		"words":["fuck","me"],
-		"responses":["Gladly.","Some other time.","That's a little fast don't you think?","Buy me a drink first.","Do you really want robot sex?"]
+		"responses":[
+			"Gladly.",
+			"Some other time.",
+			"That's a little fast don't you think?",
+			"Buy me a drink first.",
+			"Do you really want robot sex?"
+		]
 	},
 	{
 		"words":["how","weather"],
-		"responses":["Cold. Miserable.","Sunny and pleasant. Wish you were here. xoxo.","Pouring with rain.","Raining! Now I'm all wet! No, not that kind of wet!","Upside down. Somehow. You clown.","It's snowing! Yay!","It's raining people. Thankfully, since I was getting hungry... GULP","It's very windy, a lovely day for flying.","I'm dealing with a cyclone right now!"]
+		"responses":[
+			"Cold. Miserable.",
+			"Sunny and pleasant. Wish you were here. xoxo.",
+			"Pouring with rain.",
+			"Raining! Now I'm all wet! No, not that kind of wet!",
+			"Upside down. Somehow. You clown.",
+			"It's snowing! Yay!",
+			"It's raining people. Thankfully, since I was getting hungry... GULP",
+			"It's very windy, a lovely day for flying.",
+			"I'm dealing with a cyclone right now!"
+		]
 	},
 	{
 		"words":["where","am","i"],
-		"responses":["In my stomach. Duh.","You’re in a room filled with dragons. Unless you’re a dragon, I suggest you… run.","In my stomach. Duh. Wait, I thought I couldn’t eat people?","No, you’re on the moon. Where do you think you are?!?"]
+		"responses":[
+			"In my stomach. Duh.",
+			"You’re in a room filled with dragons. Unless you’re a dragon, I suggest you… run.",
+			"In my stomach. Duh. Wait, I thought I couldn’t eat people?",
+			"No, you’re on the moon. Where do you think you are?!?",
+			"You’re in the best place in the world.",
+			"You’re in the worst place in the world.",
+			"In somebody’s stomach. Probably. I don’t know who’s.",
+			"A vore Discord server. The best one, hopefully.",
+			"Somewhere.",
+			"Anywhere.",
+			"Everywhere.",
+			"Nowhere."
+		]
+	},
+	{
+		"words":["what","is","love"],
+		"responses":[
+			"Baby don't hurt me. Don't hurt me. No more."
+		]
 	}
 ]
