@@ -463,7 +463,7 @@ const version = "1.2.0";
 	}
 	
 	var botResponses;
-	fs.readFile("../botResponses.json",function(err,data){
+	fs.readFile("botResponses.json",function(err,data){
 		if(err)console.log(err);
 		else{
 			var culprit;	
