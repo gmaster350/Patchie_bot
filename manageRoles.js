@@ -6,6 +6,7 @@ var speciesRoles = ["Dragon","Human"];
 var descRoles = ["Furry","Scalie","Avian"];
 var feetRoles = ["Anthro","Feral"];
 var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
+var willRoles = ["Willing","Unwilling"];
 var miscRoles = ["Disposal"];
 
 
@@ -160,6 +161,23 @@ function setRole(message,callback,errorCallback){
 							if(zr == r.name){
 								user.removeRole(getRoleFromGuildByName(server,zr));
 								replaced = ", replacing "+zr+".";
+							}
+						});
+					});
+					var role = getRoleFromGuildByName(server,roleGiven);
+					if(role === undefined) errorCallback("The role was not found. fix something.");
+					else{
+						user.addRole(role);
+					}
+					callback("Added role "+roleGiven+replaced);
+				}
+				else if(willRoles.some(function(wr){return wr == roleGiven;})){
+					var replaced = ".";
+					willRoles.forEach(function(wr){
+						user.roles.map(function(r){
+							if(wr == r.name){
+								user.removeRole(getRoleFromGuildByName(server,wr));
+								replaced = ", replacing "+wr+".";
 							}
 						});
 					});
