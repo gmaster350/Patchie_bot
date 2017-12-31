@@ -1,6 +1,19 @@
 [
 	{
+		"words":[],
+		"type":"N/A",
+		"responses":[
+			"https://i.imgur.com/KMrX6Vn.gif",
+			"https://i.imgur.com/GERs5SJ.mp4",
+			"Que?",
+			"Start speaking sense.",
+			"Uh huh. I get you entirely. Totally…",
+			"What you be talking about?"
+		]
+	},
+	{
 		"words":["fuck","you"],
+		"type":"ordered",
 		"responses":[
 			"I'll pretend not to have heard that.",
 			"Trust me, you don't want to do that."
@@ -8,6 +21,7 @@
 	},
 	{
 		"words":["eat","me"],
+		"type":"ordered",
 		"responses":[
 			"I do not have that function",
 			"unfortunately, bots cannot eat.",
@@ -16,6 +30,7 @@
 	},
 		{
 		"words":["fuck","me"],
+		"type":"ordered",
 		"responses":[
 			"Gladly.",
 			"Some other time.",
@@ -33,6 +48,7 @@
 	},
 	{
 		"words":["how's","weather"],
+		"type":"ordered",
 		"responses":[
 			"Cold. Miserable.",
 			"Sunny and pleasant. Wish you were here. xoxo.",
@@ -47,6 +63,7 @@
 	},
 	{
 		"words":["where","am","i"],
+		"type":"contiguous",
 		"responses":[
 			"In my stomach. Duh.",
 			"You’re in a room filled with dragons. Unless you’re a dragon, I suggest you… run.",
@@ -64,8 +81,24 @@
 	},
 	{
 		"words":["what","is","love"],
+		"type":"exact",
 		"responses":[
 			"Baby don't hurt me. Don't hurt me. No more."
+		]
+	},
+	{
+		"words":["i","want","to","party"],
+		"type":"contiguous",
+		"responses":[
+			"Let’s party then!",
+			"Hahahaha … no.",
+			"*starts dancing*",
+			"And I want to not party! So there!",
+			"Don’t you remember what happened last time?",
+			"No thank you. I’m still picking chunks of oak out of my teeth. Why’d you try to set fire to that orange anyway?",
+			"We already are!",
+			"Sure thing! But first, we’ll need some party snacks…",
+			"*grabs you and puts you in bowl of nacho dip* There, party food is sorted."
 		]
 	}
 ]

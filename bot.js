@@ -516,16 +516,28 @@ function alertOwner(msg,error){
 	});
 }
 
-Array.prototype.hasEach = function(list,insensitive){
-	return list.every(function(e1){
-		return this.some(function(e2){
-			if(e1.constructor == String && e2.constructor == String && insensitive){
-				return e1.toLowerCase() == e2.toLowerCase();
-			}
-			else
-				return e1 == e2;
-		});
-	},this);
+function hasEach(str,listOfThingsToMatch,callback){
+	var exact = false;
+	var contiguous = false;
+	var ordered = false;
+	var disordered = false;
+	var strIndex = 0;
+	
+	exact = str == listOfThingsToMatch.join(" ");
+	contiguous = str.includes(listOfThingsToMatch.join(" "));
+	ordered = listOfThingsToMatch.every(function(item){
+		if(str.substring(strIndex).includes(item)){
+			strIndex = str.substring(strIndex).indexOf(item);
+			return true;
+		}
+		else{
+			return false;
+		}
+	});
+	disordered = listOfThingsToMatch.every(function(e1){
+		return str.includes(e1);
+	});
+	callback(exact,contiguous,ordered,disordered);
 }
 //remove non-alphanumeric characters
 String.prototype.clean = function(){
@@ -559,13 +571,55 @@ function reverse(message,callback){
 // Misc commands
 
 function botRoleplay(words,callback){
-	botResponses.some(function(obj){
-		if(words.hasEach(obj.words,true)){
-			var response = obj.responses[Math.floor(Math.random()*obj.responses.length)];
-			callback(response);
-			return true;
-		}
-	});
+	if(!(botResponses.slice(1).some(function(obj){
+		var b;
+		hasEach(words,obj.words,function(exact,contiguous,ordered,disordered){
+			switch(obj.type){
+				case "exact":
+					if(exact){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				case "contiguous":
+					if(contiguous){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				case "ordered":
+					if(ordered){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				case "disordered":
+					if(disordered){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				default:
+					a = false;
+			}
+			b = a;
+		});
+		return b;
+	}))){
+		callback(botResponses[0].responses[Math.floor(Math.random()*botResponses[0].responses.length)]);
+	}
 }
 
 function botAddressed(message){
@@ -793,7 +847,7 @@ bot.on("message",function(message){
 				});
 			}
 			else if(botAddressed(message)){
-				botRoleplay(message.content.clean().toLowerCase().split(" ").slice(1),function(reply){
+				botRoleplay(message.content.clean().toLowerCase().split(" ").slice(1).join(" "),function(reply){
 					message.channel.send(reply);
 				});
 			}
