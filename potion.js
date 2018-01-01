@@ -263,6 +263,18 @@ function generate(message,callback){
 		if(loops > 10){
 			callback("No more than 10 effects at once, please.");
 		}
+		else if(loops > 30){
+			callback("Woah, not that many!");
+		}
+		else if(loops == Infinity){
+			callback("I'm not giving you unlimited potions.");
+		}
+		else if(loops === 0){
+			callback("No money for free potions?");
+		}
+		else if(loops < 0){
+			callback("*takes back "+String(loops)+" potions*");
+		}
 		else{
 			for(var i = 0; i < loops; i++){
 				pickEffect(message,importedPotions,members,function(resp){
