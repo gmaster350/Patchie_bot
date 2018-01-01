@@ -84,13 +84,5 @@
 			"You suddenly sprout an extra ",
 			["tail","penis","head","pair of ears","pair of horns","tongue"]
 		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"Your mind and ",
-			"%members%",
-			"'s mind are switched."
-		]
 	}
 ]
