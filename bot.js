@@ -806,16 +806,21 @@ bot.on("message",function(message){
 			if(message.content == (prefix + "ping")){
 				message.channel.send("pong");
 			}
-			else if(message.content.startsWith(prefix+"relay") && message.channel.type == "dm" && message.author.id == owner){
-				var chanid = message.content.split(" ").slice(1,2)[0];
-				var msg = message.content.split(" ").slice(2);
-				var ch = bot.channels.get(chanid);
-				
-				if(ch !== undefined){
-					ch.send(msg);
+			else if(message.content.startsWith(prefix+"relay") && message.channel.type == "dm"){
+				if(message.author.id == owner){
+					var chanid = message.content.split(" ").slice(1,2)[0];
+					var msg = message.content.split(" ").slice(2);
+					var ch = bot.channels.get(chanid);
+					
+					if(ch !== undefined){
+						ch.send(msg);
+					}
+					else{
+						message.channel.send("Could not find channel.");
+					}
 				}
 				else{
-					message.channel.send("Could not find channel.");
+					message.channel.send("You're not my owner! What are you playing at?");
 				}
 			}
 			
