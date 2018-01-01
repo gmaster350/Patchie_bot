@@ -260,14 +260,14 @@ function generate(message,callback){
 	}
 	else{
 		var loops = (message.content.split(" ").length >= 2 && !Number.isNaN(Number(message.content.split(" ")[1]))) ? Number(message.content.split(" ")[1]) : 1;
-		if(loops > 10){
-			callback("No more than 10 effects at once, please.");
+		if(!Number.isFinite(loops)){
+			callback("I'm not giving you unlimited potions.");
 		}
 		else if(loops > 30){
 			callback("Woah, not that many!");
 		}
-		else if(!Number.isFinite(loops)){
-			callback("I'm not giving you unlimited potions.");
+		else if(loops > 10){
+			callback("No more than 10 effects at once, please.");
 		}
 		else if(loops === 0){
 			callback("No money for free potions?");
