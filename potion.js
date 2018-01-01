@@ -266,7 +266,7 @@ function generate(message,callback){
 		else if(loops > 30){
 			callback("Woah, not that many!");
 		}
-		else if(!Number.isFinite(loops) && loops > 0){
+		else if(!Number.isFinite(loops)){
 			callback("I'm not giving you unlimited potions.");
 		}
 		else if(loops === 0){
