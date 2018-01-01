@@ -809,7 +809,7 @@ bot.on("message",function(message){
 			else if(message.content.startsWith(prefix+"relay") && message.channel.type == "dm"){
 				if(message.author.id == owner){
 					var chanid = message.content.split(" ").slice(1,2)[0];
-					var msg = message.content.split(" ").slice(2);
+					var msg = message.content.split(" ").slice(2).join(" ");
 					var ch = bot.channels.get(chanid);
 					
 					if(ch !== undefined){
