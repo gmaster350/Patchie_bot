@@ -823,7 +823,14 @@ bot.on("message",function(message){
 					message.channel.send("You're not my owner! What are you playing at?");
 				}
 			}
-			
+			else if(mesage.content.startsWith(prefix+"broadcast") && message.authr.id == owner){
+				var msg = message.content.split(" ").slice(1).join(" ");
+				bot.channels.map(function(chan){
+					if(chan.type == "text"){
+						chan.send(msg);
+					}
+				});
+			}
 			else if(message.content == (prefix + "stop") && message.channel.type == "text"){
 				if(message.member.permissions.has("MANAGE_GUILD")){
 					message.channel.send("Bye!").then(function(msg){
