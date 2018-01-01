@@ -273,7 +273,7 @@ function generate(message,callback){
 			callback("No money for free potions?");
 		}
 		else if(loops < 0){
-			callback("*takes back "+String(loops*-1)+" potions*");
+			callback("I can't give you negative potions.");
 		}
 		else{
 			for(var i = 0; i < loops; i++){
