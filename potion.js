@@ -225,7 +225,6 @@ function pick(array,callback){
 }
 
 function generate(message,callback){
-	
 	//it is more efficient to determine valid members before-hand, and then pass the array down through each recursion step.
 	var members;
 	switch(message.channel.type){
@@ -260,9 +259,17 @@ function generate(message,callback){
 		customs.shift();
 	}
 	else{
-		pickEffect(message,importedPotions,members,function(resp){
-			callback(resp);
-		});
+		var loops = (message.content.split(" ").length >= 2 && !Number.isNaN(Number(message.content.split(" ")[1]))) ? Number(message.content.split(" ")[1]) : 1;
+		if(loops >= 10){
+			callback("No more than 10 effects at once, please.");
+		}
+		else{
+			for(var i = 0; i < loops; i++){
+				pickEffect(message,importedPotions,members,function(resp){
+					callback(resp);
+				});
+			}
+		}
 	}
 }
 

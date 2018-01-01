@@ -864,8 +864,7 @@ bot.on("message",function(message){
 							});
 						}
 						else{
-							send += response;
-							message.channel.send(send);
+							message.channel.send(response);
 						}
 					}
 				});
