@@ -806,8 +806,20 @@ bot.on("message",function(message){
 			if(message.content == (prefix + "ping")){
 				message.channel.send("pong");
 			}
+			else if(message.content.startsWith(prefix+"relay") && message.channel.type == "dm" && message.author.id == owner){
+				var chanid = message.content.split(" ").slice(1,2)[0];
+				var msg = message.content.split(" ").slice(2);
+				var ch = bot.channels.get(chanid);
+				
+				if(ch !== undefined){
+					ch.send(msg);
+				}
+				else{
+					message.channel.send("Could not find channel.");
+				}
+			}
 			
-			if(message.content == (prefix + "stop") && message.channel.type == "text"){
+			else if(message.content == (prefix + "stop") && message.channel.type == "text"){
 				if(message.member.permissions.has("MANAGE_GUILD")){
 					message.channel.send("Bye!").then(function(msg){
 						setTimeout(function(){
