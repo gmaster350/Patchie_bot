@@ -1,5 +1,5 @@
 // Bot random potion module //
-
+const Discord = require("discord.js");
 const fs = require("fs");
 
 var settings;
@@ -150,7 +150,7 @@ function pickEffect(message,effects,members,callback){
 								case "%members%":
 									//special case, picks a random member from the guild, which is online, and willing to participate
 									pick(members,function(r){
-										response += r;
+										response += r.displayName;
 									});
 									break;
 								default:
