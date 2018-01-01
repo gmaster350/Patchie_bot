@@ -260,7 +260,7 @@ function generate(message,callback){
 	}
 	else{
 		var loops = (message.content.split(" ").length >= 2 && !Number.isNaN(Number(message.content.split(" ")[1]))) ? Number(message.content.split(" ")[1]) : 1;
-		if(loops >= 10){
+		if(loops > 10){
 			callback("No more than 10 effects at once, please.");
 		}
 		else{
