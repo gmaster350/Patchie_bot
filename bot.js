@@ -823,7 +823,7 @@ bot.on("message",function(message){
 					message.channel.send("You're not my owner! What are you playing at?");
 				}
 			}
-			else if(mesage.content.startsWith(prefix+"broadcast") && message.authr.id == owner){
+			else if(mesage.content.startsWith(prefix+"broadcast") && message.author.id == owner){
 				var msg = message.content.split(" ").slice(1).join(" ");
 				bot.channels.map(function(chan){
 					if(chan.type == "text"){
