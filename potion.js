@@ -1,5 +1,5 @@
 // Bot random potion module //
-
+const Discord = require("discord.js");
 const fs = require("fs");
 
 var settings;
@@ -150,7 +150,7 @@ function pickEffect(message,effects,members,callback){
 								case "%members%":
 									//special case, picks a random member from the guild, which is online, and willing to participate
 									pick(members,function(r){
-										response += r;
+										response += r.displayName === undefined ? r.username : r.displayName;
 									});
 									break;
 								default:
@@ -225,7 +225,6 @@ function pick(array,callback){
 }
 
 function generate(message,callback){
-	
 	//it is more efficient to determine valid members before-hand, and then pass the array down through each recursion step.
 	var members;
 	switch(message.channel.type){
@@ -260,9 +259,29 @@ function generate(message,callback){
 		customs.shift();
 	}
 	else{
-		pickEffect(message,importedPotions,members,function(resp){
-			callback(resp);
-		});
+		var loops = (message.content.split(" ").length >= 2 && !Number.isNaN(Number(message.content.split(" ")[1]))) ? Number(message.content.split(" ")[1]) : 1;
+		if(!Number.isFinite(loops)){
+			callback("I'm not giving you unlimited potions.");
+		}
+		else if(loops > 30){
+			callback("Woah, not that many!");
+		}
+		else if(loops > 10){
+			callback("No more than 10 effects at once, please.");
+		}
+		else if(loops === 0){
+			callback("No money for free potions?");
+		}
+		else if(loops < 0){
+			callback("I can't give you negative potions.");
+		}
+		else{
+			for(var i = 0; i < loops; i++){
+				pickEffect(message,importedPotions,members,function(resp){
+					callback(resp);
+				});
+			}
+		}
 	}
 }
 

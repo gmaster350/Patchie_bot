@@ -6,7 +6,7 @@
 	a range of APIs, including reddit and discord.
 */
 
-const version = "1.1.2";
+const version = "1.2.0";
 
 
 ////// Module import and setup //////
@@ -434,9 +434,11 @@ const version = "1.1.2";
 	const spam = require("./spam.js");
 	const potion = require("./potion.js");
 	const privateRoom = require("./privateRoom.js");
+	const manageRoles = require("./manageRoles.js");
+	
 	const prefix = "!!";
 	const about = 
-	"Info:\nMade by: @Zapp#4885"+
+	"Made by: @Zapp#4885"+
 	"\nRepository: https://github.com/gmaster350/Patchie_bot"+
 	"\nVersion: "+version+
 	"\n\n**Icon info**"+
@@ -459,6 +461,21 @@ const version = "1.1.2";
 		});
 		return res;
 	}
+	
+	var botResponses;
+	fs.readFile("botResponses.json",function(err,data){
+		if(err)console.log(err);
+		else{
+			var culprit;	
+			botResponses = JSON.parse(data);
+			if(!(botResponses.every(function(obj){
+				culprit = obj;
+				return "words" in obj && "responses" in obj;
+			}))){
+				throw "botResponses.json format is bad! culprit: "+obj.toString();
+			}
+		}
+	});
 
 
 /*
@@ -499,6 +516,42 @@ function alertOwner(msg,error){
 	});
 }
 
+function hasEach(str,listOfThingsToMatch,callback){
+	var exact = false;
+	var contiguous = false;
+	var ordered = false;
+	var disordered = false;
+	var strIndex = 0;
+	
+	exact = str == listOfThingsToMatch.join(" ");
+	contiguous = str.includes(listOfThingsToMatch.join(" "));
+	ordered = listOfThingsToMatch.every(function(item){
+		if(str.substring(strIndex).includes(item)){
+			strIndex = str.substring(strIndex).indexOf(item);
+			return true;
+		}
+		else{
+			return false;
+		}
+	});
+	disordered = listOfThingsToMatch.every(function(e1){
+		return str.includes(e1);
+	});
+	callback(exact,contiguous,ordered,disordered);
+}
+//remove non-alphanumeric characters
+String.prototype.clean = function(){
+	var ret = "";
+	var cleanChars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0"," ","'"];
+	for(var i = 0; i < this.length; i++){
+		if(cleanChars.some(function(c){
+			return this.charAt(i) == c;
+		},this)){
+			ret += this.charAt(i);
+		}
+	}
+	return ret;
+}
 
 // Test Module
 
@@ -508,7 +561,7 @@ function echo(message,callback){
 }
 
 function reverse(message,callback){
-	result = "";
+	var result = "";
 	for(var i = message.content.length-1; i > "reverse".length+2; i--){
 		result += message.content.charAt(i);
 	}
@@ -516,6 +569,64 @@ function reverse(message,callback){
 }
 
 // Misc commands
+
+function botRoleplay(words,callback){
+	if(!(botResponses.slice(1).some(function(obj){
+		var b;
+		hasEach(words,obj.words,function(exact,contiguous,ordered,disordered){
+			switch(obj.type){
+				case "exact":
+					if(exact){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				case "contiguous":
+					if(contiguous){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				case "ordered":
+					if(ordered){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				case "disordered":
+					if(disordered){
+						callback(obj.responses[Math.floor(Math.random()*obj.responses.length)]);
+						a = true;
+					}
+					else{
+						a = false;
+					}
+					break;
+				default:
+					a = false;
+			}
+			b = a;
+		});
+		return b;
+	}))){
+		callback(botResponses[0].responses[Math.floor(Math.random()*botResponses[0].responses.length)]);
+	}
+}
+
+function botAddressed(message){
+	return message.cleanContent.startsWith("@") && message.mentions.users.size > 0 && message.mentions.users.some(function(m){
+		return m.id == bot.user.id;
+	});
+}
 
 function giveRole(message,callback){
 	var parameters = message.content.substr(prefix.length).split(" ");
@@ -578,6 +689,20 @@ function wipe(message,callback){
 	}
 }
 
+function setRole(message,callback){
+	manageRoles.setRole(message,function(resp){
+		callback(resp);
+	},function(error){
+		if(error){
+			bot.fetchUser("125576692646281216").then(function(user){
+				user.send(error);
+			}).catch(function(err){
+				console.log(err);
+			});
+		}
+	});
+}
+
 // Submenu Module
 
 var commandTree = {
@@ -605,8 +730,11 @@ var commandTree = {
 	"potionIgnore":potion.changeSetting,
 	"createRoom":privateRoom.create,
 	"leaveRoom":privateRoom.leave,
-	"inviteToRoom":privateRoom.inviteToRoom
-//	"potionCustom":potion.addCustom
+	"inviteToRoom":privateRoom.inviteToRoom,
+//	"potionCustom":potion.addCustom,
+	"setRole":setRole,
+	"removeRole":manageRoles.removeRole,
+	"hasRole":manageRoles.hasRole
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -678,8 +806,32 @@ bot.on("message",function(message){
 			if(message.content == (prefix + "ping")){
 				message.channel.send("pong");
 			}
-			
-			if(message.content == (prefix + "stop") && message.channel.type == "text"){
+			else if(message.content.startsWith(prefix+"relay") && message.channel.type == "dm"){
+				if(message.author.id == owner){
+					var chanid = message.content.split(" ").slice(1,2)[0];
+					var msg = message.content.split(" ").slice(2).join(" ");
+					var ch = bot.channels.get(chanid);
+					
+					if(ch !== undefined){
+						ch.send(msg);
+					}
+					else{
+						message.channel.send("Could not find channel.");
+					}
+				}
+				else{
+					message.channel.send("You're not my owner! What are you playing at?");
+				}
+			}
+			else if(message.content.startsWith(prefix+"broadcast") && message.author.id == owner){
+				var msg = message.content.split(" ").slice(1).join(" ");
+				bot.channels.map(function(chan){
+					if(chan.type == "text"){
+						chan.send(msg);
+					}
+				});
+			}
+			else if(message.content == (prefix + "stop") && message.channel.type == "text"){
 				if(message.member.permissions.has("MANAGE_GUILD")){
 					message.channel.send("Bye!").then(function(msg){
 						setTimeout(function(){
@@ -712,10 +864,14 @@ bot.on("message",function(message){
 							});
 						}
 						else{
-							send += response;
-							message.channel.send(send);
+							message.channel.send(response);
 						}
 					}
+				});
+			}
+			else if(botAddressed(message)){
+				botRoleplay(message.content.clean().toLowerCase().split(" ").slice(1).join(" "),function(reply){
+					message.channel.send(reply);
 				});
 			}
 			else{
@@ -738,6 +894,7 @@ bot.on("message",function(message){
 					}
 				});
 			}
+			
 			/*
 			filter.evaluate(message,function(res){
 				send += res;

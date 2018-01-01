@@ -1,5 +1,11 @@
 [
 	{
+		"chance":5,
+		"options":[
+			"All potion effects are removed."
+		]
+	},
+	{
 		"chance":1,
 		"options":[
 			"You feel many times stronger."
@@ -77,14 +83,6 @@
 		"options":[
 			"You suddenly sprout an extra ",
 			["tail","penis","head","pair of ears","pair of horns","tongue"]
-		]
-	},
-	{
-		"chance":1,
-		"options":[
-			"Your mind and ",
-			"%members%",
-			"'s mind are switched."
 		]
 	}
 ]
