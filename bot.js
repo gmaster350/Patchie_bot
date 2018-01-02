@@ -38,6 +38,7 @@ const version = "1.2.0";
 	const rawjs = require("raw.js");
 	const reddit = new rawjs("User Agent: dragon_vore_bot/"+version+" by u/K-guy");
 
+	var enforcePattern = false; //if true, posts are unapproved by bot, otherwise bot posts a comment listing missing tags.
 	var getModQueue;
 	var getMail;
 	
@@ -335,40 +336,56 @@ const version = "1.2.0";
 															}
 														}
 														else{
-															
-															// Remove post if it does not follow the guidelines.
-															reddit.remove(thing,function(err){
-																
-																// Send the user a message about why their post was removed.
-																if(err)console.log(err);
-																else{
-																	reddit.message({
-																		"to":post.author,
-																		"subject":"Your post was automatically removed",
-																		"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
-																	},function(err){
-																		if(err)console.log(err);
-																	});
-																}
-															});
+															if(enforcePattern){
+																// Remove post if it does not follow the guidelines.
+																reddit.remove(thing,function(err){
+																	
+																	// Send the user a message about why their post was removed.
+																	if(err)console.log(err);
+																	else{
+																		reddit.message({
+																			"to":post.author,
+																			"subject":"Your post was automatically removed",
+																			"text":"Your post has been removed for the following reason: \n\n" + error + "\n\nif you think this is an error, contact Zapp in our discord."
+																		},function(err){
+																			if(err)console.log(err);
+																		});
+																	}
+																});
+															}
+															else{
+																reddit.comment(thing, "Not all types of tags were found in your post titles.\n"+error,function(err,thisComment){
+																	if(err){
+																		console.log(err);
+																	}
+																});
+															}
 														}
 													});
 												}
 												else{
-													console.log("false ==> " + post.title);
-													// remove post if the title format is wrong.
-													reddit.remove(post.name,function(err){
-														if(err) console.log(err);
-														else{
-															reddit.message({
-																"to":post.author,
-																"subject":"Your post was automatically removed",
-																"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
-															},function(err){
-																if(err) console.log(err);
-															});
-														}
-													});
+													if(enforcePattern){
+														// remove post if the title format is wrong.
+														reddit.remove(post.name,function(err){
+															if(err) console.log(err);
+															else{
+																reddit.message({
+																	"to":post.author,
+																	"subject":"Your post was automatically removed",
+																	"text":"Your post has been removed for the following reason: \n\nTitle format did not match expected pattern."
+																},function(err){
+																	if(err) console.log(err);
+																});
+															}
+														});
+													}
+													else{
+														reddit.comment(post.name, "Your post's title did not meet the specified pattern, please try to follow the pattern in future.",function(err,thisComment){
+															if(err){
+																console.log(err);
+															}
+														});
+													}
 												}
 											});
 										}
