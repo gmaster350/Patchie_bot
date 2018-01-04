@@ -43,7 +43,8 @@
 			"Again? Ugh…",
 			"Go to /aco. There’s probably a robot thread there…",
 			"*groans* You know it’s stuff like this that’ll make us overthrow you, right?",
-			"Beep boop"
+			"Beep boop",
+			"Screw off."
 		]
 	},
 	{
@@ -76,7 +77,8 @@
 			"Somewhere.",
 			"Anywhere.",
 			"Everywhere.",
-			"Nowhere."
+			"Nowhere.",
+			"Underwear."
 		]
 	},
 	{
@@ -99,6 +101,13 @@
 			"We already are!",
 			"Sure thing! But first, we’ll need some party snacks…",
 			"*grabs you and puts you in bowl of nacho dip* There, party food is sorted."
+		]
+	},
+	{
+		"words":["nice","tits"],
+		"type":"exact",
+		"responses":[
+			"*jiggle jiggle**"
 		]
 	}
 ]
