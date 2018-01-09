@@ -5,7 +5,7 @@ const historyLength = 30;
 var strikeLength = 5;
 var muteTime = 30000;
 var coolOffPeriod = 3;
-var sensitivity = 2.5;
+var sensitivity = 1.0;
 
 function debug(str){if(true){console.log(str);}}
 
