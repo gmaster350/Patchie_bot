@@ -892,24 +892,26 @@ bot.on("message",function(message){
 				});
 			}
 			else{
-				spam.process(message,function(response){
-					if(typeof response == "string" && response.length > 0){
-						if(errorCodes.some(function(code){return response.startsWith(code)})){
-							send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
-							message.channel.send(send).then(function(msg){
-								msg.delete(errorTimeout);
-								if(message.channel.type == "text")
-									message.delete(errorTimeout);
-							}).catch(function(err){
-								console.log(err);
-							});
+				if(message.channel.id != "360352337274863617"){
+					spam.process(message,function(response){
+						if(typeof response == "string" && response.length > 0){
+							if(errorCodes.some(function(code){return response.startsWith(code)})){
+								send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
+								message.channel.send(send).then(function(msg){
+									msg.delete(errorTimeout);
+									if(message.channel.type == "text")
+										message.delete(errorTimeout);
+								}).catch(function(err){
+									console.log(err);
+								});
+							}
+							else{
+								send += response;
+								message.channel.send(send);
+							}
 						}
-						else{
-							send += response;
-							message.channel.send(send);
-						}
-					}
-				});
+					});
+				}
 			}
 			
 			/*
