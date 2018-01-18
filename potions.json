@@ -84,5 +84,12 @@
 			"You suddenly sprout an extra ",
 			["tail","penis","head","pair of ears","pair of horns","tongue"]
 		]
+	},
+	{
+		"chance":3,
+		"options":[
+			"It's just ",
+			["water","coca-cola","orange soda","grape soda","orange juice","lemon juice","whiskey","ale","mint schnapps","clear cider","cloudy cider","lemonade","milk","chocolate milk","strawberry milk"]
+		]
 	}
 ]

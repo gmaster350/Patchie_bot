@@ -452,6 +452,7 @@ const version = "1.2.0";
 	const potion = require("./potion.js");
 	const privateRoom = require("./privateRoom.js");
 	const manageRoles = require("./manageRoles.js");
+	const interactives = require("./interactiveStories.js");
 	
 	const prefix = "!!";
 	const about = 
@@ -491,6 +492,7 @@ const version = "1.2.0";
 			}))){
 				throw "botResponses.json format is bad! culprit: "+obj.toString();
 			}
+			console.log("Loaded bot responses.");
 		}
 	});
 
@@ -751,7 +753,10 @@ var commandTree = {
 //	"potionCustom":potion.addCustom,
 	"setRole":setRole,
 	"removeRole":manageRoles.removeRole,
-	"hasRole":manageRoles.hasRole
+	"hasRole":manageRoles.hasRole,
+	"addOption":interactives.addOption,
+	"branchText":interactives.changeDescription,
+	"startStory":interactives.start
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -785,6 +790,7 @@ bot.on("ready",function(){
 	},function(err){
 		console.log(err);
 	});
+	console.log("Set presence");
 	
 	bot.channels.map(function(channel,channelIndex,channelArray){
 		if(channel.type == "text"){
@@ -795,6 +801,7 @@ bot.on("ready",function(){
 			});
 		}
 	});
+	console.log("Applied roles");
 	
 	fs.readFile("./potionSettings.txt",function(err,data){
 		if(err)console.log(err);
@@ -811,6 +818,44 @@ bot.on("ready",function(){
 			});
 			fs.writeFile("./potionSettings.txt",JSON.stringify(s));
 			potion.importSettings(s);
+		}
+	});
+	console.log("Loaded potions data");
+	
+	fs.readFile("../interactiveData.txt",function(err,data){
+		if(err) console.log(err);
+		else{
+			var r = JSON.parse(data);
+			bot.channels.map(function(c){
+				switch(c.type){
+					case "text":
+						c.members.map(function(m){
+							if(Object.keys(r).every(function(k){
+								return m.id != k;
+							})){
+								r[m.id] = [];
+							}
+						});
+						break;
+					case "dm":
+						if(Object.keys(r).every(function(k){
+							return c.recipient.id != k;
+						})){
+							r[c.recipient.id] = [];
+						}
+						break;
+					case "group":
+						c.recipients.map(function(m){
+							if(Object.keys(r).every(function(k){
+								return m.id != k;
+							})){
+								r[m.id] = [];
+							}
+						});
+						break;
+				}
+			});
+			interactives.setActive(r);
 		}
 	});
 });
@@ -935,6 +980,7 @@ bot.on("message",function(message){
 bot.on("guildMemberAdd",function(member){
 	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
 	submenu.addUser(member.id);
+	interactives.addUser(member.id);
 });
 
 /*
@@ -951,6 +997,38 @@ bot.on("messageUpdate",function(message){
 	});
 })
 */
+
+
+function CompleteStringify(obj){
+	var str = "{";
+	var l = Object.keys(obj).length-1;
+	Object.keys(obj).forEach(function(key,index){
+		var value = obj[key];
+		str += "\"" + key + "\":";
+		if(typeof value == "object"){
+			if(value.constructor == Array){
+				str += "[" + CompleteStringify(value) + "]";
+			}
+			else{
+				str += "{" + CompleteStringify(value) + "}";
+			}
+		}
+		else if(typeof value == "string"){
+			value.replace("\"","\\\"");
+			str += "\"" + value + "\"";
+		}
+		else{
+			str += value;
+		}
+		if(index < l){
+			str += ",";
+		}
+	});
+	str += "}";
+	return str;
+}
+
+
 // Login secret exists in a folder one level about the git folder.
 
 fs.readFile("../botSecret.txt",function(err,secret){
