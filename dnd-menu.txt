@@ -1,0 +1,64 @@
+dnd
+	class <class-name>
+		quick-stats
+		features
+		proficiencies
+			armor
+			weapons
+			tools
+			saving-throws
+			skills
+		hit-points
+	race <race-name>
+		ability-score-increases
+		age
+	item-info <item-name>
+	items
+		weapon
+			simple-melee
+			simple-ranged
+			martial-melee
+			martial-ranged
+		gear
+			ammunition
+			arcane-focus
+			container
+			druidic-focus
+			holy-symbol
+		tools
+			artisans-tools
+			gaming-sets
+			musical-instruments
+	prices
+		basic-goods
+		food-drink
+		lodging
+		weapon
+			simple-melee
+			simple-ranged
+			martial-melee
+			martial-ranged
+		gear
+			ammunition
+			arcane-focus
+			container
+			druidic-focus
+			holy-symbol
+		tools
+			artisans-tools
+			gaming-sets
+			musical-instruments
+		services
+		vehicles
+		mounts
+		watercraft
+	create
+		npc
+		town
+			tiny
+			small
+			medium
+			large
+			huge
+		monster
+			level <int>		

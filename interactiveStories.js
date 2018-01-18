@@ -1,78 +1,135 @@
-// interactive stories //
+//interactive stories module//
 
-const oh = require("./objectHelper.js");
-
-/*
-format of active:
-	{ 
-		<String> userid : [ 
-			<String> branch label, 
-			<String> branch label
-		] 
-	}
-*/
-var active = {}; //keeps a record of the path the user has taken through the tree
+const fs = require("fs");
+var active = {}; //{userid:[node,node]}
 
 class Branch{
-	constructor(parent=null,response=null{
-		this.parent = parent;
-    if(response == null) throw "response not provided.";
-    this.response = response;
-		this.children = {};
+	constructor(description="[This is a new branch. use !!branchText to put some text here!]"){
+		this.description = description;
+		this.options = {}; //{<string>:<Branch>}
 	}
 	
-  /*
-  option = choice presented to the user
-  response = text of response, label of new object
-  */
-  
-	addChild(option,response){ 
-		this.children[option] = (new Branch(this,response));
+	addOption(option){
+		this.options[option] = new Branch();
 	}
-  
-	// Will accept either text, or a number representing an option.
-  toChild(userid,option){
-    if(Object.keys(this.children).some(function(o){return option == o}))
-      active[userid].push(option);
-    else if(!isNaN(Number(option)) && Number(option) < Object.keys(this.children).length){
-      active[userid].push(this.children[Object.keys(this.children)[Number(option)]]);
-    }
-  }
+}
+
+var Root = new Branch("There are a number of marked doors before you, which door do you open?");
+Root.addOption("'Dragon'");
+
+
+fs.writeFile("interactives.json",JSON.stringify(Root),function(err){
+	if(err)console.log(err);
+});
+
+
+function getCurrent(userid,nodes=null,branch=Root){
+	if(nodes == null){
+		var n = active[userid];
+		return getCurrent(userid,n.slice(1),Root.options[n[0]]);
+	}
+	else{
+		if(nodes.length == 0){
+			return branch;
+		}
+		else{
+			var n = nodes.slice(1);
+			return getCurrent(userid,n,branch.options[n[0]]);
+		}
+	}
+}
+
+function branchPrint(b){
+	var response = b.description + "\n\n[-1] quit\n";
+	var ops = Object.keys(b.options);
+	for(var i = 0; i < ops.length; i++){
+		response += "[" + String(i) + "] " + ops[i] + "\n";
+	}
+	return response;
+}
+
+function numberFilter(m){
+	let flag = m.author.id == userid && !isNaN(Number(m.content));
+	return flag;
+}
+
+function start(message,callback){
+	var userid = message.author.id;
+	callback(branchPrint(Root));
+	navigate(message,function(r){
+		callback(r);
+	});
 	
-	// moves user back up a level.
-	toParent(userid){
-    active[userid].pop();
-  }
+	message.channel.awaitMessages(
+		function(m){
+			
+		},{
+			time: 6000000, 
+			maxMatches: 1,
+			errors: ['time']
+		}
+	).then(function(collection){
+		navigate(userid,collection.first(),function(r){
+			callback(r);
+		});
+	}).catch(function(e){
+		callback(e);
+		active[userid] = [];
+	});
 }
 
-var Root = new Branch();
-
-function addBranch(message,callback){
-  var user = message.author.id;
-  var text = message.content.split(" ").slice(1).split(" => ");
-  getCurrent(Root,active[user],function(currentBranch){
-    currentBranch.addChild(text[0],text[1]);
-  });
+function navigate(userid,msg,callback){
+	var num = Number(msg.content);
+	var currentBranch = getCurrent(userid);
+	if(isNaN(num)){
+		callback("You need to give a number.");
+	}
+	if(num >= 0){
+		active[userid].push(Object.keys(currentBranch.options)[num]);
+		var newbranch = getCurrent(userid);
+		callback(printBranch(newbranch));
+		msg.channel.awaitMessages
+	}
+	else if(num == -1){
+		active[userid] = [];
+	}
 }
 
-function traverse(message,callback){
-  var user = message.author.id;
-  var option = message.content.split(" ").slice(1);
-  getCurrent(Root,active[user],function(currentBranch){
-    currentBranch.toChild(user,option);
-    getCurrent(Root,active[user],function(currentBranch){
-      callback(currentBranch.response);
-    });
-  });
+function addOption(message,callback){
+	var userid = message.author.id;
+	var option = message.content.split(" ").slice(1).join(" ");
+	var branch = getCurrent(userid);
+	branch.addOption(option);
 }
 
-function getCurrent(branch,path,callback){
-  if(path.length > 0){
-    getCurrent(branch.children[path[0]],path.shift(),function(b){
-      callback(b);
-    });
-  }
-  else{
-    callback(branch);
-  }
+function changeDescription(message,callback){
+	var userid = message.author.id;
+	var desc = message.content.split(" ").slice(1).join(" ");
+	var branch = getCurrent(userid);
+	branch.description = desc;
+}
+
+function setActive(a){
+	active = a;
+	fs.writeFile("../interactiveData.txt",JSON.stringify(active),function(err){
+		if(err)console.log(err);
+	});
+}
+
+function addUser(userid){
+	if(Object.keys(active).every(function(k){
+		return userid != k;
+	})){
+		active[userid] = [];
+		fs.writeFile("../interactiveData.txt",JSON.stringify(active),function(err){
+			if(err)console.log(err);
+		});
+	}
+}
+
+module.exports = {
+	"addOption":addOption,
+	"changeDescription":changeDescription,
+	"start":start,
+	"setActive":setActive
 }
