@@ -283,7 +283,7 @@ const version = "1.2.0";
 														var thing = post.name;
 														console.log(String(is_valid) + " ==> " + post.title);
 														
-														if(is_valid){
+														else if(is_valid){
 															
 															// approve post //
 															if(nsfw){
@@ -362,6 +362,12 @@ const version = "1.2.0";
 																		}
 																	});
 																});
+																if(nsfw){
+																	bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																}
+																else{
+																	bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																}
 															}
 														}
 													});
@@ -391,6 +397,12 @@ const version = "1.2.0";
 																}
 															});
 														});
+														if(post.title.toLowerCase().startsWith("[nsfw]")){
+															bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+														}
+														else{
+															bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+														}
 													}
 												}
 											});
