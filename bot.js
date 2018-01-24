@@ -354,10 +354,13 @@ const version = "1.2.0";
 																});
 															}
 															else{
-																reddit.comment(thing, "Not all types of tags were found in your post titles.\n"+error+"\nIt would be helpful to include these tags in future.",function(err,thisComment){
-																	if(err){
-																		console.log(err);
-																	}
+																reddit.approve(post.name,function(err){
+																	if(err) console.log(err);
+																	reddit.comment(thing, "Not all types of tags were found in your post titles.\n"+error+"\nIt would be helpful to include these tags in future.",function(err,thisComment){
+																		if(err){
+																			console.log(err);
+																		}
+																	});
 																});
 															}
 														}
@@ -380,10 +383,13 @@ const version = "1.2.0";
 														});
 													}
 													else{
-														reddit.comment(post.name, "Your post's title did not meet the specified pattern, please try to follow the pattern in future.",function(err,thisComment){
-															if(err){
-																console.log(err);
-															}
+														reddit.approve(post.name,function(err){
+															if(err) console.log(err);
+															reddit.comment(post.name, "Your post's title did not meet the specified pattern, please try to follow the pattern in future.",function(err,thisComment){
+																if(err){
+																	console.log(err);
+																}
+															});
 														});
 													}
 												}
