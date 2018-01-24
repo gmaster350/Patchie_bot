@@ -354,7 +354,7 @@ const version = "1.2.0";
 																});
 															}
 															else{
-																reddit.comment(thing, "Not all types of tags were found in your post titles.\n"+error,function(err,thisComment){
+																reddit.comment(thing, "Not all types of tags were found in your post titles.\n"+error+"\nIt would be helpful to include these tags in future.",function(err,thisComment){
 																	if(err){
 																		console.log(err);
 																	}
