@@ -754,9 +754,9 @@ var commandTree = {
 	"setRole":setRole,
 	"removeRole":manageRoles.removeRole,
 	"hasRole":manageRoles.hasRole,
-	"addOption":interactives.addOption,
-	"branchText":interactives.changeDescription,
-	"startStory":interactives.start
+//	"addOption":interactives.addOption,
+//	"branchText":interactives.changeDescription,
+//	"startStory":interactives.start
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
