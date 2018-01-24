@@ -283,7 +283,7 @@ const version = "1.2.0";
 														var thing = post.name;
 														console.log(String(is_valid) + " ==> " + post.title);
 														
-														else if(is_valid){
+														if(is_valid){
 															
 															// approve post //
 															if(nsfw){
