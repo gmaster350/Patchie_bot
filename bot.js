@@ -38,7 +38,7 @@ const version = "1.2.0";
 	const rawjs = require("raw.js");
 	const reddit = new rawjs("User Agent: dragon_vore_bot/"+version+" by u/K-guy");
 
-	var enforcePattern = false; //if true, posts are unapproved by bot, otherwise bot posts a comment listing missing tags.
+	var enforcePattern = true; //if false, posts are unapproved by bot, otherwise bot posts a comment listing missing tags.
 	var getModQueue;
 	var getMail;
 	
