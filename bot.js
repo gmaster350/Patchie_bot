@@ -765,6 +765,7 @@ var commandTree = {
 //	"removeRole":removeRole,
 	"potion":potion.generate,
 	"potionIgnore":potion.changeSetting,
+	"privateRoom":privateRoom.create,
 	"createRoom":privateRoom.create,
 	"leaveRoom":privateRoom.leave,
 	"inviteToRoom":privateRoom.inviteToRoom,

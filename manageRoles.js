@@ -31,7 +31,7 @@ function setRole(message,callback,errorCallback){
 		var server = message.guild;
 		var roleGiven;
 		if(parameters[1].startsWith("species:")){
-			roleGiven = capitalize(parameters[1].substring(8));
+			roleGiven = capitalize(parameters[1].substring(8).trim());
 			if(user.roles.some(function(r1){
 				return r1.name == roleGiven;
 			})){
