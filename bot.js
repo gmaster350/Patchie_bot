@@ -471,6 +471,7 @@ const version = "1.2.0";
 	const privateRoom = require("./privateRoom.js");
 	const manageRoles = require("./manageRoles.js");
 	const interactives = require("./interactiveStories.js");
+	const frequency = require("./frequency.js");
 	
 	const prefix = "!!";
 	const about = 
@@ -740,6 +741,32 @@ function setRole(message,callback){
 	});
 }
 
+function retroactiveRead(message,callback){
+	if(message.author.id == "360352337274863617"){
+		var times = {};
+		bot.channels.map(channel => {
+			if(channel.type == "text"){
+				if(!(channel.guild.id in times)){
+					times[channel.guild.id] = {};
+				}
+				if(!(channel.id in times[channel.guild.id])){
+					times[channel.guild.id][channel.id] = [];
+				}
+				channel.fetchMessages({before:channel.lastMessageID}).then(messages => {
+					messages.map(message => {
+						times[channel.guild.id][channel.id].push(message.createdAt);
+					});
+				});
+			}
+		});
+		fs.writeFile("frequencyData.json",times.sort(),err => {
+			if(!err){
+				callback("done!");
+			}
+		});
+	}
+}
+
 // Submenu Module
 
 var commandTree = {
@@ -775,7 +802,8 @@ var commandTree = {
 	"hasRole":manageRoles.hasRole,
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
-	"startStory":interactives.start
+	"startStory":interactives.start,
+	"retroactiveRead":retroactiveRead
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -993,6 +1021,9 @@ bot.on("message",function(message){
 		}).catch(function(err){
 			console.log(err);
 		});
+	}
+	finally{
+		frequency.record(message);
 	}
 });
 
