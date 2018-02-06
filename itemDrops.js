@@ -6,11 +6,12 @@
 		"owner":<userid>
 		"takeable":<boolean> //whether item is out in the open.
 		
+		"usable":<boolean>
 		"wearable":<boolean>
 		"consumable":<boolean>
 		
 		"effect":<string>
-		"trigger": use | wear | touch | word: | words: | eat
+		"trigger": use | wear | touch | word: | words: | consume
 	}
 }
 
@@ -65,7 +66,7 @@ function readItem(message,callback){
 function newItem(){
 	var color = ["Red","Blue","Green","White","Purple","Pink","Grey","Black","Orange","Yellow","Marbled"];
 	var surface = ["Pearlscent","Shiny","Metallic","Glossy","Translucent","Darkened","Glowing","Wooden","Plastic",""];
-	var object = ["Stone","Crystal","Button","Scroll","Glass pane","Locked box","Empty box","Ring","Ball","Pendant","Bone","Knife","Box of","Bottle filled with"];
+	var object = ["Stone","Crystal","Button","Scroll","Glass pane","Locked box","Empty box","Ring","Ball","Pendant","Bone","Knife"];
 	var effect = [
 		"Your skin tingles all over"
 	];
@@ -73,8 +74,11 @@ function newItem(){
 	var id = hash();
 	var appearance = color[Math.floor(Math.random()*color.length)] + ", " + surface[Math.floor(Math.random()*surface.length)] + " " + object[Math.floor(Math.random()*object.length)];
 	
+	var usable;
 	var wearable;
 	var consumable;
+	
+	var trigger;
 	
 	if(appearance in effectCatalog){
 		effect = effectCatalog[appearance];
@@ -82,7 +86,73 @@ function newItem(){
 	else{
 		switch(appearance.split(" ")[2]){
 			case "Stone":
+				usable = false;
+				wearable = false;
+				consumable = true;
+				break;
+			case "Crystal":
+				usable = false;
+				wearable = false;
+				consumable = true;
+				break;
+			case "Button":
+				usable = true;
+				wearable = false;
+				consumable = false;
+				break;
+			case "Scroll":
+				usable = true;
+				wearable = false;
+				consumable = true;
+				break;
+			case "Glass pane":
+				usable = false;
+				wearable = false;
+				consumable = false;
+				break;
+			case "Locked box":
+				usable = false;
+				wearable = false;
+				consumable = false;
+				break;
+			case "Empty box":
+				usable = false;
+				wearable = false;
+				consumable = false;
+				break;
+			case "Ring":
+				usable = false;
+				wearable = true;
+				consumable = false;
+				break;
+			case "Ball":
+				usable = false;
+				wearable = false;
+				consumable = false;
+				break;
+			case "Pendant":
+				usable = false;
+				wearable = true;
+				consumable = false;
+				break;
+			case "Bone":
+				usable = false;
+				wearable = false;
+				consumable = false;
+				break;
+			case "Knife":
+				usable = false;
+				wearable = false;
+				consumable = false;
+				break;
 		}
 	}
 	
+	existingItems[id] = {
+		"owner":null,
+		"taken":false,
+		"usable":usable,
+		"wearable":false,
+		"consumable":consumable
+	}
 }
