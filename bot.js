@@ -802,8 +802,8 @@ var commandTree = {
 	"hasRole":manageRoles.hasRole,
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
-	"startStory":interactives.start,
-	"retroactiveRead":retroactiveRead
+	"startStory":interactives.start//,
+//	"retroactiveRead":retroactiveRead
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
