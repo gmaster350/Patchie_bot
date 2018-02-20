@@ -220,24 +220,36 @@ function setRole(message,callback,errorCallback,alias=false){
 	}
 }
 
-function removeRole(message,callback){
-	var parameters = message.content.split(" ").slice(1);
-	var roleGiven = capitalize(parameters[0].toLowerCase());
+function removeRole(message,callback,alias=false){
 	var user = message.member;
 	var server = message.guild;
+	if(alias){
+		lfrpRoles.forEach(function(lr){
+			user.roles.map(function(r){
+				if(lr == r.name){
+					user.removeRole(getRoleFromGuildByName(server,lr));
+					callback("Removed "+lr+".");
+				}
+			});
+		});
+	}
+	else{
+		var parameters = message.content.split(" ").slice(1);
+		var roleGiven = capitalize(parameters[0].toLowerCase());
 
-	var flag = true;
+		var flag = true;
 
-	user.roles.map(function(r){
-		if(r.name == roleGiven){
-			user.removeRole(getRoleFromGuildByName(server,roleGiven));
-			callback("Removed role "+roleGiven);
-			flag = false;
+		user.roles.map(function(r){
+			if(r.name == roleGiven){
+				user.removeRole(getRoleFromGuildByName(server,roleGiven));
+				callback("Removed role "+roleGiven);
+				flag = false;
+			}
+		});
+
+		if(flag){
+			callback("You do not appear to have the "+roleGiven+" role.")
 		}
-	});
-
-	if(flag){
-		callback("You do not appear to have the "+roleGiven+" role.")
 	}
 }
 

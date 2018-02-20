@@ -809,11 +809,14 @@ var commandTree = {
 			case "prey":
 				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Prey");
 				break;
-			case "prey":
+			case "pred":
 				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Pred");
 				break;
-			case "prey":
+			case "any":
 				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Any");
+				break;
+			case "stop":
+				manageRoles.removeRole(m,function(r){c(r)},true);
 				break;
 		}
 	}
