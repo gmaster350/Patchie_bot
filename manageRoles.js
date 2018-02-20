@@ -8,6 +8,7 @@ var feetRoles = ["Anthro","Feral"];
 var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
 var willRoles = ["Willing","Unwilling"];
 var miscRoles = ["Disposal"];
+var lfrpRoles = ["LFRP-Prey","LFRP-Pred","LFRP-Any"];
 
 
 function getRoleFromGuildByName(guild,name){
@@ -19,10 +20,10 @@ function getRoleFromGuildByName(guild,name){
 	return res;
 }
 
-function setRole(message,callback,errorCallback){
+function setRole(message,callback,errorCallback,alias=false){
 	var parameters = message.content.split(" ");
 
-	
+
 	if(parameters.length == 1){
 		callback("Set a role for yourself. \n**Roles:**\nPrey | Pred | Switch\nMale | Female | Other\nDragon | Human\nFurry | Scalie | Avian\nAnthro | Feral\nFine | Diminutve | Tiny | Small | Medium | Large | Huge | Gargantuan | Colossal\nDisposal");
 	}
@@ -58,8 +59,8 @@ function setRole(message,callback,errorCallback){
 			}
 		}
 		else{
-			roleGiven = capitalize(parameters[1].toLowerCase());
-			
+			roleGiven = alias ? alias : ["lfrp-prey","lfrp-pred","lfrp-any"].some(l => parameters[1].toLowerCase() == l) ? roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase()) : capitalize(parameters[1].toLowerCase());
+
 			if(user.roles.some(function(r){
 				return r.name == roleGiven;
 			})){
@@ -69,7 +70,7 @@ function setRole(message,callback,errorCallback){
 				if(genderRoles.some(function(gr){return gr == roleGiven;})){
 					// removes any and all gender roles, then adds the new one.
 					var replaced = ".";
-					
+
 					genderRoles.forEach(function(gr){
 						user.roles.map(function(r){
 							if(gr == r.name){
@@ -188,9 +189,26 @@ function setRole(message,callback,errorCallback){
 					}
 					callback("Added role "+roleGiven+replaced);
 				}
+				else if(lfrpRoles.some(function(lr){return lr == roleGiven;})){
+					var replaced = ".";
+					lfrpRoles.forEach(function(lr){
+						user.roles.map(function(r){
+							if(lr == r.name){
+								user.removeRole(getRoleFromGuildByName(server,lr));
+								replaced = ", replacing "+lr+".";
+							}
+						});
+					});
+					var role = getRoleFromGuildByName(server,roleGiven);
+					if(role === undefined) errorCallback("The role was not found. You should add it.");
+					else{
+						user.addRole(role);
+					}
+					callback("Added role "+roleGiven+replaced);
+				}
 				else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
 					// misc roles are not mutually exclusive, and will be added.
-					
+
 					user.addRole(getRoleFromGuildByName(server,roleGiven));
 					callback("Added role "+roleGiven);
 				}
@@ -207,9 +225,9 @@ function removeRole(message,callback){
 	var roleGiven = capitalize(parameters[0].toLowerCase());
 	var user = message.member;
 	var server = message.guild;
-	
+
 	var flag = true;
-	
+
 	user.roles.map(function(r){
 		if(r.name == roleGiven){
 			user.removeRole(getRoleFromGuildByName(server,roleGiven));
@@ -217,7 +235,7 @@ function removeRole(message,callback){
 			flag = false;
 		}
 	});
-	
+
 	if(flag){
 		callback("You do not appear to have the "+roleGiven+" role.")
 	}
@@ -233,7 +251,7 @@ function hasRole(message,callback){
 	var found = [];
 	var guild = message.guild;
 	var roles = message.content.split(" ").slice(1);
-	
+
 	roles.forEach(function(r){
 		var r1 = getRoleFromGuildByName(guild,capitalize(r));
 		if(r1 !== undefined){

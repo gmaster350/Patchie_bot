@@ -1,6 +1,6 @@
 /*
 	Patchie - collective name for all the bots this script controls.
-	
+
 	This bot is made to be versatile with many available tools and utilities.
 	Primarily, this bot is made to connect many services together, using
 	a range of APIs, including reddit and discord.
@@ -14,7 +14,7 @@ const version = "1.2.0";
 // Standard nodejs modules
 	const fs = require("fs");
 	const process = require("process");
-	
+
 
 // Custom modules
 	const submenu = require("./submenu.js");
@@ -22,7 +22,7 @@ const version = "1.2.0";
 	const mysql = require("./mysql");
 	const oh = require("./objectHelper");
 
-	
+
 
 ///////////////////////////////////////////////
 //  _____               _       _   _   _    //
@@ -41,17 +41,17 @@ const version = "1.2.0";
 	var enforcePattern = false; //if true, posts are unapproved by bot, otherwise bot posts a comment listing missing tags.
 	var getModQueue;
 	var getMail;
-	
+
 	// Master Regular Expression
 	var titleMatch = new RegExp(/( *\[.+\].+( *[\(\[\{] *.+ *[\)\]\}])+ *)|(.+( *[\(\[\{] *.+ *[\)\]\}])+ *)|( *\[.+\].+)/g);
-	
+
 	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
-	
+
 	var voreChannel = "360355480490475522";
 	var nsfwChannel = "360355651119087618";
-	
+
 	// Splits string using a pair of tokens. returns list of things between token pairs.
 	// nested token pairs will return outermost pair.
 	function doubleSplit(string,str1,str2,callback){
@@ -85,7 +85,7 @@ const version = "1.2.0";
 			callback("You must provide two different token characters");
 		}
 	}
-	
+
 	// Split by more than one token.
 	function multiSplit(string,tokens,callback){
 		if(tokens.length > 0){
@@ -100,7 +100,7 @@ const version = "1.2.0";
 		}
 		else callback(string);
 	}
-	
+
 	function titleCheck(title,callback){
 		var is_nsfw = false;
 		var artists = [];
@@ -121,23 +121,23 @@ const version = "1.2.0";
 		};
 		var types = [];
 		var content = [];
-		
+
 		if(exceptions.some(function(ex){
 			return title.startsWith(ex);
 		})){
 		}
 
 		var check = true;
-		
+
 		var checkExceptions = title.replace(" ","").startsWith("[");
 		var exceptionsValid = false;
-		
+
 		// Check to see if the post is marked as NSFW
 		if(title.toLowerCase().replace(" ","").startsWith("[nsfw]")){
 			is_nsfw = true;
 			exceptionsValid = true;
 		}
-		
+
 		// If the title begins with one of the exceptions, we do not need to check for tags set check as false.
 		else if(exceptions.some(function(ex){
 			return title.toLowerCase().replace(" ","").startsWith("[" + ex + "]");
@@ -152,15 +152,15 @@ const version = "1.2.0";
 				"content":content
 			});
 		}
-		
+
 		if(checkExceptions && !exceptionsValid){
 			callback(false,is_nsfw,"Bad tag at start of title.",{});
 		}
-		
+
 		else if(check){
 			var allTagsPresent = true;
 			var ErrorMessage = "";
-			
+
 			// Collect Artist tags
 			doubleSplit(title,"(",")",function(res){
 				if(typeof res == "string") console.log(res);
@@ -172,7 +172,7 @@ const version = "1.2.0";
 						allTagsPresent = false;
 						ErrorMessage += "\nNo artist tags found";
 					}
-					
+
 					// Collect character tags.
 					doubleSplit(title,"{","}",function(res){
 						if(typeof res == "string") console.log(res);
@@ -184,7 +184,7 @@ const version = "1.2.0";
 								allTagsPresent = false;
 								ErrorMessage += "\nNo character tags found";
 							}
-							
+
 							// Collect type and content tags.
 							doubleSplit(title,"[","]",function(res){
 								if(typeof res == "string") {
@@ -202,7 +202,7 @@ const version = "1.2.0";
 												});
 											});
 										}
-										
+
 										else if(voreTypes.some(function(vt){
 											if(a.toLowerCase() == vt){
 												return true;
@@ -215,14 +215,14 @@ const version = "1.2.0";
 										})){
 											types.push(a);
 										}
-										
+
 										// If the tag is not a vore tag or a gender tag, it must be a content tag.
 										else{
 											content.push(a);
 										}
 									});
-									
-									
+
+
 									if(genders.originals.length === 0){
 										allTagsPresent = false;
 										ErrorMessage += "\nNo gender tags found.";
@@ -231,7 +231,7 @@ const version = "1.2.0";
 										allTagsPresent = false;
 										ErrorMessage += "\nNo vore tags found.";
 									}
-									
+
 									if(allTagsPresent){
 										callback(true,is_nsfw,"",{
 											"artists":artists,
@@ -263,7 +263,7 @@ const version = "1.2.0";
 						if(err) console.log("Unable to authenticate user: " + err);
 						else{
 							console.log("Successfully logged into reddit.");
-							
+
 							getModQueue = setInterval(function(){
 
 								try{
@@ -272,19 +272,19 @@ const version = "1.2.0";
 										else{
 											response.children.forEach(function(p){
 												var post = p.data;
-												
+
 												// Regex Filter
 												if(post.title.match(titleMatch) != null){
 
-													
+
 													// Collect and gather content.
 													titleCheck(post.title,function(is_valid,nsfw,error,res){
-														
+
 														var thing = post.name;
 														console.log(String(is_valid) + " ==> " + post.title);
-														
+
 														if(is_valid){
-															
+
 															// approve post //
 															if(nsfw){
 																reddit.nsfw(thing,function(err){
@@ -303,7 +303,7 @@ const version = "1.2.0";
 																	if(err) console.log(err);
 																});
 															}
-															
+
 															// archive posts if it is a link type.
 															if(post.name.startsWith("t3")){
 																fs.readFile("./postHistory.txt",function(err,file){
@@ -326,20 +326,20 @@ const version = "1.2.0";
 																		});
 																	}
 																});
-																
+
 																if(nsfw){
 																	bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
 																}
 																else{
 																	bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
-																}														
+																}
 															}
 														}
 														else{
 															if(enforcePattern){
 																// Remove post if it does not follow the guidelines.
 																reddit.remove(thing,function(err){
-																	
+
 																	// Send the user a message about why their post was removed.
 																	if(err)console.log(err);
 																	else{
@@ -423,7 +423,7 @@ const version = "1.2.0";
 											var subject = mail.data.subject;
 											var body = mail.data.body;
 											var sender = mail.data.author;
-											
+
 											if(subject.toLowerCase() == "title check"){
 												titlecheck(body,function(errorRes){
 													reddit.message({
@@ -472,9 +472,9 @@ const version = "1.2.0";
 	const manageRoles = require("./manageRoles.js");
 	const interactives = require("./interactiveStories.js");
 	const frequency = require("./frequency.js");
-	
+
 	const prefix = "!!";
-	const about = 
+	const about =
 	"Made by: @Zapp#4885"+
 	"\nRepository: https://github.com/gmaster350/Patchie_bot"+
 	"\nVersion: "+version+
@@ -498,12 +498,12 @@ const version = "1.2.0";
 		});
 		return res;
 	}
-	
+
 	var botResponses;
 	fs.readFile("botResponses.json",function(err,data){
 		if(err)console.log(err);
 		else{
-			var culprit;	
+			var culprit;
 			botResponses = JSON.parse(data);
 			if(!(botResponses.every(function(obj){
 				culprit = obj;
@@ -518,11 +518,11 @@ const version = "1.2.0";
 
 /*
 	Module handling
-	
+
 	In order to facilitate the submenu module, methods are handled through
 	handler functions. Handler functions are passed the raw object, and a callback.
-	The handler function then parses the message into a form accepted by a module's method. 
-	
+	The handler function then parses the message into a form accepted by a module's method.
+
 	The callback must return a string. If string is non-empty, it will be sent to the
 	originating channel as a reply, otherwise it will do nothing.
 */
@@ -560,7 +560,7 @@ function hasEach(str,listOfThingsToMatch,callback){
 	var ordered = false;
 	var disordered = false;
 	var strIndex = 0;
-	
+
 	exact = str == listOfThingsToMatch.join(" ");
 	contiguous = str.includes(listOfThingsToMatch.join(" "));
 	ordered = listOfThingsToMatch.every(function(item){
@@ -802,8 +802,21 @@ var commandTree = {
 	"hasRole":manageRoles.hasRole,
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
-	"startStory":interactives.start//,
+	"startStory":interactives.start,//,
 //	"retroactiveRead":retroactiveRead
+	"lfrp":function(m,c){
+		switch(m.content.split(" ")[1].toLowerCase()){
+			case "prey":
+				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Prey");
+				break;
+			case "prey":
+				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Pred");
+				break;
+			case "prey":
+				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Any");
+				break;
+		}
+	}
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -819,7 +832,7 @@ fs.readFile("../submenuData.txt",function(err,data){
 
 /*
 	General functions:
-	
+
 	Any functions not part of any module. These include event handling and command rooting
 */
 
@@ -838,7 +851,7 @@ bot.on("ready",function(){
 		console.log(err);
 	});
 	console.log("Set presence");
-	
+
 	bot.channels.map(function(channel,channelIndex,channelArray){
 		if(channel.type == "text"){
 			var role = getRoleFromGuildByName(channel.guild,"Member");
@@ -849,7 +862,7 @@ bot.on("ready",function(){
 		}
 	});
 	console.log("Applied roles");
-	
+
 	fs.readFile("./potionSettings.txt",function(err,data){
 		if(err)console.log(err);
 		else{
@@ -868,7 +881,7 @@ bot.on("ready",function(){
 		}
 	});
 	console.log("Loaded potions data");
-	
+
 	fs.readFile("../interactiveData.txt",function(err,data){
 		if(err) console.log(err);
 		else{
@@ -911,7 +924,7 @@ bot.on("message",function(message){
 	try{
 		if((message.author.id != bot.user.id) && !(message.author.bot)){
 			var send = "";
-			
+
 			if(message.content == (prefix + "ping")){
 				message.channel.send("pong");
 			}
@@ -920,7 +933,7 @@ bot.on("message",function(message){
 					var chanid = message.content.split(" ").slice(1,2)[0];
 					var msg = message.content.split(" ").slice(2).join(" ");
 					var ch = bot.channels.get(chanid);
-					
+
 					if(ch !== undefined){
 						ch.send(msg);
 					}
@@ -959,7 +972,7 @@ bot.on("message",function(message){
 					message.channel.send("Insufficient Permissions.\n`this is a temporary message`").then(function(msg){msg.delete(5000)});
 				}
 			}
-			
+
 
 			else if(message.content.startsWith(prefix)){
 				submenu.evaluate(prefix,message,function(response){
@@ -1005,7 +1018,7 @@ bot.on("message",function(message){
 					});
 				}
 			}
-			
+
 			/*
 			filter.evaluate(message,function(res){
 				send += res;
