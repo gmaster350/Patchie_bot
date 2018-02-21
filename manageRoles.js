@@ -227,8 +227,11 @@ function removeRole(message,callback,alias=false){
 		lfrpRoles.forEach(function(lr){
 			user.roles.map(function(r){
 				if(lr == r.name){
-					user.removeRole(getRoleFromGuildByName(server,lr));
-					callback("Removed "+lr+".");
+					user.removeRole(getRoleFromGuildByName(server,lr)).then(function(member){
+						callback("Removed "+lr+".");
+					}).catch(function(err){
+						console.log(err);
+					});
 				}
 			});
 		});
