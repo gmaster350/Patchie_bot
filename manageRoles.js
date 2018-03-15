@@ -191,20 +191,35 @@ function setRole(message,callback,errorCallback,alias=false){
 				}
 				else if(lfrpRoles.some(function(lr){return lr == roleGiven;})){
 					var replaced = ".";
+					var isMod = false;
+					
 					lfrpRoles.forEach(function(lr){
 						user.roles.map(function(r){
 							if(lr == r.name){
 								user.removeRole(getRoleFromGuildByName(server,lr));
 								replaced = ", replacing "+lr+".";
 							}
+							if(r.name == "Moderator"){
+								isMod = true;
+							}
 						});
 					});
-					var role = getRoleFromGuildByName(server,roleGiven);
+					
+					var role = getRoleFromGuildByName(server, roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
 						user.addRole(role);
 					}
 					callback("Added role "+roleGiven+replaced);
+					
+					if(isMod){
+						var role = getRoleFromGuildByName(server, "Moderator "+roleGiven);
+						if(role === undefined) errorCallback("The role was not found. You should add it.");
+						else{
+							user.addRole(role);
+						}
+					}
+					
 				}
 				else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
 					// misc roles are not mutually exclusive, and will be added.
@@ -225,6 +240,7 @@ function removeRole(message,callback,alias=false){
 	var server = message.guild;
 	if(alias){
 		lfrpRoles.forEach(function(lr){
+			var isMod = user.roles.some(r1 => r1.name == "Moderator");
 			user.roles.map(function(r){
 				if(lr == r.name){
 					user.removeRole(getRoleFromGuildByName(server,lr)).then(function(member){
@@ -232,8 +248,17 @@ function removeRole(message,callback,alias=false){
 					}).catch(function(err){
 						console.log(err);
 					});
+					
+					if(isMod){
+						user.removeRole(getRoleFromGuildByName(server,"Moderator "+lr)).then(function(member){
+							callback("Removed "+"Moderator "+lr+".");
+						}).catch(function(err){
+							console.log(err);
+						});
+					}
 				}
 			});
+			
 		});
 	}
 	else{
