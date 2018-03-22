@@ -109,5 +109,12 @@
 		"responses":[
 			"*jiggle jiggle*"
 		]
+	},
+	{
+		"words":["some"],
+		"type":"exact",
+		"responses":[
+			"BODY once told me the world was gonna roll me, I ain’t the sharpest tool in the shed."
+		]
 	}
 ]
