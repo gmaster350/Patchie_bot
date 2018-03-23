@@ -3,7 +3,7 @@
 var genderRoles = ["Male","Female","Other"];
 var voreRoles = ["Pred","Prey","Switch"];
 var speciesRoles = ["Dragon","Human"];
-var descRoles = ["Furry","Scalie","Avian"];
+var descRoles = ["Furred","Scaled","Feathered"];
 var feetRoles = ["Anthro","Feral"];
 var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
 var willRoles = ["Willing","Unwilling"];
@@ -192,7 +192,7 @@ function setRole(message,callback,errorCallback,alias=false){
 				else if(lfrpRoles.some(function(lr){return lr == roleGiven;})){
 					var replaced = ".";
 					var isMod = false;
-					
+
 					lfrpRoles.forEach(function(lr){
 						user.roles.map(function(r){
 							if(lr == r.name){
@@ -204,14 +204,14 @@ function setRole(message,callback,errorCallback,alias=false){
 							}
 						});
 					});
-					
+
 					var role = getRoleFromGuildByName(server, roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
 						user.addRole(role);
 					}
 					callback("Added role "+roleGiven+replaced);
-					
+
 					if(isMod){
 						var role = getRoleFromGuildByName(server, "Moderator "+roleGiven);
 						if(role === undefined) errorCallback("The role was not found. You should add it.");
@@ -219,7 +219,7 @@ function setRole(message,callback,errorCallback,alias=false){
 							user.addRole(role);
 						}
 					}
-					
+
 				}
 				else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
 					// misc roles are not mutually exclusive, and will be added.
@@ -248,7 +248,7 @@ function removeRole(message,callback,alias=false){
 					}).catch(function(err){
 						console.log(err);
 					});
-					
+
 					if(isMod){
 						user.removeRole(getRoleFromGuildByName(server,"Moderator "+lr)).then(function(member){
 							callback("Removed "+"Moderator "+lr+".");
@@ -258,7 +258,7 @@ function removeRole(message,callback,alias=false){
 					}
 				}
 			});
-			
+
 		});
 	}
 	else{
