@@ -805,20 +805,20 @@ var commandTree = {
 	"startStory":interactives.start,//,
 //	"retroactiveRead":retroactiveRead
 	"lfrp":function(m,c){
-		switch(m.content.split(" ")[1].toLowerCase()){
-			case "prey":
-				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Prey");
-				break;
-			case "pred":
-				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Pred");
-				break;
-			case "any":
-				manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Any");
-				break;
-			case "stop":
-				manageRoles.removeRole(m,function(r){c(r)},true);
-				break;
-		}
+			switch(m.content.split(" ")[1].toLowerCase()){
+				case "prey":
+					manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Prey");
+					break;
+				case "pred":
+					manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Pred");
+					break;
+				case "any":
+					manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},"LFRP-Any");
+					break;
+				case "stop":
+					manageRoles.removeRole(m,function(r){c(r)},true);
+					break;
+			}
 	}
 }
 
