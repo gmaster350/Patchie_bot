@@ -65,6 +65,10 @@ function setRole(message,callback,errorCallback,alias=false){
 				}
 				else{
 					server.createRole({"name":roleGiven},"Created via command").then(function(newRole){
+						speciesRoles.push(roleGiven);
+						fs.writeFile("specieslist.json", speciesRoles, function(err){
+							if(err) console.log(err);
+						});
 						newRole.setColor([231,76,60]).then(function(coloredRole){
 							coloredRole.setPosition(23).then(function(positionedRole){
 								user.addRole(positionedRole).then(function(member){
