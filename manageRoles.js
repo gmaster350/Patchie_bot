@@ -315,5 +315,6 @@ module.exports = {
 	"setRole":setRole,
 	"removeRole":removeRole,
 	"hasRole":hasRole,
-	"roles":[genderRoles,voreRoles,speciesRoles,descRoles,feetRoles,sizeRoles,willRoles,miscRoles,lfrpRoles]
+	"roles":[].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles),
+	"getRoleFromGuildByName": getRoleFromGuildByName
 }

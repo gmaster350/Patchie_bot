@@ -798,7 +798,10 @@ var commandTree = {
 	"inviteToRoom":privateRoom.inviteToRoom,
 //	"potionCustom":potion.addCustom,
 	"setRole":setRole,
-	"removeRole":manageRoles.removeRole,
+	"removeRole":function(m,c){
+		manageRoles.removeRole(m,function(r){c(r)});
+		multiCharacter.updateCharacter(m,function(r){c(r)});
+	},
 	"hasRole":manageRoles.hasRole,
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
@@ -819,6 +822,11 @@ var commandTree = {
 					manageRoles.removeRole(m,function(r){c(r)},true);
 					break;
 			}
+	},
+	"multichararacter_initialize":function(m,c,bot){
+		multiCharacter.initialize(m,bot,function(r){
+			c(r);
+		});
 	}
 }
 
@@ -1047,7 +1055,9 @@ bot.on("guildMemberAdd",function(member){
 	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
 	submenu.addUser(member.id);
 	interactives.addUser(member.id);
+	multiCharacter.newUser(member);
 });
+
 
 /*
 bot.on("messageUpdate",function(message){
@@ -1093,6 +1103,11 @@ function CompleteStringify(obj){
 	str += "}";
 	return str;
 }
+
+
+
+
+
 
 
 // Login secret exists in a folder one level about the git folder.
