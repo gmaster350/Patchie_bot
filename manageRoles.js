@@ -31,7 +31,7 @@ function setRole(message,callback,errorCallback,alias=false){
 
 
 	if(parameters.length == 1){
-		var str = "Set a role for yourself.";
+		var str = "Set a role for yourself.\n";
 		str += "\n" + genderRoles.join(" | ");
 		str += "\n" + voreRoles.join(" | ");
 		str += "\n" + speciesRoles.join(" | ");
@@ -39,8 +39,10 @@ function setRole(message,callback,errorCallback,alias=false){
 		str += "\n" + feetRoles.join(" | ");
 		str += "\n" + sizeRoles.join(" | ");
 		str += "\n" + willRoles.join(" | ");
-		str += "\n" + miscRoles.join(" | ");
 		str += "\n" + lfrpRoles.join(" | ");
+		str += "\n" + miscRoles.join(" | ");
+		str += "\n\nNew species roles can be created on-demand, by prefixing the role with `species:`";
+		str += "\ne.g: `!!setRole species:my_species`";
 		callback(str);
 	}
 	else{
