@@ -819,6 +819,11 @@ var commandTree = {
 					manageRoles.removeRole(m,function(r){c(r)},true);
 					break;
 			}
+	},
+	"multichararacter_initialize":function(m,c,bot){
+		multiCharacter.initialize(m,bot,function(r){
+			c(r);
+		});
 	}
 }
 
@@ -1047,7 +1052,16 @@ bot.on("guildMemberAdd",function(member){
 	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
 	submenu.addUser(member.id);
 	interactives.addUser(member.id);
+	multiCharacter.newUser(member);
 });
+
+
+bot.on("guildMemberUpdate",(oldMember, newMember) => {
+	if(oldMember.displayName != newMember.displayName){
+		mutliCharacter.switchCharacter(newMember, newMember.displayName);
+	}
+});
+
 
 /*
 bot.on("messageUpdate",function(message){
@@ -1093,6 +1107,11 @@ function CompleteStringify(obj){
 	str += "}";
 	return str;
 }
+
+
+
+
+
 
 
 // Login secret exists in a folder one level about the git folder.
