@@ -101,9 +101,13 @@ class CharacterSet {
 			this.characters[current].pop(indexOf(role));
 		}
 
-		fs.readFile("../characterSets.json",function(err,file){
-
+		fs.writeFile("../characterSets.json",characterSets,function(err){
+			if(err) console.log(err);
 		});
+	}
+
+	hasCharacter(name){
+		return Object.keys(this.characters).some(char => char == name);
 	}
 }
 
@@ -134,7 +138,13 @@ function initialize(message,bot,callback){
 				}
 			});
 		});
-		callback("Done.");
+		callback('Saving all profiles to file...');
+		fs.writeFile("../characterSets.json",characterSets,function(err){
+			if(err) console.log(err);
+			else{
+				callback("Done.");
+			}
+		});
 	}
 	else{
 		callback("This is an administrator-only function.");
@@ -149,26 +159,25 @@ function newUser(member){
 }
 
 // function to be called from the main script, to switch characters.
-function switchCharacter(message,callback){
-	var member = message.member;
-	var name = message.content.split(" ").slice(1).join(" "); //extract the name given.
-	characterSets[member.id].switchCharacter(name,function(res){
-		callback(res);
-	});
+function switchCharacter(member,name,callback){
+	if(characterSets[member.id].hasCharacter(name)){
+		characterSets[member.id].switchCharacter(name,function(res){
+			callback(res);
+		});
+	}
+	else{
+		newCharacter(member,name,function(res){callback(res)});
+	}
 }
 
-function newCharacter(message,callback){
-	var member = message.member;
-	var name = message.content.split(" ").slice(1).join(" "); //extract the name given.
+function newCharacter(member,name,callback){
 	characterSets[member.id].addCharacter(member,name,function(res){
 		callback(res);
 	});
 }
 
-function updateCharacter(message,removing,callback){
-	var role = capitalize(parameters[1].substring(8).trim());
+function updateCharacter(message,role,removing,callback){
 	var member = message.member;
-
 	characterSets[member.id].updateCharacter(role,removing);
 }
 

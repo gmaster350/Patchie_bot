@@ -798,10 +798,7 @@ var commandTree = {
 	"inviteToRoom":privateRoom.inviteToRoom,
 //	"potionCustom":potion.addCustom,
 	"setRole":setRole,
-	"removeRole":function(m,c){
-		manageRoles.removeRole(m,function(r){c(r)});
-		multiCharacter.updateCharacter(m,function(r){c(r)});
-	},
+	"removeRole":manageRoles.removeRole,
 	"hasRole":manageRoles.hasRole,
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
@@ -1056,6 +1053,13 @@ bot.on("guildMemberAdd",function(member){
 	submenu.addUser(member.id);
 	interactives.addUser(member.id);
 	multiCharacter.newUser(member);
+});
+
+
+bot.on("guildMemberUpdate",(oldMember, newMember) => {
+	if(oldMember.displayName != newMember.displayName){
+		mutliCharacter.switchCharacter(newMember, newMember.displayName);
+	}
 });
 
 
