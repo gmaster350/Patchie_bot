@@ -472,6 +472,7 @@ const version = "1.2.0";
 	const manageRoles = require("./manageRoles.js");
 	const interactives = require("./interactiveStories.js");
 	const frequency = require("./frequency.js");
+	const multiCharacter = require("./multiCharacter.js");
 
 	const prefix = "!!";
 	const about =
@@ -820,11 +821,7 @@ var commandTree = {
 					break;
 			}
 	},
-	"multichararacter_initialize":function(m,c,bot){
-		multiCharacter.initialize(m,bot,function(r){
-			c(r);
-		});
-	}
+	"character": multiCharacter.describeCharacter
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -925,6 +922,15 @@ bot.on("ready",function(){
 			});
 			interactives.setActive(r);
 		}
+	});
+
+	bot.guilds.map(guild => {
+		guild.members.map(member => {
+			if(!multiCharacter.hasMember(member)){
+				multiCharacter.newUser(member);
+				console.log("created profile for "+member.displayName);
+			}
+		})
 	});
 });
 
@@ -1058,7 +1064,7 @@ bot.on("guildMemberAdd",function(member){
 
 bot.on("guildMemberUpdate",(oldMember, newMember) => {
 	if(oldMember.displayName != newMember.displayName){
-		mutliCharacter.switchCharacter(newMember, newMember.displayName);
+		multiCharacter.switchCharacter(newMember, newMember.displayName);
 	}
 });
 
@@ -1107,10 +1113,6 @@ function CompleteStringify(obj){
 	str += "}";
 	return str;
 }
-
-
-
-
 
 
 
