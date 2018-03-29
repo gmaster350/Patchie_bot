@@ -1,16 +1,42 @@
-const manageRoles = require('manageRoles');
 const fs = require('fs');
 
+
+var genderRoles = ["Male","Female","Other"];
+var voreRoles = ["Pred","Prey","Switch"];
+var speciesRoles;
+var descRoles = ["Furred","Scaled","Feathered"];
+var feetRoles = ["Anthro","Feral"];
+var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
+var willRoles = ["Willing","Unwilling"];
+var miscRoles = ["Disposal"];
+var lfrpRoles = ["LFRP-Prey","LFRP-Pred","LFRP-Any"];
+
+fs.readFile('specieslist.json',function(err,file){
+	speciesRoles = JSON.parse(file);
+});
+
+function allRoles(){
+	return [].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles);
+}
+
 // reinstance all objects from file upon start
-fs.readFile("../characterSets.json",function(err,file){
-	Object.keys(file).forEach(userid => {
-		characterSets[userid] = new CharacterSet(userid);
-		Object.keys(file[userid]).forEach(character => {
-			let roles = file[userid][character];
-			let name = character;
-			characterSets[userid].addCharacter(null,name,roles);
+fs.readFile("../characterSets.json",function(err,data){
+	if(err){
+		fs.writeFile("../characterSets.json","",function(err){
+			if(err) console.log(err);
 		});
-	});
+	}
+	else{
+		var file = JSON.parse(data);
+		Object.keys(file).forEach(userid => {
+			characterSets[userid] = new CharacterSet(userid);
+			Object.keys(file[userid]).forEach(character => {
+				let roles = file[userid][character];
+				let name = character;
+				characterSets[userid].addCharacter(null,name,roles);
+			});
+		});
+	}
 });
 
 
@@ -20,10 +46,10 @@ class Character {
 		this.roles = [];
 		this.name = name;
 		if(roles === null){
-			member.roles.forEach(r1 => {
-				if(manageRoles.roles.some(r2 => {
+			member.roles.map(r1 => {
+				if(allRoles().some(r2 => {
 					return r1.name == r2;
-				})){
+				})) {
 					this.roles.push(r1.name);
 				}
 			});
@@ -62,8 +88,8 @@ class CharacterSet {
 		}
 
 		else if(name in this.characters){
-			manageRoles.roles.forEach(availableRole => { //list of available roles.
-				var role = manageRoles.getRoleFromGuildByName(member.guild, availableRole);
+			allRoles().forEach(availableRole => { //list of available roles.
+				var role = getRoleFromGuildByName(member.guild, availableRole);
 
 				oldRoles = this.characters[current].roles;
 				newRoles = this.characters[name].roles;
@@ -101,13 +127,17 @@ class CharacterSet {
 			this.characters[current].pop(indexOf(role));
 		}
 
-		fs.writeFile("../characterSets.json",characterSets,function(err){
+		fs.writeFile("../characterSets.json",JSON.stringify(characterSets),function(err){
 			if(err) console.log(err);
 		});
 	}
 
 	hasCharacter(name){
 		return Object.keys(this.characters).some(char => char == name);
+	}
+
+	currenCharacter(){
+		return this.characters[current];
 	}
 }
 
@@ -124,38 +154,12 @@ Format:
 
 var characterSets = {};
 
-// setup all profiles for the first time.
-function initialize(message,bot,callback){
-	if(message.member.permissions.has("ADMINISTRATOR")){
-		callback("Preparing MultiCharacter module for the first time...");
-		callback("Generating profiles for all guild members...");
-		bot.guilds.map(guild => {
-			guild.members.map(member => {
-				if(!(member.id in characterSets)){
-					characterSets[member.id] = new CharacterSet(member.id,[
-						new Character(member, member.displayName);
-					]).current = member.displayName;
-				}
-			});
-		});
-		callback('Saving all profiles to file...');
-		fs.writeFile("../characterSets.json",characterSets,function(err){
-			if(err) console.log(err);
-			else{
-				callback("Done.");
-			}
-		});
-	}
-	else{
-		callback("This is an administrator-only function.");
-	}
-}
-
 // When a user joins the guild, automatically give them a character set.
 function newUser(member){
 	characterSets[member.id] = new CharacterSet(member.id,[
-		new Character(member, member.displayName);
+		new Character(member, member.displayName)
 	]).current = member.displayName;
+	save();
 }
 
 // function to be called from the main script, to switch characters.
@@ -168,17 +172,20 @@ function switchCharacter(member,name,callback){
 	else{
 		newCharacter(member,name,function(res){callback(res)});
 	}
+	save();
 }
 
 function newCharacter(member,name,callback){
 	characterSets[member.id].addCharacter(member,name,function(res){
 		callback(res);
 	});
+	save();
 }
 
 function updateCharacter(message,role,removing,callback){
 	var member = message.member;
 	characterSets[member.id].updateCharacter(role,removing);
+	save();
 }
 
 function removeCharacter(message,callback){
@@ -187,6 +194,17 @@ function removeCharacter(message,callback){
 	characterSets[member.id].removeCharacter(name,function(res){
 		callback(res);
 	});
+	save();
+}
+
+function hasMember(member){
+	return Object.keys(characterSets).some(set => set == member.id);
+}
+
+function describeCharacter(message,callback){
+	var char = characterSets[message.member.id].currentCharacter();
+	var str = "**Name:**\n"+char.name+"\n**Roles:**\n"+char.roles.join("\n");
+	callback(str);
 }
 
 function capitalize(str){
@@ -194,3 +212,28 @@ function capitalize(str){
 	var b = str.substring(1).toLowerCase();
 	return a + b;
 }
+
+function getRoleFromGuildByName(guild,name){
+	var res = undefined;
+	guild.roles.map(function(role,snowflake){
+		if(role.name.toLowerCase() == name.toLowerCase())
+			res = role;
+	});
+	return res;
+}
+
+function save(){
+	fs.writeFile("../characterSets.json",JSON.stringify(characterSets),function(err){
+		console.log(err);
+	});
+}
+
+module.exports = {
+	"hasMember": hasMember,
+	"describeCharacter": describeCharacter,
+	"removeCharacter": removeCharacter,
+	"updateCharacter": updateCharacter,
+	"newCharacter": newCharacter,
+	"switchCharacter": switchCharacter,
+	"newUser": newUser
+};

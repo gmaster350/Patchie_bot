@@ -1,6 +1,6 @@
 ///  Role managing module
 const fs = require('fs');
-const mc = require('mutliCharacter.js');
+const mc = require('./multiCharacter.js');
 
 
 var genderRoles = ["Male","Female","Other"];
@@ -16,6 +16,10 @@ var lfrpRoles = ["LFRP-Prey","LFRP-Pred","LFRP-Any"];
 fs.readFile('specieslist.json',function(err,file){
 	speciesRoles = JSON.parse(file);
 });
+
+function allRoles(){
+	return [].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles);
+}
 
 
 function getRoleFromGuildByName(guild,name){
@@ -67,6 +71,7 @@ function setRole(message,callback,errorCallback,alias=false){
 				else{
 					server.createRole({"name":roleGiven},"Created via command").then(function(newRole){
 						speciesRoles.push(roleGiven);
+						var allRoles = [].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles);
 						fs.writeFile("specieslist.json", speciesRoles, function(err){
 							if(err) console.log(err);
 						});
@@ -366,10 +371,12 @@ function hasRole(message,callback){
 	callback(found.join("\n"));
 }
 
+
+
 module.exports = {
 	"setRole":setRole,
 	"removeRole":removeRole,
 	"hasRole":hasRole,
-	"roles":[].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles),
-	"getRoleFromGuildByName": getRoleFromGuildByName
-}
+	"allRoles":allRoles,
+	"getRoleFromGuildByName":getRoleFromGuildByName
+};
