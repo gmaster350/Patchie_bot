@@ -942,6 +942,9 @@ bot.on("message",function(message){
 			if(message.content == (prefix + "ping")){
 				message.channel.send("pong");
 			}
+			else if(message.content.startsWith("@supereveryone")){
+				message.channel.send(message.author + " is lookin' quite the *fool* today.");
+			}
 			else if(message.content.startsWith(prefix+"relay") && message.channel.type == "dm"){
 				if(message.author.id == owner){
 					var chanid = message.content.split(" ").slice(1,2)[0];
