@@ -472,7 +472,7 @@ const version = "1.2.0";
 	const manageRoles = require("./manageRoles.js");
 	const interactives = require("./interactiveStories.js");
 	const frequency = require("./frequency.js");
-	const multiCharacter = require("./multiCharacter.js");
+	//const multiCharacter = require("./multiCharacter.js");
 
 	const prefix = "!!";
 	const about =
@@ -820,8 +820,8 @@ var commandTree = {
 					manageRoles.removeRole(m,function(r){c(r)},true);
 					break;
 			}
-	},
-	"character": multiCharacter.describeCharacter
+	}//,
+	//"character": multiCharacter.describeCharacter
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
