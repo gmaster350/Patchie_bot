@@ -78,7 +78,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					server.createRole({"name":roleGiven},"Created via command").then(function(newRole){
 						speciesRoles.push(roleGiven);
 						var allRoles = [].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles);
-						fs.writeFile("specieslist.json", speciesRoles, function(err){
+						fs.writeFile("specieslist.json", JSON.stringify(speciesRoles), function(err){
 							if(err) console.log(err);
 						});
 						newRole.setColor([231,76,60]).then(function(coloredRole){
