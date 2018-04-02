@@ -103,7 +103,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
 				}
 				else{
-					capitalize(parameters[1].toLowerCase());
+					rolegiven = capitalize(parameters[1].toLowerCase());
 				}
 			}
 
