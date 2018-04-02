@@ -85,9 +85,17 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 							coloredRole.setPosition(23).then(function(positionedRole){
 								user.addRole(positionedRole).then(function(member){
 									callback("Added role "+roleGiven+".");
+								}).catch(function(err){
+									console.log(err);
 								});
+							}).catch(function(err){
+								console.log(err);
 							});
+						}).catch(function(err){
+							console.log(err);
 						});
+					}).catch(function(err){
+						console.log(err);
 					});
 				}
 			}
@@ -120,7 +128,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					genderRoles.forEach(function(gr){
 						user.roles.map(function(r){
 							if(gr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,gr));
+								user.removeRole(getRoleFromGuildByName(server,gr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -131,7 +139,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 						//mc.updateCharacter(message,roleGiven,false,function(res){
 						//	callback(res);
 						//});
@@ -144,7 +152,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					voreRoles.forEach(function(vr){
 						user.roles.map(function(r){
 							if(vr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,vr));
+								user.removeRole(getRoleFromGuildByName(server,vr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -155,7 +163,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 						//mc.updateCharacter(message,roleGiven,false,function(res){
 						//	callback(res);
 						//});
@@ -167,7 +175,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					speciesRoles.forEach(function(sr){
 						user.roles.map(function(r){
 							if(sr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,sr));
+								user.removeRole(getRoleFromGuildByName(server,sr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -178,7 +186,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 						//mc.updateCharacter(message,roleGiven,false,function(res){
 						//	callback(res);
 						//});
@@ -190,7 +198,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					descRoles.forEach(function(dr){
 						user.roles.map(function(r){
 							if(dr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,dr));
+								user.removeRole(getRoleFromGuildByName(server,dr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -201,7 +209,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 					}
 					callback("Added role "+roleGiven+replaced);
 				}
@@ -210,7 +218,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					feetRoles.forEach(function(fr){
 						user.roles.map(function(r){
 							if(fr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,fr));
+								user.removeRole(getRoleFromGuildByName(server,fr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -221,7 +229,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. fix something.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 						//mc.updateCharacter(message,roleGiven,false,function(res){
 						//	callback(res);
 						//});
@@ -233,7 +241,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					sizeRoles.forEach(function(zr){
 						user.roles.map(function(r){
 							if(zr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,zr));
+								user.removeRole(getRoleFromGuildByName(server,zr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -244,7 +252,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. fix something.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 						//mc.updateCharacter(message,roleGiven,false,function(res){
 						//	callback(res);
 						//});
@@ -256,7 +264,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					willRoles.forEach(function(wr){
 						user.roles.map(function(r){
 							if(wr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,wr));
+								user.removeRole(getRoleFromGuildByName(server,wr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -267,7 +275,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. fix something.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 						//mc.updateCharacter(message,roleGiven,false,function(res){
 						//	callback(res);
 						//});
@@ -280,7 +288,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					lfrpRoles.forEach(function(lr){
 						user.roles.map(function(r){
 							if(lr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,lr));
+								user.removeRole(getRoleFromGuildByName(server,lr)).then(function(ro){}).catch(function(err){console.log(err);});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -292,7 +300,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server, roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
-						user.addRole(role);
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
 						//mc.updateCharacter(message,roleGiven,false,function(res){
 						//	callback(res);
 						//});
@@ -303,7 +311,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 				else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
 					// misc roles are not mutually exclusive, and will be added.
 
-					user.addRole(getRoleFromGuildByName(server,roleGiven));
+					user.addRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){}).catch(function(err){console.log(err);});
 					//mc.updateCharacter(message,roleGiven,false,function(res){
 					//	callback(res);
 					//});
@@ -357,7 +365,7 @@ function removeRole(message,callback,alias=false){
 
 		user.roles.map(function(r){
 			if(r.name == roleGiven){
-				user.removeRole(getRoleFromGuildByName(server,roleGiven));
+				user.removeRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){}).catch(function(err){console.log(err);});
 				//mc.updateCharacter(message,r.name,true,function(res){
 				//	callback(res);
 				//});
