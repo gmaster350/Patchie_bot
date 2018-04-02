@@ -31,7 +31,7 @@ function getRoleFromGuildByName(guild,name){
 	return res;
 }
 
-function setRole(message,callback,errorCallback,alias=false){
+function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 	var parameters = message.content.split(" ");
 
 
@@ -56,18 +56,24 @@ function setRole(message,callback,errorCallback,alias=false){
 		var roleGiven;
 		if(parameters[1].startsWith("species:")){
 			roleGiven = capitalize(parameters[1].substring(8).trim());
+
+			//check to see if the user already has the role
 			if(user.roles.some(function(r1){
 				return r1.name == roleGiven;
 			})){
 				callback("You already have the role "+roleGiven+".");
 			}
 			else{
+
+				// if the server already has the role, give the user the role
 				if(server.roles.some(function(role){
 					return role.name == roleGiven;
 				})){
 					var newRole = getRoleFromGuildByName(server,roleGiven);
 					user.addRole(newRole);
 				}
+
+				// otherwise, create the new role.
 				else{
 					server.createRole({"name":roleGiven},"Created via command").then(function(newRole){
 						speciesRoles.push(roleGiven);
@@ -87,7 +93,19 @@ function setRole(message,callback,errorCallback,alias=false){
 			}
 		}
 		else{
-			roleGiven = alias ? alias : ["lfrp-prey","lfrp-pred","lfrp-any"].some(l => parameters[1].toLowerCase() == l) ? roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase()) : capitalize(parameters[1].toLowerCase());
+			if(alias){
+				roleGiven = aliasRole;
+			}
+			else{
+				if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
+					return parameters[1].toLowerCase() == l;
+				})){
+					roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
+				}
+				else{
+					capitalize(parameters[1].toLowerCase());
+				}
+			}
 
 			if(user.roles.some(function(r){
 				return r.name == roleGiven;
@@ -320,8 +338,20 @@ function removeRole(message,callback,alias=false){
 		});
 	}
 	else{
-		var parameters = message.content.split(" ").slice(1);
-		var roleGiven = capitalize(parameters[0].toLowerCase());
+		var parameters = message.content.split(" ");
+		var roleGiven;
+
+		if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
+			console.log(l);
+			console.log(parameters);
+			return parameters[1].toLowerCase() == l;
+		})){
+			roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
+		}
+		else{
+			roleGive = capitalize(parameters[1].toLowerCase());
+		}
+
 
 		var flag = true;
 
