@@ -13,7 +13,7 @@ var willRoles = ["Willing","Unwilling"];
 var miscRoles = ["Disposal"];
 var lfrpRoles = ["LFRP-Prey","LFRP-Pred","LFRP-Any"];
 
-fs.readFile('specieslist.json',function(err,file){
+fs.readFile('./specieslist.json',function(err,file){
 	speciesRoles = JSON.parse(file);
 });
 
