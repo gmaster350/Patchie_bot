@@ -5,7 +5,7 @@ const historyLength = 30;
 var strikeLength = 5;
 var muteTime = 30000;
 var coolOffPeriod = 3;
-var sensitivity = 1.0;
+var sensitivity = 4.0;
 
 function debug(str){if(true){console.log(str);}}
 
@@ -21,7 +21,7 @@ function lev(s1, s2, callback) {
     return s1 !== s2 ? 1 : 0;
   };
   var res = ed.levenshtein(s1, s2, insert, remove, update).distance;
-  
+
   if(callback)
     callback(res);
   return res;
@@ -62,7 +62,7 @@ function process(message,callback){
 			history[message.channel.id][message.author.id]["cooloff"] = 0;
 		}
 	});
-	
+
 	history[message.channel.id][message.author.id].messages.push(
 		{
 			"messageid":message.id,
@@ -89,7 +89,7 @@ function process(message,callback){
 				}).catch(function(err){
 					console.log(err);
 				});
-				
+
 				callback("Warning: Please avoid spamming this channel.")
 			}
 			else{

@@ -1019,7 +1019,7 @@ bot.on("message",function(message){
 				});
 			}
 			else{
-				if(message.channel.id != "360352337274863617"){
+				if(message.channel.id != "360352337274863617" && ((Date.now() - message.member.joinedTimestamp) > 352800000)){
 					spam.process(message,function(response){
 						if(typeof response == "string" && response.length > 0){
 							if(errorCodes.some(function(code){return response.startsWith(code)})){
