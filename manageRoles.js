@@ -33,7 +33,7 @@ function getRoleFromGuildByName(guild,name){
 
 function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 	var parameters = message.content.split(" ");
-
+	var roleGiven;
 
 	if(parameters.length == 1){
 		var str = "Set a role for yourself.\n";
@@ -53,7 +53,6 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 	else{
 		var user = message.member;
 		var server = message.guild;
-		var roleGiven;
 		if(parameters[1].startsWith("species:")){
 			roleGiven = capitalize(parameters[1].substring(8).trim());
 
@@ -103,16 +102,19 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 		else{
 			if(alias){
 				roleGiven = aliasRole;
+				console.log("is alias");
+			}
+			else if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
+				return parameters[1].toLowerCase() == l;
+			})){
+				roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
+				console.log("is lfrp");
 			}
 			else{
-				if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
-					return parameters[1].toLowerCase() == l;
-				})){
-					roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
-				}
-				else{
-					rolegiven = capitalize(parameters[1].toLowerCase());
-				}
+				let r = capitalize(parameters[1]);
+				roleGiven = r;
+				console.log("is something else");
+				console.log(roleGiven);
 			}
 
 			if(user.roles.some(function(r){
@@ -308,7 +310,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					callback("Added role "+roleGiven+replaced);
 
 				}
-				else if(miscRoles.some(function(mr){console.log(mr,roleGiven); return mr == roleGiven;})){
+				else if(miscRoles.some(function(mr){return mr == roleGiven;})){
 					// misc roles are not mutually exclusive, and will be added.
 
 					user.addRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){}).catch(function(err){console.log(err);});
@@ -383,7 +385,8 @@ function removeRole(message,callback,alias=false){
 function capitalize(str){
 	var a = str.charAt(0).toUpperCase();
 	var b = str.substring(1).toLowerCase();
-	return a + b;
+	var c = a + b;
+	return c;
 }
 
 function hasRole(message,callback){
