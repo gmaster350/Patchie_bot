@@ -803,8 +803,8 @@ var commandTree = {
 	"hasRole":manageRoles.hasRole,
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
-	"startStory":interactives.start,//,
-//	"retroactiveRead":retroactiveRead
+	"startStory":interactives.start,
+//	"retroactiveRead":retroactiveRead,
 	"lfrp":function(m,c){
 			if(m.content.split(" ").length == 1){
 				c("Alias command for LFRP roles.\nUsage: `!!lfrp [ prey | pred | any | stop ]`");
@@ -1019,7 +1019,7 @@ bot.on("message",function(message){
 				});
 			}
 			else{
-				if(message.channel.id != "360352337274863617" && ((Date.now() - message.member.joinedTimestamp) > 352800000)){
+				if(message.channel.id != "360352337274863617" && message.channel.type == "text" && ((Date.now() - message.member.joinedTimestamp) > 352800000)){
 					spam.process(message,function(response){
 						if(typeof response == "string" && response.length > 0){
 							if(errorCodes.some(function(code){return response.startsWith(code)})){

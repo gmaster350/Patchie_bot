@@ -54,6 +54,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 		var user = message.member;
 		var server = message.guild;
 		var roleGiven;
+
 		if(parameters[1].startsWith("species:")){
 			roleGiven = capitalize(parameters[1].substring(8).trim());
 
@@ -104,16 +105,15 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 			if(alias){
 				roleGiven = aliasRole;
 			}
-			else{
-				if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
-					return parameters[1].toLowerCase() == l;
-				})){
-					roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
-				}
-				else{
-					rolegiven = capitalize(parameters[1].toLowerCase());
-				}
+			else if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
+				return parameters[1].toLowerCase() == l;
+			})){
+				roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
 			}
+			else{
+				rolegiven = capitalize(parameters[1]);
+			}
+
 
 			if(user.roles.some(function(r){
 				return r.name == roleGiven;
@@ -357,7 +357,7 @@ function removeRole(message,callback,alias=false){
 			roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
 		}
 		else{
-			roleGive = capitalize(parameters[1].toLowerCase());
+			roleGiven = capitalize(parameters[1].toLowerCase());
 		}
 
 

@@ -2,20 +2,21 @@
 
 const fs = require("fs");
 var active = {}; //{userid:[node,node]}
+var timeLimit = 600000; //option selection timeout.
 
 class Branch{
 	constructor(description="[This is a new branch. use !!branchText to put some text here!]"){
 		this.description = description;
 		this.options = {}; //{<string>:<Branch>}
 	}
-	
+
 	addOption(option){
 		this.options[option] = new Branch();
 	}
 }
 
 var Root = new Branch("There are a number of marked doors before you, which door do you open?");
-Root.addOption("'Dragon'");
+Root.addOption("Dragon");
 
 
 fs.writeFile("interactives.json",JSON.stringify(Root),function(err){
@@ -39,6 +40,10 @@ function getCurrent(userid,nodes=null,branch=Root){
 	}
 }
 
+function branchLength(b){
+	return Object.keys(b.options).length;
+}
+
 function branchPrint(b){
 	var response = b.description + "\n\n[-1] quit\n";
 	var ops = Object.keys(b.options);
@@ -48,50 +53,77 @@ function branchPrint(b){
 	return response;
 }
 
-function numberFilter(m){
-	let flag = m.author.id == userid && !isNaN(Number(m.content));
+function messageFilter(m,branch){
+	let flag = false;
+	if (m.author.id == userid){
+		if(!isNaN(Number(m.content))){
+			if(Number(m.content) >= branchLength(branch) || Number(m.content) < -1){
+				m.channel.send("Not a valid option!");
+			}
+			else{
+				flag = true;
+			}
+		}
+		else{
+			if(!(m.content.startsWith("!!"))){
+				m.channel.send("You need to give a number.");
+			}
+		}
+	}
 	return flag;
 }
 
 function start(message,callback){
 	var userid = message.author.id;
+	active[userid] = [];
 	callback(branchPrint(Root));
-	navigate(message,function(r){
-		callback(r);
-	});
-	
+
 	message.channel.awaitMessages(
 		function(m){
-			
+			return messageFilter(m,Root);
 		},{
-			time: 6000000, 
+			time: timeLimit,
 			maxMatches: 1,
 			errors: ['time']
 		}
 	).then(function(collection){
-		navigate(userid,collection.first(),function(r){
-			callback(r);
-		});
-	}).catch(function(e){
-		callback(e);
+		console.log(collection.first().content);
+		navigate(collection.first().author.id,collection.first());
+	}, function(e){
+		console.log(e);
 		active[userid] = [];
+		message.channel.send("Took too long to respond. Please repond to story within 10 minutes.");
 	});
 }
 
-function navigate(userid,msg,callback){
+function navigate(userid,msg){
 	var num = Number(msg.content);
 	var currentBranch = getCurrent(userid);
-	if(isNaN(num)){
-		callback("You need to give a number.");
-	}
-	if(num >= 0){
+
+	if(num >= 0 && num < Object.keys(currentBranch.options).length){
 		active[userid].push(Object.keys(currentBranch.options)[num]);
-		var newbranch = getCurrent(userid);
-		callback(printBranch(newbranch));
-		msg.channel.awaitMessages
+		currentBranch = getCurrent(userid);
+		msg.channel.send(branchPrint(currentBranch));
+
+		msg.channel.awaitMessages(
+			function(m){
+				return messageFilter(m,currentBranch);
+			},{
+				time: timeLimit,
+				maxMatches: 1,
+				errors: ['time']
+			}
+		).then(function(collection){
+			navigate(collection.first().author.id,collection.first());
+		}, function(e){
+			msg.channel.send(e);
+			active[userid] = [];
+			msg.channel.send("Took too long to respond. Please repond to story within 10 minutes.");
+		});
 	}
 	else if(num == -1){
 		active[userid] = [];
+		msg.channel.send("Exited story");
 	}
 }
 
