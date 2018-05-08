@@ -129,7 +129,6 @@ function addOption(message,callback){
 	var branch = getCurrent(userid);
 	branch.branches.push(new Branch());
 	branch.options.push(op);
-
 	callback(branchPrint(branch));
 	saveTree();
 }
