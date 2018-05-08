@@ -127,10 +127,14 @@ function addOption(message,callback){
 	var userid = message.author.id;
 	var op = message.content.split(" ").slice(1).join(" ");
 	var branch = getCurrent(userid);
+<<<<<<< HEAD
 
 	branch.branches.push(new Branch());
 	branch.options.push(op);
 
+=======
+	branch.addOption(option);
+>>>>>>> 2ac4a46f08a38b2a6915fc21488a0c6350c574a1
 	callback(branchPrint(branch));
 	saveTree();
 }
