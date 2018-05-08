@@ -127,7 +127,6 @@ function addOption(message,callback){
 	var userid = message.author.id;
 	var op = message.content.split(" ").slice(1).join(" ");
 	var branch = getCurrent(userid);
-
 	branch.branches.push(new Branch());
 	branch.options.push(op);
 
