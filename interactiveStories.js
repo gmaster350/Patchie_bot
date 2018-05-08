@@ -7,57 +7,56 @@ var timeLimit = 600000; //option selection timeout.
 class Branch{
 	constructor(description="[This is a new branch. use !!branchText to put some text here!]"){
 		this.description = description;
-		this.options = {}; //{<string>:<Branch>}
+		this.options = []; //[<String>,<String>,<String>]
+		this.branches = []; //[<Branch>,<Branch>,<Branch>]
 	}
 
-	addOption(option){
-		this.options[option] = new Branch();
+	addOption(opt){
+		this.branches.push(new Branch());
+		this.options.push(opt);
 	}
 }
 
-var Root = new Branch("There are a number of marked doors before you, which door do you open?");
-Root.addOption("Dragon");
+var Root;
 
-
-fs.writeFile("interactives.json",JSON.stringify(Root),function(err){
-	if(err)console.log(err);
-});
-
-
-function getCurrent(userid,nodes=null,branch=Root){
-	if(nodes == null){
-		var n = active[userid];
-		return getCurrent(userid,n.slice(1),Root.options[n[0]]);
+fs.readFile("interactives.json",function(err,file){
+	if(err) console.log(err);
+	else if(file.length === 0){
+		Root = new Branch("`hint: !!branchText to set a branch's text. !!addOption to make another branch off the current branch`\nThere are a number of marked doors before you, which door do you open?");
+		Root.addOption("Dragon");
+		fs.writeFile("interactives.json",JSON.stringify(Root),function(err){
+			if(err) console.log(err);
+		});
 	}
 	else{
-		if(nodes.length == 0){
-			return branch;
-		}
-		else{
-			var n = nodes.slice(1);
-			return getCurrent(userid,n,branch.options[n[0]]);
-		}
+		Root = JSON.parse(file);
 	}
+});
+
+function getCurrent(userid,nodes=active[userid],branch=Root){
+	return nodes.length === 0 ? branch : getCurrent(userid,nodes.slice(1),branch.branches[nodes[0]]);
 }
 
 function branchLength(b){
-	return Object.keys(b.options).length;
+	return Object.keys(b.branches).length;
 }
 
 function branchPrint(b){
 	var response = b.description + "\n\n[-1] quit\n";
-	var ops = Object.keys(b.options);
+	var ops = b.options;
 	for(var i = 0; i < ops.length; i++){
 		response += "[" + String(i) + "] " + ops[i] + "\n";
 	}
 	return response;
 }
 
-function messageFilter(m,branch){
+function messageFilter(m,userid,branch){
 	let flag = false;
+	let n = Number(m.content);
 	if (m.author.id == userid){
-		if(!isNaN(Number(m.content))){
-			if(Number(m.content) >= branchLength(branch) || Number(m.content) < -1){
+		if(!isNaN(n)){
+			//options lie between -1 and branchLength-1
+			if(n >= branchLength(branch) || n <= -2){
 				m.channel.send("Not a valid option!");
 			}
 			else{
@@ -76,23 +75,24 @@ function messageFilter(m,branch){
 function start(message,callback){
 	var userid = message.author.id;
 	active[userid] = [];
+	saveActive();
+
 	callback(branchPrint(Root));
 
 	message.channel.awaitMessages(
 		function(m){
-			return messageFilter(m,Root);
+			return messageFilter(m,userid,Root);
 		},{
 			time: timeLimit,
 			maxMatches: 1,
 			errors: ['time']
 		}
 	).then(function(collection){
-		console.log(collection.first().content);
 		navigate(collection.first().author.id,collection.first());
 	}, function(e){
-		console.log(e);
-		active[userid] = [];
-		message.channel.send("Took too long to respond. Please repond to story within 10 minutes.");
+		if(active[userid] !== []){
+			msg.channel.send("Took too long to respond. Please repond to story within 10 minutes.");
+		}
 	});
 }
 
@@ -100,14 +100,19 @@ function navigate(userid,msg){
 	var num = Number(msg.content);
 	var currentBranch = getCurrent(userid);
 
-	if(num >= 0 && num < Object.keys(currentBranch.options).length){
-		active[userid].push(Object.keys(currentBranch.options)[num]);
-		currentBranch = getCurrent(userid);
-		msg.channel.send(branchPrint(currentBranch));
+	if(num == -1){
+		active[userid] = [];
+		msg.channel.send("Exited story");
+	}
+	else {
+		active[userid].push(num);
+		newBranch = getCurrent(userid);
+		msg.channel.send(branchPrint(newBranch));
 
+		saveActive();
 		msg.channel.awaitMessages(
 			function(m){
-				return messageFilter(m,currentBranch);
+				return messageFilter(m,userid,newBranch);
 			},{
 				time: timeLimit,
 				maxMatches: 1,
@@ -116,14 +121,10 @@ function navigate(userid,msg){
 		).then(function(collection){
 			navigate(collection.first().author.id,collection.first());
 		}, function(e){
-			msg.channel.send(e);
-			active[userid] = [];
-			msg.channel.send("Took too long to respond. Please repond to story within 10 minutes.");
+			if(active[userid] !== []){
+				msg.channel.send("Took too long to respond. Please repond to story within 10 minutes.");
+			}
 		});
-	}
-	else if(num == -1){
-		active[userid] = [];
-		msg.channel.send("Exited story");
 	}
 }
 
@@ -132,13 +133,28 @@ function addOption(message,callback){
 	var option = message.content.split(" ").slice(1).join(" ");
 	var branch = getCurrent(userid);
 	branch.addOption(option);
+	callback(branchPrint(branch));
+	saveTree();
 }
 
 function changeDescription(message,callback){
 	var userid = message.author.id;
-	var desc = message.content.split(" ").slice(1).join(" ");
 	var branch = getCurrent(userid);
-	branch.description = desc;
+	if((branch == Root) && (userid != "360352337274863617")){
+		callback("Note: You may not change the text of the root branch.");
+	}
+	else{
+		var desc = message.content.split(" ").slice(1).join(" ");
+		branch.description = desc;
+		callback(branchPrint(branch));
+		saveTree();
+	}
+}
+
+function saveActive(){
+	fs.writeFile("../interactiveData.txt",JSON.stringify(active),function(err){
+		if(err)console.log(err);
+	});
 }
 
 function setActive(a){
@@ -157,6 +173,12 @@ function addUser(userid){
 			if(err)console.log(err);
 		});
 	}
+}
+
+function saveTree(){
+	fs.writeFile("interactives.json",JSON.stringify(Root),function(err){
+		if(err) console.log(err);
+	});
 }
 
 module.exports = {
