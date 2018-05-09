@@ -141,7 +141,7 @@ function addOption(message,callback){
 
 function editOption(message,callback){
 	var toChange = Number(message.content.split(" ")[1]);
-	var newOption = message.content.split(" ").slice(1).join(" ");
+	var newOption = message.content.split(" ").slice(2).join(" ");
 	var userid = message.author.id;
 	var branch = getCurrent(userid);
 	if(isNaN(toChange)){
