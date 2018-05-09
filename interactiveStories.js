@@ -37,10 +37,10 @@ function branchLength(b){
 }
 
 function branchPrint(b){
-	var response = b.description + "\n\n[-1] quit\n";
+	var response = b.description + "\n\n[-1] *exit*\n[0] *back*\n\n";
 	var ops = b.options;
 	for(var i = 0; i < ops.length; i++){
-		response += "[" + String(i) + "] " + ops[i] + "\n";
+		response += "[" + String(i+1) + "] " + ops[i] + "\n";
 	}
 	return response;
 }
@@ -50,8 +50,9 @@ function messageFilter(m,userid,branch){
 	let n = Number(m.content);
 	if (m.author.id == userid){
 		if(!isNaN(n)){
-			//options lie between -1 and branchLength-1
-			if(n >= branchLength(branch) || n <= -2){
+			//proper options lie between 1 and branchLength
+			//-1 and 0 being special options
+			if(n > branchLength(branch) || n <= -2){
 				m.channel.send("Not a valid option!");
 			}
 			else{
@@ -95,13 +96,18 @@ function navigate(userid,msg){
 	var num = Number(msg.content);
 	var currentBranch = getCurrent(userid);
 
-	if(num == -1){
+	if(num == -1) {
 		active[userid] = [];
 		msg.channel.send("Exited story");
 	}
 	else {
-		active[userid].push(num);
-		newBranch = getCurrent(userid);
+		if(num === 0){
+			active[userid].pop();
+		}
+		else {
+			active[userid].push(num-1);
+		}
+		var newBranch = getCurrent(userid);
 		msg.channel.send(branchPrint(newBranch));
 
 		saveActive();
@@ -131,6 +137,29 @@ function addOption(message,callback){
 	branch.options.push(op);
 	callback(branchPrint(branch));
 	saveTree();
+}
+
+function editOption(message,callback){
+	var toChange = Number(message.content.split(" ")[1]);
+	var newOption = message.content.split(" ")[2];
+	var userid = message.author.id;
+	var branch = getCurrent(userid);
+	if(isNaN(toChange)){
+		callback("Please provide the number of option to edit first.");
+	}
+	else if(toChange < 1 || toChange > branchLength(branch)){
+		if(toChange == -1 || toChange === 0){
+			callback("The *exit* and *back* commands are not allowed to be changed.");
+		}
+		else{
+			callback("Invalid Option!");
+		}
+	}
+	else{
+		branch.options[toChange-1] = newOption;
+		callback(branchPrint(getCurrent(userid)));
+		saveTree();
+	}
 }
 
 function changeDescription(message,callback){
@@ -181,5 +210,6 @@ module.exports = {
 	"addOption":addOption,
 	"changeDescription":changeDescription,
 	"start":start,
-	"setActive":setActive
+	"setActive":setActive,
+	"editOption":editOption
 }
