@@ -10,7 +10,9 @@ var descRoles = ["Furred","Scaled","Feathered"];
 var feetRoles = ["Anthro","Feral","Taur"];
 var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
 var willRoles = ["Willing","Unwilling"];
-var miscRoles = ["Disposal"];
+var fatalRoles = ["Fatal","Endo"];
+var typeRoles = ["Oral","Anal","Unbirth","Soul","Tail","Cock"];
+var miscRoles = ["Disposal","Fulltour","Reformation"];
 var lfrpRoles = ["LFRP-Prey","LFRP-Pred","LFRP-Any"];
 
 fs.readFile('./specieslist.json',function(err,file){
@@ -43,6 +45,8 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 		str += "\n" + descRoles.join(" | ");
 		str += "\n" + feetRoles.join(" | ");
 		str += "\n" + sizeRoles.join(" | ");
+		str += "\n" + fatalRoles.join(" | ");
+		str += "\n" + typeRoles.join(" | ");
 		str += "\n" + willRoles.join(" | ");
 		str += "\n" + lfrpRoles.join(" | ");
 		str += "\n" + miscRoles.join(" | ");
@@ -275,6 +279,52 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 								//	callback(res);
 								//});
 								replaced = ", replacing "+wr+".";
+							}
+						});
+					});
+					var role = getRoleFromGuildByName(server,roleGiven);
+					if(role === undefined) errorCallback("The role was not found. fix something.");
+					else{
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
+						//mc.updateCharacter(message,roleGiven,false,function(res){
+						//	callback(res);
+						//});
+					}
+					callback("Added role "+roleGiven+replaced);
+				}
+				else if(fatalRoles.some(function(fr){return fr == roleGiven;})){
+					var replaced = ".";
+					fatalRoles.forEach(function(fr){
+						user.roles.map(function(r){
+							if(fr == r.name){
+								user.removeRole(getRoleFromGuildByName(server,fr)).then(function(ro){}).catch(function(err){console.log(err);});
+								//mc.updateCharacter(message,r.name,true,function(res){
+								//	callback(res);
+								//});
+								replaced = ", replacing "+fr+".";
+							}
+						});
+					});
+					var role = getRoleFromGuildByName(server,roleGiven);
+					if(role === undefined) errorCallback("The role was not found. fix something.");
+					else{
+						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
+						//mc.updateCharacter(message,roleGiven,false,function(res){
+						//	callback(res);
+						//});
+					}
+					callback("Added role "+roleGiven+replaced);
+				}
+				else if(typeRoles.some(function(tr){return tr == roleGiven;})){
+					var replaced = ".";
+					willRoles.forEach(function(tr){
+						user.roles.map(function(r){
+							if(tr == r.name){
+								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){}).catch(function(err){console.log(err);});
+								//mc.updateCharacter(message,r.name,true,function(res){
+								//	callback(res);
+								//});
+								replaced = ", replacing "+tr+".";
 							}
 						});
 					});
