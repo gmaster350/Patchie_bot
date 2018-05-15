@@ -317,7 +317,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 				}
 				else if(typeRoles.some(function(tr){return tr == roleGiven;})){
 					var replaced = ".";
-					willRoles.forEach(function(tr){
+					typeRoles.forEach(function(tr){
 						user.roles.map(function(r){
 							if(tr == r.name){
 								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){}).catch(function(err){console.log(err);});
