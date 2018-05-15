@@ -477,13 +477,13 @@ const version = "1.2.0";
 	const prefix = "!!";
 	const about =
 	"Made by: @Zapp#4885"+
-	"\nRepository: https://github.com/gmaster350/Patchie_bot"+
+	"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
 	"\nVersion: "+version+
 	"\n\n**Icon info**"+
-	"\nSource: "+"http://www.furaffinity.net/view/14462677/"+
-	"\nArtist: "+"http://www.furaffinity.net/user/sprout/"+
+	"\nSource: "+"<http://www.furaffinity.net/view/14462677/>"+
+	"\nArtist: "+"<http://www.furaffinity.net/user/sprout/>"+
 	"\nCharacter: "+"Samael"+
-	"\nOwner: "+"http://www.furaffinity.net/user/macabredragon";
+	"\nOwner: "+"<http://www.furaffinity.net/user/macabredragon>";
 
 	var owner;
 	fs.readFile("../discordBotOwnerId.txt",function(err,data){
