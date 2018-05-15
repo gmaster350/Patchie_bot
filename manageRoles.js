@@ -7,7 +7,7 @@ var genderRoles = ["Male","Female","Other"];
 var voreRoles = ["Pred","Prey","Switch"];
 var speciesRoles;
 var descRoles = ["Furred","Scaled","Feathered"];
-var feetRoles = ["Anthro","Feral"];
+var feetRoles = ["Anthro","Feral","Taur"];
 var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
 var willRoles = ["Willing","Unwilling"];
 var miscRoles = ["Disposal"];
