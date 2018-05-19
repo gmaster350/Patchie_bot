@@ -1074,6 +1074,10 @@ bot.on("guildMemberUpdate",(oldMember, newMember) => {
 	}
 });
 
+bot.on("guildMemberRemove",function(member){
+	member.guild.defaultChannel.send("Sorry to see you go, "+member.user);
+});
+
 
 /*
 bot.on("messageUpdate",function(message){
