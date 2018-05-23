@@ -823,8 +823,7 @@ var commandTree = {
 						break;
 				}
 			}
-	}//,
-	//"character": multiCharacter.describeCharacter
+	}
 }
 
 fs.readFile("../submenuData.txt",function(err,data){

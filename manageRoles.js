@@ -2,26 +2,67 @@
 const fs = require('fs');
 //const //mc = require('./multiCharacter.js');
 
-
-var genderRoles = ["Male","Female","Other"];
-var voreRoles = ["Pred","Prey","Switch"];
-var speciesRoles;
-var descRoles = ["Furred","Scaled","Feathered"];
-var feetRoles = ["Anthro","Feral","Taur"];
-var sizeRoles = ["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"];
-var willRoles = ["Willing","Unwilling"];
-var fatalRoles = ["Fatal","Endo"];
-var typeRoles = ["Oral","Anal","Unbirth","Soul","Tail","Cock"];
-var miscRoles = ["Disposal","Fulltour","Reformation"];
-var lfrpRoles = ["LFRP-Prey","LFRP-Pred","LFRP-Any"];
+var tags = [
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Male","Female","Other"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Pred","Prey","Switch"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Furred","Scaled","Feathered"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Anthro","Feral","Taur"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Fine","Diminutive","Tiny","Small","Medium","Large","Huge","Gargantuan","Colossal"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Willing","Unwilling"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Fatal","Endo"]
+	},
+	{
+		"exclusive":false,
+		"prefix":null,
+		"roles":["Oral","Anal","Unbirth","Soul","Tail","Cock"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Disposal","Fulltour","Reformation"]
+	},
+	{
+		"exclusive":true,
+		"prefix":null,
+		"roles":["Lfrp-prey","Lfrp-pred","Lfrp-any"]
+	}
+];
 
 fs.readFile('./specieslist.json',function(err,file){
-	speciesRoles = JSON.parse(file);
+	var s = JSON.parse(file);
+	tags.push({
+		"exclusive":true,
+		"prefix":"species",
+		"roles":s
+	});
 });
-
-function allRoles(){
-	return [].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles);
-}
 
 
 function getRoleFromGuildByName(guild,name){
@@ -33,62 +74,69 @@ function getRoleFromGuildByName(guild,name){
 	return res;
 }
 
+
+
 function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 	var parameters = message.content.split(" ");
-	var roleGiven;
-
-	if(parameters.length == 1){
+	if(message.channel.type != "text"){
+		callback("You can only use that command in guilds.");
+	}
+	else if(parameters.length == 1){
 		var str = "Set a role for yourself.\n";
-		str += "\n" + genderRoles.join(" | ");
-		str += "\n" + voreRoles.join(" | ");
-		str += "\n" + speciesRoles.join(" | ");
-		str += "\n" + descRoles.join(" | ");
-		str += "\n" + feetRoles.join(" | ");
-		str += "\n" + sizeRoles.join(" | ");
-		str += "\n" + fatalRoles.join(" | ");
-		str += "\n" + typeRoles.join(" | ");
-		str += "\n" + willRoles.join(" | ");
-		str += "\n" + lfrpRoles.join(" | ");
-		str += "\n" + miscRoles.join(" | ");
-		str += "\n\nNew species roles can be created on-demand, by prefixing the role with `species:`";
-		str += "\ne.g: `!!setRole species:my_species`";
+		tags.forEach(function(t){
+			str += "\n" + t.roles.join(" | ");
+		});
 		callback(str);
 	}
 	else{
 		var user = message.member;
 		var server = message.guild;
 		var roleGiven;
-		if(parameters[1].startsWith("species:")){
-			roleGiven = capitalize(parameters[1].substring(8).trim());
+		var prefix;
+		if(alias){
+			roleGiven = aliasRole;
+		}
+		else if(parameters[1].indexOf(":") >= 0){
+			roleGiven = capitalize(parameters[1].substring(parameters[1].indexOf(":")+1).trim());
+			prefix = parameters[1].substring(0,parameters[1].indexOf(":"));
+		}
+		else{
+			roleGiven = capitalize(parameters[1]);
+		}
 
-			//check to see if the user already has the role
-			if(user.roles.some(function(r1){
-				return r1.name == roleGiven;
-			})){
-				callback("You already have the role "+roleGiven+".");
-			}
-			else{
-
-				// if the server already has the role, give the user the role
-				if(server.roles.some(function(role){
-					return role.name == roleGiven;
-				})){
-					var newRole = getRoleFromGuildByName(server,roleGiven);
-					user.addRole(newRole);
-				}
-
-				// otherwise, create the new role.
-				else{
-					server.createRole({"name":roleGiven},"Created via command").then(function(newRole){
-						speciesRoles.push(roleGiven);
-						var allRoles = [].concat(miscRoles,descRoles,feetRoles,lfrpRoles,sizeRoles,voreRoles,willRoles,genderRoles,speciesRoles);
-						fs.writeFile("specieslist.json", JSON.stringify(speciesRoles), function(err){
-							if(err) console.log(err);
-						});
-						newRole.setColor([231,76,60]).then(function(coloredRole){
-							coloredRole.setPosition(23).then(function(positionedRole){
-								user.addRole(positionedRole).then(function(member){
-									callback("Added role "+roleGiven+".");
+		if(user.roles.some(function(r1){
+			return r1.name == roleGiven;
+		})){
+			callback("You already have the role "+roleGiven+".");
+		}
+		else{
+			tags.forEach(function(t){
+				if(prefix != undefined && t.prefix == prefix){
+					// if the server already has the role, give the user the role
+					if(server.roles.some(function(role){
+						return role.name == roleGiven;
+					})){
+						var newRole = getRoleFromGuildByName(server,roleGiven);
+						user.addRole(newRole);
+					}
+					// otherwise, create the new role.
+					else{
+						server.createRole({"name":roleGiven},"Created via command").then(function(newRole){
+							t.roles.push(roleGiven);
+							switch(t.prefix){
+								case "species":
+									fs.writeFile("specieslist.json", JSON.stringify(speciesRoles), function(err){
+										if(err) console.log(err);
+									});
+									break;
+							}
+							newRole.setColor([231,76,60]).then(function(coloredRole){
+								coloredRole.setPosition(23).then(function(positionedRole){
+									user.addRole(positionedRole).then(function(member){
+										callback("Added role "+roleGiven+".");
+									}).catch(function(err){
+										console.log(err);
+									});
 								}).catch(function(err){
 									console.log(err);
 								});
@@ -98,229 +146,16 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 						}).catch(function(err){
 							console.log(err);
 						});
-					}).catch(function(err){
-						console.log(err);
-					});
-				}
-			}
-		}
-		else{
-			if(alias){
-				roleGiven = aliasRole;
-				console.log("is alias");
-			}
-			else if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
-				return parameters[1].toLowerCase() == l;
-			})){
-				roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
-				console.log("is lfrp");
-			}
-			else if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
-				return parameters[1].toLowerCase() == l;
-			})){
-				roleGiven = (parameters[1].substr(0,6).toUpperCase() + parameters[1].substr(6).toLowerCase());
-			}
-			else{
-				roleGiven = capitalize(parameters[1]);
-			}
-
-
-			if(user.roles.some(function(r){
-				return r.name == roleGiven;
-			})){
-				callback("You already have the role "+roleGiven+".");
-			}
-			else{
-				if(genderRoles.some(function(gr){return gr == roleGiven;})){
-					// removes any and all gender roles, then adds the new one.
-					var replaced = ".";
-
-					genderRoles.forEach(function(gr){
-						user.roles.map(function(r){
-							if(gr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,gr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+gr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. You should add it.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
 					}
-					callback("Added role "+roleGiven+replaced);
 				}
-				else if(voreRoles.some(function(vr){return vr == roleGiven;})){
-					// removes any and all vore roles, then adds the new one.
+				else if(t.roles.some(function(tr){return tr == roleGiven;})){
 					var replaced = ".";
-					voreRoles.forEach(function(vr){
+					t.roles.forEach(function(tr){
 						user.roles.map(function(r){
-							if(vr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,vr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+vr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. You should add it.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(speciesRoles.some(function(sr){return sr == roleGiven;})){
-					var replaced = ".";
-					speciesRoles.forEach(function(sr){
-						user.roles.map(function(r){
-							if(sr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,sr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+sr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. You should add it.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(descRoles.some(function(dr){return dr == roleGiven;})){
-					var replaced = ".";
-					descRoles.forEach(function(dr){
-						user.roles.map(function(r){
-							if(dr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,dr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+dr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. You should add it.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(feetRoles.some(function(fr){return fr == roleGiven;})){
-					var replaced = ".";
-					feetRoles.forEach(function(fr){
-						user.roles.map(function(r){
-							if(fr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,fr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+fr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. fix something.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(sizeRoles.some(function(zr){return zr == roleGiven;})){
-					var replaced = ".";
-					sizeRoles.forEach(function(zr){
-						user.roles.map(function(r){
-							if(zr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,zr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+zr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. fix something.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(willRoles.some(function(wr){return wr == roleGiven;})){
-					var replaced = ".";
-					willRoles.forEach(function(wr){
-						user.roles.map(function(r){
-							if(wr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,wr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+wr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. fix something.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(fatalRoles.some(function(fr){return fr == roleGiven;})){
-					var replaced = ".";
-					fatalRoles.forEach(function(fr){
-						user.roles.map(function(r){
-							if(fr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,fr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+fr+".";
-							}
-						});
-					});
-					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. fix something.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(typeRoles.some(function(tr){return tr == roleGiven;})){
-					var replaced = ".";
-					typeRoles.forEach(function(tr){
-						user.roles.map(function(r){
-							if(tr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){}).catch(function(err){console.log(err);});
+							if(t.exclusive && tr == r.name){
+								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){}).catch(function(err){
+									console.log(err);
+								});
 								//mc.updateCharacter(message,r.name,true,function(res){
 								//	callback(res);
 								//});
@@ -329,31 +164,6 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 						});
 					});
 					var role = getRoleFromGuildByName(server,roleGiven);
-					if(role === undefined) errorCallback("The role was not found. fix something.");
-					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
-					}
-					callback("Added role "+roleGiven+replaced);
-				}
-				else if(lfrpRoles.some(function(lr){return lr == roleGiven;})){
-					var replaced = ".";
-
-					lfrpRoles.forEach(function(lr){
-						user.roles.map(function(r){
-							if(lr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,lr)).then(function(ro){}).catch(function(err){console.log(err);});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
-								replaced = ", replacing "+lr+".";
-							}
-						});
-					});
-
-					var role = getRoleFromGuildByName(server, roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
 						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
@@ -362,21 +172,8 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 						//});
 					}
 					callback("Added role "+roleGiven+replaced);
-
 				}
-				else if(miscRoles.some(function(mr){return mr == roleGiven;})){
-					// misc roles are not mutually exclusive, and will be added.
-
-					user.addRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){}).catch(function(err){console.log(err);});
-					//mc.updateCharacter(message,roleGiven,false,function(res){
-					//	callback(res);
-					//});
-					callback("Added role "+roleGiven);
-				}
-				else{
-					callback("Error: No role by that name found.");
-				}
-			}
+			});
 		}
 	}
 }
@@ -467,11 +264,227 @@ function hasRole(message,callback){
 }
 
 
+/////////////////////////
+//  Multi - Character  //
+/////////////////////////
+
+/*
+fs.readFile("../characterSets.json",function(err,data){
+	if(err){
+		fs.writeFile("../characterSets.json","",function(err){
+			if(err) console.log(err);
+		});
+	}
+	else{
+		var file = JSON.parse(data);
+		Object.keys(file).forEach(userid => {
+			characterSets[userid] = new CharacterSet(userid);
+			Object.keys(file[userid]).forEach(character => {
+				let roles = file[userid][character];
+				let name = character;
+				characterSets[userid].addCharacter(null,name,roles);
+			});
+		});
+	}
+});
+*/
+
+// Main character class
+class Character {
+	constructor(member,name,roles=null){
+		this.roles = [];
+		this.name = name;
+		if(roles === null){
+			member.roles.map(r1 => {
+				if(allRoles().some(r2 => {
+					return r1.name == r2;
+				})) {
+					this.roles.push(r1.name);
+				}
+			});
+		}
+		else{
+			this.roles = roles;
+		}
+	}
+}
+
+// Users each have a character set. Defaulting to contain a single character (with no set roles)
+class CharacterSet {
+	constructor(member,chars=[]){
+		this.member = member; //userid of the member.
+		this.current; //name of the active character in set.
+		this.characters = {}; //list of characters in set.
+		for(let i = 0; i < chars.length; i++){
+			this.characters[chars[i].name] = chars[i];
+		}
+	}
+
+	addCharacter(member,name){
+		this.character[name] = new Character(member,name);
+	}
+
+	removeCharacter(name,callback){
+		if(name == this.current){
+			callback("You may not remove the character which you are currently playing.");
+		}
+		delete this.characters[name];
+	}
+
+	switchCharacter(member,name,callback){
+		if(name == this.current){
+			callback("You are alrady playing as "+this.current+".");
+		}
+
+		else if(name in this.characters){
+			allRoles().forEach(availableRole => { //list of available roles.
+				var role = getRoleFromGuildByName(member.guild, availableRole);
+
+				oldRoles = this.characters[current].roles;
+				newRoles = this.characters[name].roles;
+
+				// if old character lacks role, new character contains role.
+				if(oldRoles.indexOf(availableRole) < 0 && newRoles.indexOf(availableRole) >= 0){
+					// then give the user the role.
+					member.addRole(role).then(function(role){
+						// it did its job.
+					}).catch(function(err){
+						console.log(err);
+					});
+				}
+
+				// if old character contains role, new character lacks role.
+				else if(oldRoles.indexOf(availableRole) >= 0 && newRoles.indexOf(availableRole) < 0){
+					// then remove the role from the user
+					member.removeRole(role).then(function(role){
+						// it did its job.
+					}).catch(function(err){
+						console.log(err);
+					});
+				}
+			});
+			this.current = name;
+			callback("Now playing as "+this.current+".");
+		}
+	}
+
+	updateCharacter(role,removing){
+		if(!removing){
+			this.characters[current].push(role);
+		}
+		else{
+			this.characters[current].pop(indexOf(role));
+		}
+
+		fs.writeFile("../characterSets.json",JSON.stringify(characterSets),function(err){
+			if(err) console.log(err);
+		});
+	}
+
+	hasCharacter(name){
+		return Object.keys(this.characters).some(char => char == name);
+	}
+
+	currenCharacter(){
+		return this.characters[current];
+	}
+}
+
+/*
+Format:
+	characterSets: {
+		userid: {
+			CharacterSet: {
+				Character (...)
+			}
+		}
+	}
+*/
+
+var characterSets = {};
+
+// When a user joins the guild, automatically give them a character set.
+function newUser(member){
+	characterSets[member.id] = new CharacterSet(member.id,[
+		new Character(member, member.displayName)
+	]).current = member.displayName;
+	save();
+}
+
+// function to be called from the main script, to switch characters.
+function switchCharacter(member,name,callback){
+	if(characterSets[member.id].hasCharacter(name)){
+		characterSets[member.id].switchCharacter(name,function(res){
+			callback(res);
+		});
+	}
+	else{
+		newCharacter(member,name,function(res){callback(res)});
+	}
+	save();
+}
+
+function newCharacter(member,name,callback){
+	characterSets[member.id].addCharacter(member,name,function(res){
+		callback(res);
+	});
+	save();
+}
+
+function updateCharacter(message,role,removing,callback){
+	var member = message.member;
+	characterSets[member.id].updateCharacter(role,removing);
+	save();
+}
+
+function removeCharacter(message,callback){
+	var member = message.member;
+	var name = message.content.split(" ").slice(1).join(" "); //extract the name given.
+	characterSets[member.id].removeCharacter(name,function(res){
+		callback(res);
+	});
+	save();
+}
+
+function hasMember(member){
+	return Object.keys(characterSets).some(set => set == member.id);
+}
+
+function describeCharacter(message,callback){
+	var char = characterSets[message.member.id].currentCharacter();
+	var str = "**Name:**\n"+char.name+"\n**Roles:**\n"+char.roles.join("\n");
+	callback(str);
+}
+
+function getRoleFromGuildByName(guild,name){
+	var res = undefined;
+	guild.roles.map(function(role,snowflake){
+		if(role.name.toLowerCase() == name.toLowerCase())
+			res = role;
+	});
+	return res;
+}
+
+function save(){
+	fs.writeFile("../characterSets.json",JSON.stringify(characterSets),function(err){
+		console.log(err);
+	});
+}
+
+
+
+
 
 module.exports = {
 	"setRole":setRole,
 	"removeRole":removeRole,
 	"hasRole":hasRole,
-	"allRoles":allRoles,
-	"getRoleFromGuildByName":getRoleFromGuildByName
+	"getRoleFromGuildByName":getRoleFromGuildByName,
+	"hasMember": hasMember,
+	"describeCharacter": describeCharacter,
+	"removeCharacter": removeCharacter,
+	"updateCharacter": updateCharacter,
+	"newCharacter": newCharacter,
+	"switchCharacter": switchCharacter,
+	"newUser": newUser
 };
