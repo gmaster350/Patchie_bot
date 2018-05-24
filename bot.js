@@ -926,13 +926,15 @@ bot.on("ready",function(){
 		}
 	});
 
-	bot.guilds.map(guild => {
-		guild.members.map(member => {
-			//if(!multiCharacter.hasMember(member)){
-			//	multiCharacter.newUser(member);
-			//	console.log("created profile for "+member.displayName);
-			//}
-		})
+	manageRoles.loadCharacters(bot,function(){
+		bot.guilds.map(guild => {
+			guild.members.map(member => {
+				if(!manageRoles.hasMember(member)){
+					manageRoles.newUser(member);
+					console.log("created profile for "+member.displayName);
+				}
+			})
+		});
 	});
 });
 
@@ -1063,13 +1065,13 @@ bot.on("guildMemberAdd",function(member){
 	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
 	submenu.addUser(member.id);
 	interactives.addUser(member.id);
-	//multiCharacter.newUser(member);
+	manageRoles.newUser(member);
 });
 
 
 bot.on("guildMemberUpdate",(oldMember, newMember) => {
 	if(oldMember.displayName != newMember.displayName){
-		//multiCharacter.switchCharacter(newMember, newMember.displayName);
+		manageRoles.switchCharacter(newMember, newMember.displayName);
 	}
 });
 

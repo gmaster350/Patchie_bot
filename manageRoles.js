@@ -1,6 +1,5 @@
 ///  Role managing module
 const fs = require('fs');
-//const //mc = require('./multiCharacter.js');
 
 var tags = [
 	{
@@ -156,9 +155,9 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){}).catch(function(err){
 									console.log(err);
 								});
-								//mc.updateCharacter(message,r.name,true,function(res){
-								//	callback(res);
-								//});
+								updateCharacter(message,r.name,true,function(res){
+									callback(res);
+								});
 								replaced = ", replacing "+tr+".";
 							}
 						});
@@ -167,9 +166,9 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
 						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						//mc.updateCharacter(message,roleGiven,false,function(res){
-						//	callback(res);
-						//});
+						updateCharacter(message,roleGiven,false,function(res){
+							callback(res);
+						});
 					}
 					callback("Added role "+roleGiven+replaced);
 				}
@@ -187,9 +186,9 @@ function removeRole(message,callback,alias=false){
 				if(lr == r.name){
 					user.removeRole(getRoleFromGuildByName(server,lr)).then(function(member){
 						callback("Removed "+lr+".");
-						//mc.updateCharacter(message,r.name,true,function(res){
-						//	callback(res);
-						//});
+						updateCharacter(message,r.name,true,function(res){
+							callback(res);
+						});
 					}).catch(function(err){
 						console.log(err);
 					});
@@ -219,9 +218,9 @@ function removeRole(message,callback,alias=false){
 		user.roles.map(function(r){
 			if(r.name == roleGiven){
 				user.removeRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){}).catch(function(err){console.log(err);});
-				//mc.updateCharacter(message,r.name,true,function(res){
-				//	callback(res);
-				//});
+				mc.updateCharacter(message,r.name,true,function(res){
+					callback(res);
+				});
 				callback("Removed role "+roleGiven);
 				flag = false;
 			}
@@ -268,26 +267,60 @@ function hasRole(message,callback){
 //  Multi - Character  //
 /////////////////////////
 
-/*
-fs.readFile("../characterSets.json",function(err,data){
-	if(err){
-		fs.writeFile("../characterSets.json","",function(err){
-			if(err) console.log(err);
-		});
-	}
-	else{
-		var file = JSON.parse(data);
-		Object.keys(file).forEach(userid => {
-			characterSets[userid] = new CharacterSet(userid);
-			Object.keys(file[userid]).forEach(character => {
-				let roles = file[userid][character];
-				let name = character;
-				characterSets[userid].addCharacter(null,name,roles);
+//characterSets =
+//  {
+//    guild_id:{
+//      member_id:{
+//        "active": character_name,
+//        "characters":[
+//          {
+//            "name":character_name,
+//            roles:[
+//              <String>, ...
+//            ]
+//          }
+//        ]
+//      }
+//    }
+//  }
+//
+
+var characterSets = {};
+
+function loadCharacters(bot,then){
+	fs.readFile("../characterSets.json",function(err,data){
+		if(err){
+			fs.writeFile("../characterSets.json","{}",function(err){
+				if(err) console.log(err);
+				else loadCharacters(bot,function(){
+					then();
+				});
 			});
-		});
-	}
-});
-*/
+		}
+		else{
+			var file = JSON.parse(data);
+			Object.keys(file).forEach(function(guild_id){
+				var discordGuild = bot.guilds.get(guild_id);
+				console.log(bot.guilds.get(guild_id));
+				var members = file[guild_id];
+				Object.keys(members).forEach(function(member_id){
+					var discordMember = discordGuild.members.get(member_id);
+					var member = members[member_id];
+					var charSet = [];
+					var activeChar = member.active;
+
+					member.characters.forEach(function(character){
+						charSet.push(new Character(discordMember,character.name,character.roles));
+					});
+
+					characterSets[member_id] = new CharacterSet(discordMember,charSet);
+				});
+			});
+		}
+		then();
+	});
+}
+
 
 // Main character class
 class Character {
@@ -296,8 +329,10 @@ class Character {
 		this.name = name;
 		if(roles === null){
 			member.roles.map(r1 => {
-				if(allRoles().some(r2 => {
-					return r1.name == r2;
+				if(tags.some(t => {
+					return t.roles.some(r2 => {
+						return r1.name == r2;
+					});
 				})) {
 					this.roles.push(r1.name);
 				}
@@ -313,6 +348,7 @@ class Character {
 class CharacterSet {
 	constructor(member,chars=[]){
 		this.member = member; //userid of the member.
+		this.guild = member.guild; //guild of which member is from.
 		this.current; //name of the active character in set.
 		this.characters = {}; //list of characters in set.
 		for(let i = 0; i < chars.length; i++){
@@ -401,8 +437,6 @@ Format:
 	}
 */
 
-var characterSets = {};
-
 // When a user joins the guild, automatically give them a character set.
 function newUser(member){
 	characterSets[member.id] = new CharacterSet(member.id,[
@@ -465,8 +499,25 @@ function getRoleFromGuildByName(guild,name){
 	return res;
 }
 
+// TODO //
 function save(){
-	fs.writeFile("../characterSets.json",JSON.stringify(characterSets),function(err){
+	var prepared = {};
+
+	Object.keys(characterSets).forEach(function(user_id){
+		var charSet = characterSets[user_id];
+		if(!(Object.keys(prepared).some(function(g){
+			return g == charSet.guild;
+		})){
+			prepared[charSet.guild] = {};
+		}
+
+		Object.keys(charSet.characters).forEach(function(charName){
+			var char = charSet.characters[charName];
+			
+		});
+	});
+
+	fs.writeFile("../characterSets.json",JSON.stringify(prepared),function(err){
 		console.log(err);
 	});
 }
@@ -486,5 +537,6 @@ module.exports = {
 	"updateCharacter": updateCharacter,
 	"newCharacter": newCharacter,
 	"switchCharacter": switchCharacter,
-	"newUser": newUser
+	"newUser": newUser,
+	"loadCharacters": loadCharacters
 };
