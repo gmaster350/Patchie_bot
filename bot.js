@@ -802,28 +802,11 @@ var commandTree = {
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
 	"startStory":interactives.start,
-//	"retroactiveRead":retroactiveRead,
-	"lfrp":function(m,c){
-			if(m.content.split(" ").length == 1){
-				c("Alias command for LFRP roles.\nUsage: `!!lfrp [ prey | pred | any | stop ]`");
-			}
-			else{
-				switch(m.content.split(" ")[1].toLowerCase()){
-					case "prey":
-						manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"LFRP-Prey");
-						break;
-					case "pred":
-						manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"LFRP-Pred");
-						break;
-					case "any":
-						manageRoles.setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"LFRP-Any");
-						break;
-					case "stop":
-						manageRoles.removeRole(m,function(r){c(r)},true);
-						break;
-				}
-			}
-	}
+	"describeCharacter":manageRoles.describeCharacter,
+	"renameCharacter":manageRoles.renameCharacter,
+	"characters":manageRoles.listCharacters,
+	"allCharacters":manageRoles.listAllCharacters,
+	"lfrp":manageRoles.lfrp
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -859,6 +842,7 @@ bot.on("ready",function(){
 	});
 	console.log("Set presence");
 
+	// Give all users Member role
 	bot.channels.map(function(channel,channelIndex,channelArray){
 		if(channel.type == "text"){
 			var role = getRoleFromGuildByName(channel.guild,"Member");
@@ -868,7 +852,6 @@ bot.on("ready",function(){
 			});
 		}
 	});
-	console.log("Applied roles");
 
 	fs.readFile("./potionSettings.txt",function(err,data){
 		if(err)console.log(err);
@@ -883,11 +866,11 @@ bot.on("ready",function(){
 					}
 				});
 			});
-			fs.writeFile("./potionSettings.txt",JSON.stringify(s));
+			var stringS = JSON.stringify(s);
 			potion.importSettings(s);
 		}
+		console.log("Loaded potions data");
 	});
-	console.log("Loaded potions data");
 
 	fs.readFile("../interactiveData.txt",function(err,data){
 		if(err) console.log(err);
@@ -924,6 +907,7 @@ bot.on("ready",function(){
 			});
 			interactives.setActive(r);
 		}
+		console.log("Loaded interactive story position data");
 	});
 
 	manageRoles.loadCharacters(bot,function(){
