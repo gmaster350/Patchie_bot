@@ -19,7 +19,7 @@ var tags = [
 	},
 	{
 		"exclusive":true,
-		"prefix":null,
+		"prefix":"legs",
 		"roles":["Anthro","Feral","Taur"]
 	},
 	{
@@ -43,7 +43,7 @@ var tags = [
 		"roles":["Oral","Anal","Unbirth","Soul","Tail","Cock"]
 	},
 	{
-		"exclusive":true,
+		"exclusive":false,
 		"prefix":"misc",
 		"roles":["Disposal","Fulltour","Reformation"]
 	},
@@ -83,7 +83,9 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 	else if(parameters.length == 1){
 		var str = "Set a role for yourself.\n";
 		tags.forEach(function(t){
-			str += "\n" + t.roles.join(" | ") + "  prefix: `" + (t.prefix == null ? "[none]" : t.prefix) + (t.exlusive ? "`  (exclusive)" : "");
+			str += "\n" + t.roles.join(" | ");
+			if(t.prefix != null) str += " ----- `prefix: " + t.prefix + "`";
+			if(!t.exclusive) str += " (non-exclusive)";
 		});
 		callback(str);
 	}
@@ -117,6 +119,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					})){
 						var newRole = getRoleFromGuildByName(server,roleGiven);
 						user.addRole(newRole);
+//TODO//				characterSets[message.member.id].currentCharacter().addRole(newRole);
 					}
 					// otherwise, create the new role.
 					else{
@@ -132,6 +135,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 							newRole.setColor([231,76,60]).then(function(coloredRole){
 								coloredRole.setPosition(23).then(function(positionedRole){
 									user.addRole(positionedRole).then(function(member){
+//TODO//								characterSets[message.member.id].currentCharacter().addRole(roleGiven);
 										callback("Added role "+roleGiven+".");
 									}).catch(function(err){
 										console.log(err);
@@ -152,11 +156,10 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					t.roles.forEach(function(tr){
 						user.roles.map(function(r){
 							if(t.exclusive && tr == r.name){
-								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){}).catch(function(err){
+								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){
+//TODO//						characterSets[message.member.id].removeRole(tr);
+								}).catch(function(err){
 									console.log(err);
-								});
-								updateCharacter(message,r.name,true,function(res){
-									callback(res);
 								});
 								replaced = ", replacing "+tr+".";
 							}
@@ -165,9 +168,10 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					var role = getRoleFromGuildByName(server,roleGiven);
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
-						user.addRole(role).then(function(ro){}).catch(function(err){console.log(err);});
-						updateCharacter(message,roleGiven,false,function(res){
-							callback(res);
+						user.addRole(role).then(function(ro){
+//TODO//					characterSets[message.member.id].addRole(roleGiven);
+						}).catch(function(err){
+							console.log(err);
 						});
 					}
 					callback("Added role "+roleGiven+replaced);
@@ -186,9 +190,7 @@ function removeRole(message,callback,alias=false){
 				if(lr == r.name){
 					user.removeRole(getRoleFromGuildByName(server,lr)).then(function(member){
 						callback("Removed "+lr+".");
-						updateCharacter(message,r.name,true,function(res){
-							callback(res);
-						});
+//TODO//				characterSets[message.member.id].removeRole(lr);
 					}).catch(function(err){
 						console.log(err);
 					});
@@ -217,9 +219,10 @@ function removeRole(message,callback,alias=false){
 
 		user.roles.map(function(r){
 			if(r.name == roleGiven){
-				user.removeRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){}).catch(function(err){console.log(err);});
-				mc.updateCharacter(message,r.name,true,function(res){
-					callback(res);
+				user.removeRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){
+//TODO//			characterSets[message.member.id].removeRole(roleGiven);
+				}).catch(function(err){
+					console.log(err);
 				});
 				callback("Removed role "+roleGiven);
 				flag = false;
@@ -378,8 +381,8 @@ class CharacterSet {
 	}
 
 	addCharacter(member,name,callback){
-		this.character[name] = new Character(member,name);
-		callback("Info: Created new character '"+name+"'");
+		this.characters[name] = new Character(member,name);
+		callback("Created new character '"+name+"'");
 		save();
 	}
 
@@ -396,49 +399,50 @@ class CharacterSet {
 			callback("Info: You are already playing as "+this.current+".");
 		}
 
-		else if(name in this.characters){
+		else if(this.hasCharacter(name)){
+			var oldRoles = this.characters[this.current].roles;
+			var newRoles = this.characters[name].roles;
 			tags.forEach(t => {
-				t.forEach(availableRole => { //list of available roles.
+				t.roles.forEach(availableRole => { //list of available roles.
 					var role = getRoleFromGuildByName(member.guild, availableRole);
-
-					oldRoles = this.characters[current].roles;
-					newRoles = this.characters[name].roles;
 
 					// if old character lacks role AND new character contains role.
 					if(oldRoles.indexOf(availableRole) < 0 && newRoles.indexOf(availableRole) >= 0){
+						console.log("adding role " + role.name);
 						// then give the user the role.
-						member.addRole(role).then(function(role){
+						member.addRole(role).then(function(r){
 							// it did its job.
 						}).catch(function(err){
-							console.log(err);
+							if(err)console.log(err);
 						});
 					}
 
 					// if old character contains role AND new character lacks role.
-					else if(oldRoles.indexOf(availableRole) >= 0 && newRoles.indexOf(availableRole) < 0){
+					if(oldRoles.indexOf(availableRole) >= 0 && newRoles.indexOf(availableRole) < 0){
+						console.log("removing role " + role.name);
 						// then remove the role from the user
-						member.removeRole(role).then(function(role){
+						member.removeRole(role).then(function(r){
 							// it did its job.
 						}).catch(function(err){
-							console.log(err);
+							if(err)console.log(err);
 						});
 					}
 				});
 			});
 			this.current = name;
+			this.currentCharacter().roles = newRoles;
 			callback("Info: Switched to "+this.current+".");
 			save();
 		}
 	}
 
-	updateCharacter(role,removing){
-		if(!removing){
-			this.characters[this.current].push(role);
-		}
-		else{
-			this.characters[this.current].pop(indexOf(role));
-		}
-		save();
+	removeRole(role){
+		var index = this.currentCharacter().roles.indexOf(role);
+		this.characters[this.current].roles.pop(index);
+	}
+
+	addRole(role){
+		this.characters[this.current].roles.push(role);
 	}
 
 	hasCharacter(name){
@@ -497,58 +501,64 @@ function newUser(member){
 // function to be called from the main script, to switch characters.
 function switchCharacter(member,name,callback){
 	if(characterSets[member.id].hasCharacter(name)){
-		characterSets[member.id].switchCharacter(name,function(res){
+		characterSets[member.id].switchCharacter(member,name,function(res){
 			callback(res);
 		});
 	}
 	else{
-		newCharacter(member,name,function(res){callback(res)});
+		characterSets[member.id].addCharacter(member,name,function(res){
+			callback(res);
+		});
 	}
 	save();
 }
 
 function listCharacters(message,callback){
-	var chars = Object.keys(characterSets[message.member.id].characters);
-	var str = "**Your characters:**\n" + chars.join("\n    ");
-	callback(str);
+	if(message.channel.type == "text"){
+		var chars = Object.keys(characterSets[message.member.id].characters);
+		var str = "**Your characters:**\n" + chars.join("\n");
+		callback(str);
+	}
 }
 
 function listAllCharacters(message,callback){
-	var tabWidth = 20;
-	var str = "**Character**" + " ".repeat(tabWidth+2) + "**Owner**";
-	Object.keys(characterSets).forEach(function(userid){
-		var charSet = characterSets[userid];
-		var owner = charSet.member.displayName;
-		var guild_id = charSet.guild.id;
-		if(guild_id == message.guild.id){
-			Object.keys(charSet.characters).forEach(function(charName){
-				str += "\n" + charName + " " + "-".repeat(tabWidth - charName.length) + " " + owner;
-			});
-		}
-	});
-	callback(str);
+	if(message.channel.type == "text"){
+		var tabWidth = 20;
+		var str = "**__Character__**" + " ".repeat(tabWidth+2) + "**__Owner__**";
+		var i = 0;
+		Object.keys(characterSets).forEach(function(userid){
+			var e = i % 2 === 1 ? "**" : "";
+			var charSet = characterSets[userid];
+			var owner = charSet.member.displayName;
+			var guild_id = charSet.guild.id;
+			if(guild_id == message.guild.id){
+				Object.keys(charSet.characters).forEach(function(charName){
+					str += "\n" + e + charName + e + " " + "-".repeat(tabWidth - charName.length) + " " + e + owner + e;
+				});
+			}
+			i++;
+		});
+		callback(str);
+	}
 }
-
+/*
 function newCharacter(member,name,callback){
 	characterSets[member.id].addCharacter(member,name,function(res){
 		callback(res);
 	});
 	save();
 }
-
-function updateCharacter(message,role,removing,callback){
-	var member = message.member;
-	characterSets[member.id].updateCharacter(role,removing);
-	save();
-}
+*/
 
 function removeCharacter(message,callback){
-	var member = message.member;
-	var name = message.content.split(" ").slice(1).join(" "); //extract the name given.
-	characterSets[member.id].removeCharacter(name,function(res){
-		callback(res);
-	});
-	save();
+	if(message.channel.type == "text"){
+		var member = message.member;
+		var name = message.content.split(" ").slice(1).join(" "); //extract the name given.
+		characterSets[member.id].removeCharacter(name,function(res){
+			callback(res);
+		});
+		save();
+	}
 }
 
 function hasMember(member){
@@ -556,14 +566,19 @@ function hasMember(member){
 }
 
 function describeCharacter(message,callback){
-	var char = characterSets[message.member.id].currentCharacter();
-	var str = "**Name:**\n"+char.name+"\n**Roles:**\n"+char.roles.join("\n");
-	callback(str);
+	if(message.channel.type == "text"){
+		var char = characterSets[message.member.id].currentCharacter();
+		var str = "**Name:**\n"+char.name+"\n**Roles:**\n"+char.roles.join("\n");
+		callback(str);
+	}
 }
 
 function renameCharacter(message,callback){
 	var char = characterSets[message.member.id].currentCharacter();
 	var parameters = message.content.split(" ");
+	if(parameters.length == 1){
+		callback("Rename a character you own.\n\nUsage:\n!!renameCharacter (new_name) -- rename current character\n!!renameCharacter (old_name) (new_name) -- rename any other character");
+	}
 	char.renameCharacter(parameters[1],parameters[2]);
 }
 
@@ -582,20 +597,21 @@ function save(){
 
 	Object.keys(characterSets).forEach(function(user_id){
 		var charSet = characterSets[user_id];
+
 		if(!(Object.keys(prepared).some(function(g){
-			return g == charSet.guild;
+			return g == charSet.guild.id;
 		}))){
-			prepared[charSet.guild] = {};
+			prepared[charSet.guild.id] = {};
 		}
 
-		if(Object.keys(prepared[charSet.guild]).some(function(m){
-			return m == charSet.member;
-		})){
-			prepared[charSet.guild][charSet.member] = {};
+		if(!(Object.keys(prepared[charSet.guild.id]).some(function(m){
+			return m == charSet.member.id;
+		}))){
+			prepared[charSet.guild.id][charSet.member.id] = {};
 		}
 
-		prepared[charSet.guild][charSet.member]["active"] = charSet.current;
-		prepared[charSet.guild][charSet.member]["characters"] = [];
+		prepared[charSet.guild.id][charSet.member.id]["active"] = charSet.current;
+		prepared[charSet.guild.id][charSet.member.id]["characters"] = [];
 
 		Object.keys(charSet.characters).forEach(function(charName){
 			var char = charSet.characters[charName];
@@ -603,7 +619,7 @@ function save(){
 				"name":char.name,
 				"roles":char.roles
 			};
-			prepared[charSet.guild][charSet.member]["characters"].push(char_obj);
+			prepared[charSet.guild.id][charSet.member.id]["characters"].push(char_obj);
 		});
 	});
 
@@ -613,7 +629,30 @@ function save(){
 }
 
 
-
+function initialize(message,bot,callback){
+	if(message.member.hasPermission("ADMINISTRATOR")){
+		bot.channels.map(channel => {
+			channel.members.map(member => {
+				var roleList = [];
+				member.roles.map(role => {
+					if(tags.some(t => {
+						return t.roles.some(r => {
+							return capitalize(r) == capitalize(role.name);
+						});
+					})){
+						roleList.push(role.name);
+					}
+				});
+				characterSets[member.id].currentCharacter().roles = roleList;
+			});
+		});
+		callback("Initialized all user profiles");
+		save();
+	}
+	else{
+		callback("Insufficient Permissions.");
+	}
+}
 
 
 module.exports = {
@@ -626,11 +665,11 @@ module.exports = {
 	"describeCharacter": describeCharacter,
 	"removeCharacter": removeCharacter,
 	"renameCharacter":renameCharacter,
-	"updateCharacter": updateCharacter,
-	"newCharacter": newCharacter,
+//	"newCharacter": newCharacter,
 	"switchCharacter": switchCharacter,
 	"newUser": newUser,
 	"loadCharacters": loadCharacters,
 	"listCharacters":listCharacters,
-	"listAllCharacters":listAllCharacters
+	"listAllCharacters":listAllCharacters,
+	"initialize":initialize
 };

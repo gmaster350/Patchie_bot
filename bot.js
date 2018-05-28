@@ -768,6 +768,12 @@ function retroactiveRead(message,callback){
 	}
 }
 
+function initializeMultiCharacter(message,callback){
+	manageRoles.initialize(message,bot,function(res){
+		callback(res);
+	});
+}
+
 // Submenu Module
 
 var commandTree = {
@@ -802,11 +808,12 @@ var commandTree = {
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
 	"startStory":interactives.start,
-	"describeCharacter":manageRoles.describeCharacter,
-	"renameCharacter":manageRoles.renameCharacter,
-	"characters":manageRoles.listCharacters,
-	"allCharacters":manageRoles.listAllCharacters,
-	"lfrp":manageRoles.lfrp
+//	"describeCharacter":manageRoles.describeCharacter,
+//	"renameCharacter":manageRoles.renameCharacter,
+//	"characters":manageRoles.listCharacters,
+//	"allCharacters":manageRoles.listAllCharacters,
+	"lfrp":manageRoles.lfrp,
+//	"initializeMultiCharacter":initializeMultiCharacter
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -910,6 +917,8 @@ bot.on("ready",function(){
 		console.log("Loaded interactive story position data");
 	});
 
+//TODO//
+	/*
 	manageRoles.loadCharacters(bot,function(){
 		bot.guilds.map(guild => {
 			guild.members.map(member => {
@@ -920,6 +929,7 @@ bot.on("ready",function(){
 			})
 		});
 	});
+	*/
 });
 
 bot.on("message",function(message){
@@ -1003,7 +1013,7 @@ bot.on("message",function(message){
 			}
 			else{
 				if(message.channel.id != "360352337274863617" && message.channel.type == "text" && ((Date.now() - message.member.joinedTimestamp) > 352800000)){
-					spam.process(message,function(response){
+					/*spam.process(message,function(response){
 						if(typeof response == "string" && response.length > 0){
 							if(errorCodes.some(function(code){return response.startsWith(code)})){
 								send += response + "\n`This is a temporary message.` `("+String(errorTimeout/1000)+" seconds)`";
@@ -1021,6 +1031,7 @@ bot.on("message",function(message){
 							}
 						}
 					});
+					*/
 				}
 			}
 
@@ -1052,18 +1063,22 @@ bot.on("guildMemberAdd",function(member){
 	manageRoles.newUser(member);
 });
 
-
+/*
 bot.on("guildMemberUpdate",(oldMember, newMember) => {
 	if(oldMember.displayName != newMember.displayName){
-		manageRoles.switchCharacter(newMember, newMember.displayName);
+		manageRoles.switchCharacter(newMember, newMember.displayName, function(res){
+			console.log(res);
+		});
 	}
 });
+*/
 
 bot.on("guildMemberRemove",function(member){
 	member.guild.defaultChannel.send("Sorry to see you go, "+member.user);
 });
 
 
+//TODO//
 /*
 bot.on("messageUpdate",function(message){
 	filter.evaluate(message,function(res){
