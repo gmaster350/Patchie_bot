@@ -272,13 +272,13 @@ function lfrp(m,c){
 	else{
 		switch(m.content.split(" ")[1].toLowerCase()){
 			case "prey":
-				setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"LFRP-Prey");
+				setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"Lfrp-prey");
 				break;
 			case "pred":
-				setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"LFRP-Pred");
+				setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"Lfrp-pred");
 				break;
 			case "any":
-				setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"LFRP-Any");
+				setRole(m,function(r1){c(r1)},function(r2){console.log(r2)},true,"Lfrp-any");
 				break;
 			case "stop":
 				removeRole(m,function(r){c(r)},true);
