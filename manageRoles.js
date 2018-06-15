@@ -120,7 +120,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					})){
 						var newRole = getRoleFromGuildByName(server,roleGiven);
 						user.addRole(newRole);
-//TODO//				characterSets[message.member.id].currentCharacter().addRole(newRole);
+						characterSets[message.member.id].currentCharacter().addRole(newRole);
 					}
 					// otherwise, create the new role.
 					else{
@@ -136,7 +136,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 							newRole.setColor([231,76,60]).then(function(coloredRole){
 								coloredRole.setPosition(23).then(function(positionedRole){
 									user.addRole(positionedRole).then(function(member){
-//TODO//								characterSets[message.member.id].currentCharacter().addRole(roleGiven);
+										characterSets[message.member.id].currentCharacter().addRole(roleGiven);
 										callback("Added role "+roleGiven+".");
 									}).catch(function(err){
 										console.log(err);
@@ -158,7 +158,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 						user.roles.map(function(r){
 							if(t.exclusive && tr == r.name){
 								user.removeRole(getRoleFromGuildByName(server,tr)).then(function(ro){
-//TODO//						characterSets[message.member.id].removeRole(tr);
+									characterSets[message.member.id].removeRole(tr);
 								}).catch(function(err){
 									console.log(err);
 								});
@@ -170,7 +170,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
 						user.addRole(role).then(function(ro){
-//TODO//					characterSets[message.member.id].addRole(roleGiven);
+							characterSets[message.member.id].addRole(roleGiven);
 						}).catch(function(err){
 							console.log(err);
 						});
@@ -191,7 +191,7 @@ function removeRole(message,callback,alias=false){
 				if(lr == r.name){
 					user.removeRole(getRoleFromGuildByName(server,lr)).then(function(member){
 						callback("Removed "+lr+".");
-//TODO//				characterSets[message.member.id].removeRole(lr);
+						characterSets[message.member.id].removeRole(lr);
 					}).catch(function(err){
 						console.log(err);
 					});
@@ -221,7 +221,7 @@ function removeRole(message,callback,alias=false){
 		user.roles.map(function(r){
 			if(r.name == roleGiven){
 				user.removeRole(getRoleFromGuildByName(server,roleGiven)).then(function(ro){
-//TODO//			characterSets[message.member.id].removeRole(roleGiven);
+					characterSets[message.member.id].removeRole(roleGiven);
 				}).catch(function(err){
 					console.log(err);
 				});

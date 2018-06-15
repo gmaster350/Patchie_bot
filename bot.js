@@ -815,11 +815,11 @@ var commandTree = {
 	"startStory":interactives.start,
 
 	//characters
-//	"describeCharacter":manageRoles.describeCharacter,
-//	"renameCharacter":manageRoles.renameCharacter,
-//	"characters":manageRoles.listCharacters,
-//	"allCharacters":manageRoles.listAllCharacters,
-//	"initializeMultiCharacter":initializeMultiCharacter
+	"describeCharacter":manageRoles.describeCharacter,
+	"renameCharacter":manageRoles.renameCharacter,
+	"characters":manageRoles.listCharacters,
+	"allCharacters":manageRoles.listAllCharacters,
+	"initializeMultiCharacter":initializeMultiCharacter
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
@@ -922,7 +922,7 @@ bot.on("ready",function(){
 		}
 		console.log("Loaded interactive story position data");
 	});
-	/*
+
 	manageRoles.loadCharacters(bot,function(){
 		bot.guilds.map(guild => {
 			guild.members.map(member => {
@@ -933,7 +933,7 @@ bot.on("ready",function(){
 			})
 		});
 	});
-	*/
+
 });
 
 bot.on("message",function(message){
@@ -1067,7 +1067,7 @@ bot.on("guildMemberAdd",function(member){
 	manageRoles.newUser(member);
 });
 
-/*
+
 bot.on("guildMemberUpdate",(oldMember, newMember) => {
 	if(oldMember.displayName != newMember.displayName){
 		manageRoles.switchCharacter(newMember, newMember.displayName, function(res){
@@ -1075,7 +1075,7 @@ bot.on("guildMemberUpdate",(oldMember, newMember) => {
 		});
 	}
 });
-*/
+
 
 bot.on("guildMemberRemove",function(member){
 	member.guild.defaultChannel.send("Sorry to see you go, "+member.user);
