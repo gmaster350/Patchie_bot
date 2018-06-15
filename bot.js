@@ -472,6 +472,7 @@ const version = "1.2.0";
 	const manageRoles = require("./manageRoles.js");
 	const interactives = require("./interactiveStories.js");
 	const frequency = require("./frequency.js");
+	const image = require("./dynamicImage.js");
 	//const multiCharacter = require("./multiCharacter.js");
 
 	const prefix = "!!";
@@ -780,6 +781,7 @@ var commandTree = {
 	"test":{
 		"echo":echo,
 		"reverse":reverse,
+		"render":image.testRender,
 		"back":submenu.up, //returns to upper command tree
 		"help":submenu.list, //print commands present at current location
 		"forceError":function(m,c){if(m.author.id == owner){c(UndefinedVariable);}}, // Will divide by zero.
