@@ -87,6 +87,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 			if(t.prefix != null) str += " ----- `prefix: " + t.prefix + "`";
 			if(!t.exclusive) str += " (non-exclusive)";
 		});
+		str += "\n\nCategories with prefixes can have new roles created on-demand by prepending the prefix to the new role. \ne.g, `!!setRole species:my_species`";
 		callback(str);
 	}
 	else{
