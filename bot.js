@@ -802,17 +802,23 @@ var commandTree = {
 	"createRoom":privateRoom.create,
 	"leaveRoom":privateRoom.leave,
 	"inviteToRoom":privateRoom.inviteToRoom,
+
+	//roles
 	"setRole":setRole,
 	"removeRole":manageRoles.removeRole,
 	"hasRole":manageRoles.hasRole,
+	"lfrp":manageRoles.lfrp,
+
+	//interactives
 	"addOption":interactives.addOption,
 	"branchText":interactives.changeDescription,
 	"startStory":interactives.start,
+
+	//characters
 //	"describeCharacter":manageRoles.describeCharacter,
 //	"renameCharacter":manageRoles.renameCharacter,
 //	"characters":manageRoles.listCharacters,
 //	"allCharacters":manageRoles.listAllCharacters,
-	"lfrp":manageRoles.lfrp,
 //	"initializeMultiCharacter":initializeMultiCharacter
 }
 
@@ -916,8 +922,6 @@ bot.on("ready",function(){
 		}
 		console.log("Loaded interactive story position data");
 	});
-
-//TODO//
 	/*
 	manageRoles.loadCharacters(bot,function(){
 		bot.guilds.map(guild => {
@@ -1078,7 +1082,7 @@ bot.on("guildMemberRemove",function(member){
 });
 
 
-//TODO//
+
 /*
 bot.on("messageUpdate",function(message){
 	filter.evaluate(message,function(res){

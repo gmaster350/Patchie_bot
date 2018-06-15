@@ -185,7 +185,7 @@ function removeRole(message,callback,alias=false){
 	var user = message.member;
 	var server = message.guild;
 	if(alias){
-		lfrpRoles.forEach(function(lr){
+		["Lfrp-prey","Lfrp-pred","Lfrp-any"].forEach(function(lr){
 			user.roles.map(function(r){
 				if(lr == r.name){
 					user.removeRole(getRoleFromGuildByName(server,lr)).then(function(member){
@@ -203,7 +203,7 @@ function removeRole(message,callback,alias=false){
 		var parameters = message.content.split(" ");
 		var roleGiven;
 
-		if(["lfrp-prey","lfrp-pred","lfrp-any"].some(function(l){
+		if(["Lfrp-prey","Lfrp-pred","Lfrp-any"].some(function(l){
 			console.log(l);
 			console.log(parameters);
 			return parameters[1].toLowerCase() == l;
