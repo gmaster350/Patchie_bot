@@ -368,7 +368,7 @@ const version = "1.2.0";
 																	let i = post.title.indexOf(d);
 																	if(i < lastIndex) lastIndex = i;
 																});
-																var t = post.title.substring(lastIndex);
+																var t = post.title.substring(0,lastIndex);
 
 																if(nsfw){
 																	bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url+"\n\n**"+t+"**");
