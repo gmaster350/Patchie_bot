@@ -170,7 +170,7 @@ const version = "1.2.0";
 					});
 					if(res.length === 0){
 						allTagsPresent = false;
-						ErrorMessage += "\nNo artist tags found";
+						ErrorMessage += "\n\nNo artist tags found.";
 					}
 
 					// Collect character tags.
@@ -182,7 +182,7 @@ const version = "1.2.0";
 							});
 							if(res.length === 0){
 								allTagsPresent = false;
-								ErrorMessage += "\nNo character tags found";
+								ErrorMessage += "\n\nNo character tags found.";
 							}
 
 							// Collect type and content tags.
@@ -225,11 +225,11 @@ const version = "1.2.0";
 
 									if(genders.originals.length === 0){
 										allTagsPresent = false;
-										ErrorMessage += "\nNo gender tags found.";
+										ErrorMessage += "\n\nNo gender tags found.";
 									}
 									if(types.length === 0){
 										allTagsPresent = false;
-										ErrorMessage += "\nNo vore tags found.";
+										ErrorMessage += "\n\nNo vore tags found.";
 									}
 
 									if(allTagsPresent){
@@ -362,11 +362,19 @@ const version = "1.2.0";
 																		}
 																	});
 																});
+
+																var lastIndex = post.title.length-1;
+																["(","[","{"].forEach(d => {
+																	let i = post.title.indexOf(d);
+																	if(i < lastIndex) lastIndex = i;
+																});
+																var t = post.title.substring(lastIndex);
+
 																if(nsfw){
-																	bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																	bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url+"\n\n**"+t+"**");
 																}
 																else{
-																	bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																	bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url+"\n\n**"+t+"**");
 																}
 															}
 														}
