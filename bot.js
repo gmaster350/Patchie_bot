@@ -1086,7 +1086,7 @@ bot.on("guildMemberUpdate",(oldMember, newMember) => {
 */
 
 bot.on("guildMemberRemove",function(member){
-	member.guild.channels.find("name","general").send("Sorry to see you go, "+member.user);
+	member.guild.channels.find("name","general").send("Sorry to see you go, "+member.displayName);
 });
 
 
