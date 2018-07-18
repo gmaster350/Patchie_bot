@@ -49,20 +49,20 @@ function hash(){
 
 /*
 	Private Room Module
-		Lets users in guilds create their own group 
+		Lets users in guilds create their own group
 		channels, visible only to members of the group.
-		
+
 		All necessary permissions and roles are
 		created automatically, preventing non-members
 		from viewing a private room. The only exception
 		of course being the guild owner, who is still able to
 		view all channels.
-		
+
 		A channel group for private channels will be created
 		if one does not already exist, upon the bot joining
 		a guild for the first time.
-		
-		All new private channels will be placed under the 
+
+		All new private channels will be placed under the
 		private channels group.
 */
 
@@ -78,7 +78,7 @@ function getRoleFromGuildByName(guild,name){
 // Create Group Room, only visible to members of the group
 function create(message,callback){
 	if(message.content.split(" ").length == 1){
-		callback("Usage: createRoom *room_name* \@user \@user ...\nCreates a private room for you and any mentioned users (You are automatically included). Room will be a text channel visible only to you and your mentioned users. Room is destroyed when all participants leave the room via `leaveRoom`");
+		callback("Usage: privateRoom *room_name* \@user \@user ...\nCreates a private room for you and any mentioned users (You are automatically included). Room will be a text channel visible only to you and your mentioned users. Room is destroyed when all participants leave the room via `leaveRoom`");
 	}
 	else if(message.channel.type != "text"){
 		callback("You cannot call this command outside of a server.");
@@ -111,7 +111,7 @@ function create(message,callback){
 function inviteToRoom(message,callback){
 	if(message.channel.topic.match(/^\{[1234567890abcdef]{4}\}.*$/)){
 		var newRole = getRoleFromGuildByName(message.guild,message.channel.topic.substring(1,5));
-		
+
 		if(message.mentions.users.size > 0){
 			message.mentions.users.map(function(mentionedUser,uid){
 				message.guild.fetchMember(mentionedUser).then(function(m){
@@ -140,7 +140,7 @@ function leave(message,callback){
 				message.mentions.members.map(function(member){
 					member.removeRole(role).then(function(mem){
 						var membersWithRole = 0;
-						
+
 						message.guild.members.map(function(member){
 							if(member.roles.some(function(r){
 								return r.name == topic;
@@ -148,7 +148,7 @@ function leave(message,callback){
 								membersWithRole++;
 							}
 						});
-						
+
 						if(membersWithRole == 0){
 							message.channel.delete("Room is now empty").then(function(channel){
 								message.guild.roles.map(function(role,id){
@@ -168,7 +168,7 @@ function leave(message,callback){
 		else{
 			message.member.removeRole(role).then(function(mem){
 				var membersWithRole = 0;
-				
+
 				message.guild.members.map(function(member){
 					if(member.roles.some(function(r){
 						return r.name == topic;
@@ -176,7 +176,7 @@ function leave(message,callback){
 						membersWithRole++;
 					}
 				});
-				
+
 				if(membersWithRole == 0){
 					message.channel.delete("Room is now empty").then(function(channel){
 						message.guild.roles.map(function(role,id){
