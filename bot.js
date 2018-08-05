@@ -482,6 +482,7 @@ const version = "1.2.0";
 	const frequency = require("./frequency.js");
 	//const multiCharacter = require("./multiCharacter.js");
 
+	const bannedIds = ["475013414566232094"];
 	const prefix = "!!";
 	const about =
 	"Made by: @Zapp#4885"+
@@ -944,6 +945,16 @@ bot.on("ready",function(){
 	*/
 });
 
+bot.once("ready",function(){
+	bot.guilds.map(function(guild){
+		guild.members.map(function(member){
+			if(bannedIds.some(bid => member.user.id == bid)){
+				member.ban("Banned ID");
+			}
+		});
+	});
+});
+
 bot.on("message",function(message){
 	try{
 		if((message.author.id != bot.user.id) && !(message.author.bot)){
@@ -1069,10 +1080,15 @@ bot.on("message",function(message){
 });
 
 bot.on("guildMemberAdd",function(member){
-	member.addRole(getRoleFromGuildByName(member.guild,"Member"));
-	submenu.addUser(member.id);
-	interactives.addUser(member.id);
-	manageRoles.newUser(member);
+	if(bannedIds.some(bid => member.user.id == bid)){
+		member.ban("Banned ID");
+	}
+	else{
+		member.addRole(getRoleFromGuildByName(member.guild,"Member"));
+		submenu.addUser(member.id);
+		interactives.addUser(member.id);
+		manageRoles.newUser(member);
+	}
 });
 
 /*
