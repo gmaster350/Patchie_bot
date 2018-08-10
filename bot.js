@@ -6,7 +6,7 @@
 	a range of APIs, including reddit and discord.
 */
 
-const version = "1.2.0";
+const version = "1.4.0";
 
 
 ////// Module import and setup //////
@@ -866,6 +866,7 @@ var commandTree = {
 	"createRoom":privateRoom.create,
 	"leaveRoom":privateRoom.leave,
 	"inviteToRoom":privateRoom.inviteToRoom,
+	"blacklist":blacklist,
 
 	//roles
 	"setRole":setRole,
