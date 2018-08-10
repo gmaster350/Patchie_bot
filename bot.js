@@ -52,6 +52,26 @@ const version = "1.2.0";
 	var voreChannel = "360355480490475522";
 	var nsfwChannel = "360355651119087618";
 
+
+	// artists or characters that have been requested to be automatically removed.
+	// posts with these tags will be rejected by the bot.
+	var tagBlacklist;
+	fs.readFile("../tagBlacklist.json",function(err,data){
+		if(data == undefined){
+			fs.writeFile("../tagBlacklist.json","",function(err){
+				if(err) console.log(err);
+			});
+		}
+		if(data.length == 0){
+			fs.writeFile("../tagBlacklist.json",'{"artist":[],"character":[]}',function(err){
+				if(err) console.log(err);
+			});
+		}
+		else{
+			tagBlacklist = JSON.parse(data);
+		}
+	});
+
 	// Splits string using a pair of tokens. returns list of things between token pairs.
 	// nested token pairs will return outermost pair.
 	function doubleSplit(string,str1,str2,callback){
@@ -102,6 +122,15 @@ const version = "1.2.0";
 	}
 
 	function titleCheck(title,callback){
+		var tEnd = title.length-1;
+		['(',')','[',']','{','}'].forEach(t => {
+			let idx = title.indexOf(t)
+			if(idx >= 0 && idx < tEnd){
+				tEnd = idx;
+			}
+		});
+		var thisTitle = title.substr(0,tEnd);
+
 		var is_nsfw = false;
 		var artists = [];
 		var characters = [];
@@ -145,6 +174,7 @@ const version = "1.2.0";
 			check = false;
 			exceptionsValid = true;
 			callback(true,is_nsfw,"",{
+				"title":thisTitle,
 				"artists":artists,
 				"characters":characters,
 				"genders":genders,
@@ -234,6 +264,7 @@ const version = "1.2.0";
 
 									if(allTagsPresent){
 										callback(true,is_nsfw,"",{
+											"title":thisTitle,
 											"artists":artists,
 											"characters":characters,
 											"types":types,
@@ -327,11 +358,19 @@ const version = "1.2.0";
 																	}
 																});
 
+																var crossPost = "Title: " + res.title +
+																"\n\nArtist: " + res.artist +
+																"\nCharacter(s): " + res.characters.join(", ") +
+																"\nVore types: " + res.types.join(", ") +
+																"\nOther tags: " + res.content.join(", ") +
+																"\n\nThread: " + "http://www.reddit.com" + post.permalink +
+																"\nLink: " + post.link;
+
 																if(nsfw){
-																	bot.channels.get(nsfwChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																	bot.channels.get(nsfwChannel).send(crossPost);
 																}
 																else{
-																	bot.channels.get(voreChannel).send("http://www.reddit.com"+post.permalink+"\n\n"+post.url);
+																	bot.channels.get(voreChannel).send(crossPost);
 																}
 															}
 														}
@@ -538,6 +577,22 @@ const version = "1.2.0";
 */
 
 // Reddit integration
+
+function blacklist(message,callback){
+	var parameters = message.content.split(" ");
+	if(message.member.hasPermission("MANAGE_CHANNELS")){
+		if(parameters.length < 3 || ["artist","character"].every(t => parameters[1] != t)){
+			callback("add an artist or character tag to the blacklist\n\nUsage: !!blacklist (artist | character) (name)");
+		}
+		else{
+			tagBlacklist[parameters[1]].push(parameters[2]);
+
+		}
+	}
+	else{
+		callback("Error: That is a restricted command.");
+	}
+}
 
 function titlecheck(m,callback,fromReddit){
 	var title = fromReddit ? m : m.content.substr(prefix.length+"titlecheck".length+1);
