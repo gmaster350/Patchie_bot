@@ -45,12 +45,13 @@ const version = "1.4.0";
 	// Master Regular Expression
 	var titleMatch = new RegExp(/( *\[.+\].+( *[\(\[\{] *.+ *[\)\]\}])+ *)|(.+( *[\(\[\{] *.+ *[\)\]\}])+ *)|( *\[.+\].+)/g);
 
-	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey"];
+	var exceptions = ["roleplay","rp","discussion","meta","question","request","survey","written","writing","story"];
 	var vorePrepends = ["implied","imminent"];
 	var voreTypes = ["soft vore","hard vore","oral vore","anal vore","unbirth","vaginal vore","dick vore","cock vore","urethra vore","tail vore","absorption","alternative vore","mawshot","non vore","non-vore","tongueplay","tongue play","tongue-play"];
 
 	var voreChannel = "360355480490475522";
 	var nsfwChannel = "360355651119087618";
+	var storyChannel = "385716016497557506";
 
 
 	// artists or characters that have been requested to be automatically removed.
@@ -121,16 +122,7 @@ const version = "1.4.0";
 		else callback(string);
 	}
 
-	function titleCheck(title,callback){
-		var tEnd = title.length-1;
-		['(',')','[',']','{','}'].forEach(t => {
-			let idx = title.indexOf(t)
-			if(idx >= 0 && idx < tEnd){
-				tEnd = idx;
-			}
-		});
-		var thisTitle = title.substr(0,tEnd);
-
+	function titleCheck(title,callback,post){
 		var is_nsfw = false;
 		var artists = [];
 		var characters = [];
@@ -169,12 +161,21 @@ const version = "1.4.0";
 
 		// If the title begins with one of the exceptions, we do not need to check for tags set check as false.
 		else if(exceptions.some(function(ex){
-			return title.toLowerCase().replace(" ","").startsWith("[" + ex + "]");
+			if(title.toLowerCase().replace(" ","").startsWith("[" + ex + "]") ||
+			title.toLowerCase().replace(" ","").startsWith("(" + ex + ")")){
+				if(["writing","written","story"].some(e => ex == e)){
+					bot.channels.get(storyChannel).send("New story posted: "+
+						"\n\nLink: " + post.link +
+						"\nThread: " + "http://www.reddit.com" + post.permalink;
+					);
+				}
+				return true;
+			}
+			else return false;
 		})){
 			check = false;
 			exceptionsValid = true;
 			callback(true,is_nsfw,"",{
-				"title":thisTitle,
 				"artists":artists,
 				"characters":characters,
 				"genders":genders,
@@ -264,7 +265,6 @@ const version = "1.4.0";
 
 									if(allTagsPresent){
 										callback(true,is_nsfw,"",{
-											"title":thisTitle,
 											"artists":artists,
 											"characters":characters,
 											"types":types,
@@ -315,62 +315,112 @@ const version = "1.4.0";
 														console.log(String(is_valid) + " ==> " + post.title);
 
 														if(is_valid){
-
-															// approve post //
-															if(nsfw){
-																reddit.nsfw(thing,function(err){
+															var badArtist;
+															var badCharacter;
+															if(res.characters.some(c1 => {
+																return tagBlacklist.character.some(c2 => {
+																	if(c1 == c2){
+																		badCharacter = c1;
+																		return true;
+																	}
+																	else{
+																		return false;
+																	}
+																});
+															})){ // has blacklisted characters //
+																reddit.remove(thing,function(err){
+																	// Send the user a message about why their post was removed.
 																	if(err) console.log(err);
 																	else{
-																		reddit.approve(thing,function(err){
-																			if(err){
-																				console.log(err);
-																			}
+																		reddit.message({
+																			"to":post.author,
+																			"subject":"Your post was automatically removed",
+																			"text":"Your post has been removed because the character " + badCharacter + " is blacklisted."
+																		},function(err){
+																			if(err)console.log(err);
+																		});
+																	}
+																});
+															}
+															else if(tagBlacklist.artist.some(a => {
+																if(a == res.artist){
+																	a = badArtist;
+																	return true;
+																}
+																else{
+																	return false;
+																}
+															})){ // has blacklisted artists //
+																reddit.remove(thing,function(err){
+																	// Send the user a message about why their post was removed.
+																	if(err) console.log(err);
+																	else{
+																		reddit.message({
+																			"to":post.author,
+																			"subject":"Your post was automatically removed",
+																			"text":"Your post has been removed because the artist " + badArtist + " is blacklisted."
+																		},function(err){
+																			if(err)console.log(err);
 																		});
 																	}
 																});
 															}
 															else{
-																reddit.approve(thing,function(err){
-																	if(err) console.log(err);
-																});
-															}
-
-															// archive posts if it is a link type.
-															if(post.name.startsWith("t3")){
-																fs.readFile("./postHistory.txt",function(err,file){
-																	if(err) console.log(err);
-																	else{
-																		data = JSON.parse(file);
-																		data.push({
-																			"fulldata":post,
-																			"permalink":"http://www.reddit.com"+post.permalink,
-																			"link":post.url,
-																			"thumbnail":post.thumbnail,
-																			"artists":res.artist,
-																			"characters":res.characters,
-																			"types":res.types,
-																			"content":res.content,
-																			"nsfw":nsfw
-																		});
-																		fs.writeFile("./postHistory",JSON.stringify(data),function(err){
-																			if(err) console.log(err);
-																		});
-																	}
-																});
-
-																var crossPost = "Title: " + res.title +
-																"\n\nArtist: " + res.artist +
-																"\nCharacter(s): " + res.characters.join(", ") +
-																"\nVore types: " + res.types.join(", ") +
-																"\nOther tags: " + res.content.join(", ") +
-																"\n\nThread: " + "http://www.reddit.com" + post.permalink +
-																"\nLink: " + post.link;
-
+																// approve post //
 																if(nsfw){
-																	bot.channels.get(nsfwChannel).send(crossPost);
+																	reddit.nsfw(thing,function(err){
+																		if(err) console.log(err);
+																		else{
+																			reddit.approve(thing,function(err){
+																				if(err){
+																					console.log(err);
+																				}
+																			});
+																		}
+																	});
 																}
 																else{
-																	bot.channels.get(voreChannel).send(crossPost);
+																	reddit.approve(thing,function(err){
+																		if(err) console.log(err);
+																	});
+																}
+
+																// archive posts if it is a link type.
+																if(post.name.startsWith("t3")){
+																	fs.readFile("./postHistory.txt",function(err,file){
+																		if(err) console.log(err);
+																		else{
+																			data = JSON.parse(file);
+																			data.push({
+																				"fulldata":post,
+																				"permalink":"http://www.reddit.com"+post.permalink,
+																				"link":post.url,
+																				"thumbnail":post.thumbnail,
+																				"artists":res.artist,
+																				"characters":res.characters,
+																				"types":res.types,
+																				"content":res.content,
+																				"nsfw":nsfw
+																			});
+																			fs.writeFile("./postHistory",JSON.stringify(data),function(err){
+																				if(err) console.log(err);
+																			});
+																		}
+																	});
+
+																	var crossPost = "Artist: " + res.artist +
+																	"\nCharacter(s): " + res.characters.join(", ") +
+																	"\nVore types: " + res.types.join(", ") +
+																	"\nOther tags: " + res.content.join(", ") +
+																	"\n\nThread: " + "http://www.reddit.com" + post.permalink +
+																	"\nLink: " + post.link;
+
+																	if(nsfw){
+																		bot.channels.get(nsfwChannel).send(crossPost);
+																	}
+																	else{
+																		bot.channels.get(voreChannel).send(crossPost);
+																	}
 																}
 															}
 														}
@@ -417,7 +467,7 @@ const version = "1.4.0";
 																}
 															}
 														}
-													});
+													},post);
 												}
 												else{
 													if(enforcePattern){
