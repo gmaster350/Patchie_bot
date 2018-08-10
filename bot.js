@@ -164,9 +164,9 @@ const version = "1.4.0";
 			if(title.toLowerCase().replace(" ","").startsWith("[" + ex + "]") ||
 			title.toLowerCase().replace(" ","").startsWith("(" + ex + ")")){
 				if(["writing","written","story"].some(e => ex == e)){
-					bot.channels.get(storyChannel).send("New story posted: "+
+					bot.channels.get(storyChannel).send("New story posted: " +
 						"\n\nLink: " + post.link +
-						"\nThread: " + "http://www.reddit.com" + post.permalink;
+						"\nThread: " + "http://www.reddit.com" + post.permalink
 					);
 				}
 				return true;
