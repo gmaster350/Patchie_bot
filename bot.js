@@ -408,12 +408,12 @@ const version = "1.4.0";
 																		}
 																	});
 
-																	var crossPost = "Artist: " + res.artist +
+																	var crossPost = "Artist(s): " + res.artists.join(", ") +
 																	"\nCharacter(s): " + res.characters.join(", ") +
 																	"\nVore types: " + res.types.join(", ") +
 																	"\nOther tags: " + res.content.join(", ") +
 																	"\n\nThread: " + "http://www.reddit.com" + post.permalink +
-																	"\nLink: " + post.link;
+																	"\nLink: " + post.url;
 
 																	if(nsfw){
 																		bot.channels.get(nsfwChannel).send(crossPost);
