@@ -571,9 +571,11 @@ const version = "1.4.0";
 	const frequency = require("./frequency.js");
 	//const multiCharacter = require("./multiCharacter.js");
 
+	var skins = {};
+	var currentSkin = "";
 	const bannedIds = ["475013414566232094"];
 	const prefix = "!!";
-	const about =
+	var about =
 	"Made by: @Zapp#4885"+
 	"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
 	"\nVersion: "+version+
@@ -826,6 +828,62 @@ function removeRole(message,callback){
 	}
 }
 
+function skin(message,callback){
+	if(message.member.permissions.has("MANAGE_GUILD")){
+		var parameters = message.content.split(" ");
+		if(parameters[1] == "add"){
+			var required = ["icon","source","artist","character","owner"];
+			var info = {};
+			var name = parameters[2];
+			parameters.slice(3).forEach(p => {
+				var key = p.split(":")[0].trim().toLowerCase();
+				var value = p.split(":")[1].trim().toLowerCase();
+				required.some((r,i)=> {
+					if(key === r){
+						info[key] = value;
+						required.splice(i,1);
+						return true;
+					}
+					else return false;
+				});
+			});
+			if(required.length === 0){
+				bot.user.setAvatar(info.icon);
+
+				skins[parameters[2]] = info;
+				fs.writeFile("./skins.json",JSON.stringify(skins),function(err){
+					if(err) console.log(err);
+				});
+
+				about =
+				"Made by: @Zapp#4885"+
+				"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
+				"\nVersion: "+version+
+				"\n\n**Icon info**"+
+				"\nSource: "+"<"+info.source+">"+
+				"\nArtist: "+"<"+info.artist+">"+
+				"\nCharacter: "+info.character+
+				"\nOwner: "+"<"+info.owner+">";
+			}
+		}
+		else{
+			if(Object.keys(skins).some(s => s == parameters[1])){
+				currentSkin = parameters[1];
+			}
+			var info = skins[currentSkin];
+			about =
+			"Made by: @Zapp#4885"+
+			"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
+			"\nVersion: "+version+
+			"\n\n**Icon info**"+
+			"\nSource: "+"<"+info.source+">"+
+			"\nArtist: "+"<"+info.artist+">"+
+			"\nCharacter: "+info.character+
+			"\nOwner: "+"<"+info.owner+">";
+		}
+	}
+}
+
 function wipe(message,callback){
 	var parameters = message.content.split(" ");
 	var mentions = message.mentions.members;
@@ -917,6 +975,7 @@ var commandTree = {
 	"leaveRoom":privateRoom.leave,
 	"inviteToRoom":privateRoom.inviteToRoom,
 	"blacklist":blacklist,
+	"skin":skin,
 
 	//roles
 	"setRole":setRole,
@@ -946,6 +1005,60 @@ fs.readFile("../submenuData.txt",function(err,data){
 		});
 	}
 });
+
+fs.readFile("./skins.json",function(err,data){
+	if(err){
+		fs.writeFile("./skins.json","{}",function(err){
+			if(err) console.log(err);
+			else{
+				skins = JSON.parse(data);
+				Object.keys(skins).some(k => {
+					var attributes = skins[k];
+					if(attributes["active"]){
+						currentSkin = k;
+						return true;
+					}
+					else return false;
+				});
+				var info = skins[currentSkin];
+
+				bot.user.setAvatar(info.icon);
+				about =
+				"Made by: @Zapp#4885"+
+				"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
+				"\nVersion: "+version+
+				"\n\n**Icon info**"+
+				"\nSource: "+"<"+info.source+">"+
+				"\nArtist: "+"<"+info.artist+">"+
+				"\nCharacter: "+info.character+
+				"\nOwner: "+"<"+info.owner+">";
+			}
+		});
+	}
+	else{
+		skins = JSON.parse(data);
+		Object.keys(skins).some(k => {
+			var attributes = skins[k];
+			if(attributes["active"]){
+				currentSkin = k;
+				return true;
+			}
+			else return false;
+		});
+		var info = skins[currentSkin];
+
+		bot.user.setAvatar(info.icon);
+		about =
+		"Made by: @Zapp#4885"+
+		"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
+		"\nVersion: "+version+
+		"\n\n**Icon info**"+
+		"\nSource: "+"<"+info.source+">"+
+		"\nArtist: "+"<"+info.artist+">"+
+		"\nCharacter: "+info.character+
+		"\nOwner: "+"<"+info.owner+">";
+	}
+})
 
 
 /*
