@@ -99,8 +99,8 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 			roleGiven = aliasRole;
 		}
 		else if(parameters[1].indexOf(":") >= 0){
-			roleGiven = capitalize(parameters[1].substring(parameters[1].indexOf(":")+1).trim());
 			prefix = parameters[1].substring(0,parameters[1].indexOf(":"));
+			roleGiven = capitalize(parameters[1].substring(parameters[1].indexOf(":")+1));
 		}
 		else{
 			roleGiven = capitalize(parameters[1]);
@@ -113,7 +113,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 		}
 		else{
 			tags.forEach(function(t){
-				if(prefix != undefined && t.prefix == prefix){
+				if(prefix !== undefined && t.prefix == prefix){
 					// if the server already has the role, give the user the role
 					if(server.roles.some(function(role){
 						return role.name == roleGiven;
@@ -128,7 +128,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 							t.roles.push(roleGiven);
 							switch(t.prefix){
 								case "species":
-									fs.writeFile("specieslist.json", JSON.stringify(speciesRoles), function(err){
+									fs.writeFile("specieslist.json", JSON.stringify(t.roles), function(err){
 										if(err) console.log(err);
 									});
 									break;

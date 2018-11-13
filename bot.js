@@ -575,6 +575,7 @@ const version = "1.4.0";
 	var currentSkin = "";
 	const bannedIds = ["475013414566232094"];
 	const prefix = "!!";
+	var info;
 	var about =
 	"Made by: @Zapp#4885"+
 	"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
@@ -833,7 +834,7 @@ function skin(message,callback){
 		var parameters = message.content.split(" ");
 		if(parameters[1] == "add"){
 			var required = ["icon","source","artist","character","owner"];
-			var info = {};
+			info = {};
 			var name = parameters[2];
 			parameters.slice(3).forEach(p => {
 				var key = p.split(":")[0].trim().toLowerCase();
@@ -870,7 +871,7 @@ function skin(message,callback){
 			if(Object.keys(skins).some(s => s == parameters[1])){
 				currentSkin = parameters[1];
 			}
-			var info = skins[currentSkin];
+			info = skins[currentSkin];
 			about =
 			"Made by: @Zapp#4885"+
 			"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
@@ -1020,9 +1021,8 @@ fs.readFile("./skins.json",function(err,data){
 					}
 					else return false;
 				});
-				var info = skins[currentSkin];
+				info = skins[currentSkin];
 
-				bot.user.setAvatar(info.icon);
 				about =
 				"Made by: @Zapp#4885"+
 				"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
@@ -1045,9 +1045,8 @@ fs.readFile("./skins.json",function(err,data){
 			}
 			else return false;
 		});
-		var info = skins[currentSkin];
 
-		bot.user.setAvatar(info.icon);
+		info = skins[currentSkin];
 		about =
 		"Made by: @Zapp#4885"+
 		"\nRepository: <https://github.com/gmaster350/Patchie_bot>"+
@@ -1058,7 +1057,7 @@ fs.readFile("./skins.json",function(err,data){
 		"\nCharacter: "+info.character+
 		"\nOwner: "+"<"+info.owner+">";
 	}
-})
+});
 
 
 /*
@@ -1071,6 +1070,7 @@ var errorCodes = ["Error:","Warning:","Note:","Be advised:","Info:"];
 var errorTimeout = 30000;
 
 bot.on("ready",function(){
+	bot.user.setAvatar(info.icon);
 	bot.user.setPresence("online").then(function(user){
 		user.setGame(prefix+"help").then(function(usr){
 			console.log("Dragon vore bot is ready!");
