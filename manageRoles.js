@@ -54,6 +54,14 @@ var tags = [
 	}
 ];
 
+function allTags(){
+	var alltags = [];
+	tags.forEach(tg => {
+		tg.roles.forEach(t => alltags.push(t));
+	});
+	return alltags;
+}
+
 fs.readFile('./specieslist.json',function(err,file){
 	var s = JSON.parse(file);
 	tags.push({
@@ -104,6 +112,11 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 		}
 		else{
 			roleGiven = capitalize(parameters[1]);
+		}
+		
+		if(allTags().every(t => t != roleGiven)){
+			callback("Not a self-assignable role.");
+			return;
 		}
 
 		if(user.roles.some(function(r1){
