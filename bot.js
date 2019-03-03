@@ -986,6 +986,12 @@ function retroactiveRead(message,callback){
 	}
 }
 
+function sum(arr){
+	var t = 0;
+	for(i=0;i<arr.length;i++)t+=arr[i];
+	return t;
+}
+
 function weightedRandom(array,weights,callback){
 	var total = 0;
 	if(weights.some(function(w){
@@ -1080,6 +1086,7 @@ var commandTree = {
 	"skin":skin,
 	"inspectUser": inspectUser,
 	"pokeball":pokeball,
+
 
 	//roles
 	"setRole":setRole,
