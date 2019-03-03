@@ -3,12 +3,19 @@
 const fs = require("fs");
 var active = {}; //{userid:[node,node]}
 var timeLimit = 600000; //option selection timeout.
+function new_hash(){
+	let h = "";
+	for(let i = 0; i < 8; i++){
+		h += ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"][Math.random()*16]
+	}
+	return h;
+}
 
 class Branch{
 	constructor(description="[This is a new branch. use !!branchText to put some text here!]"){
 		this.description = description;
 		this.options = []; //[<String>,<String>,<String>]
-		this.branches = []; //[<Branch>,<Branch>,<Branch>]
+		this.branches = []; //[<Branch|Hash>,<Branch|Hash>,<Branch|Hash>]
 	}
 }
 

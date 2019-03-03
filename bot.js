@@ -829,6 +829,51 @@ function removeRole(message,callback){
 	}
 }
 
+function inspectUser(message, callback){
+	if(!(message.member.hasPermission("MANAGE_CHANNELS"))){
+		callback("Unsufficient permissions");
+		return;
+	}
+	var member = message.mentions.members.first();
+	if(member === undefined){
+		callback("Please specify a member.");
+		return;
+	}
+	bot.fetchUser(member.id).then(function(user){
+		var str = "Member data:\n";
+		var member = message.mentions.members.first();
+		Object.keys(member).forEach(function(key){
+			var val = member[key];
+			console.log(val);
+			if(val === undefined || val === null){}
+			else if(val.constructor.name == "Date"){
+				str += `\n${key} = ${member[key].toString()}`;
+			}
+			else if(val.constructor !== Object){
+				str += `\n${key} = ${member[key]}`;
+			}
+			else if(val.constructor.name == "Role"){
+				str += `\n${key} = ${member[key].name}`;
+			}
+		});
+		str += "\n\nUser data:\n";
+		Object.keys(user).forEach(function(key){
+			var val = user[key];
+			console.log(val);
+			if(val === undefined || val === null){}
+			else if(val.constructor.name == "Date"){
+				str += `\n${key} = ${user[key].toString()}`;
+			}
+			else if(val.constructor !== Object){
+				str += `\n${key} = ${user[key]}`;
+			}
+		});
+		callback(str);
+	}).catch(function(err){
+		console.log(err);
+	});
+}
+
 function skin(message,callback){
 	if(message.member.permissions.has("MANAGE_GUILD")){
 		var parameters = message.content.split(" ");
@@ -941,6 +986,62 @@ function retroactiveRead(message,callback){
 	}
 }
 
+function weightedRandom(array,weights,callback){
+	var total = 0;
+	if(weights.some(function(w){
+		if(w.constructor == Number){
+			total += w;
+			return false;
+		}
+		else{
+			return true;
+		}
+	})){
+		throw "ALL weights must be numbers; integers or floats.";
+	};
+
+	if(array.length != weights.length){
+		throw "lengths of arrays must be equal.";
+	}
+
+	var ret;
+	var point = Math.random()*total;
+	for(var i = 0, min = 0, max = array[0]; i < array.length; i++){
+		max = sum(weights.slice(0,i+1));
+		if(point > min && point < max){
+			ret = array[i];
+		}
+		min = sum(weights.slice(0,i+1));
+	}
+	callback(ret);
+}
+
+function pokeball(m,c){
+	var pokemons = [
+		{name:"eevee",chance:1},
+		{name:"pidgey",chance:1},
+		{name:"umbreon",chance:1},
+		{name:"pikachu",chance:1},
+		{name:"lucario",chance:5},
+		{name:"arcanine",chance:5},
+		{name:"ninetales",chance:5},
+		{name:"furret",chance:5},
+		{name:"lugia",chance:25},
+	];
+
+	var names = [];
+	var chances = [];
+
+	pokemons.forEach(p => {
+		names.push(p.name);
+		chances.push(p.chance);
+	});
+
+	weightedRandom(names,chances,function(pokemon){
+		c(`You swallow a pokeball. It releases a ${pokemon} in your belly.`);
+	});
+}
+
 function initializeMultiCharacter(message,callback){
 	manageRoles.initialize(message,bot,function(res){
 		callback(res);
@@ -977,6 +1078,7 @@ var commandTree = {
 	"inviteToRoom":privateRoom.inviteToRoom,
 	"blacklist":blacklist,
 	"skin":skin,
+	"inspectUser": inspectUser,
 
 	//roles
 	"setRole":setRole,
