@@ -1024,15 +1024,15 @@ function weightedRandom(array,weights,callback){
 
 function pokeball(m,c){
 	var pokemons = [
-		{name:"eevee",chance:1},
-		{name:"pidgey",chance:1},
-		{name:"umbreon",chance:1},
-		{name:"pikachu",chance:1},
+		{name:"eevee",chance:10},
+		{name:"pidgey",chance:10},
+		{name:"umbreon",chance:10},
+		{name:"pikachu",chance:10},
 		{name:"lucario",chance:5},
 		{name:"arcanine",chance:5},
 		{name:"ninetales",chance:5},
 		{name:"furret",chance:5},
-		{name:"lugia",chance:25},
+		{name:"lugia",chance:1},
 	];
 
 	var names = [];
