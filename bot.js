@@ -1059,8 +1059,10 @@ function pokeball(m,c){
 		chances.push(p.chance);
 	});
 
+	var shiny = Math.floor(Math.random() * 50) === 1 ? "**Shiny** " : "";
+
 	weightedRandom(names,chances,function(pokemon){
-		c(`You swallow a pokeball. It releases a ${pokemon} in your belly.`);
+		c(`You swallow a pokeball. It releases a ${shiny}${pokemon} in your belly.`);
 	});
 }
 
