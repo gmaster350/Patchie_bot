@@ -1079,6 +1079,7 @@ var commandTree = {
 	"blacklist":blacklist,
 	"skin":skin,
 	"inspectUser": inspectUser,
+	"pokeball":pokeball,
 
 	//roles
 	"setRole":setRole,
