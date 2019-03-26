@@ -12,15 +12,6 @@
 		]
 	},
 	{
-                "words":["who","best","dragon"],
-                "type":"ordered",
-                "responses":[
-                        "Calculating...\nresult: Vince.",
-                        "Vince it best dragon!",
-                        "Gotta be Vince."
-                ]
-        },
-	{
 		"words":["fuck","you"],
 		"type":"ordered",
 		"responses":[
@@ -120,10 +111,27 @@
 		]
 	},
 	{
+        "words":["who","best","dragon"],
+        "type":"ordered",
+        "responses":[
+            "Calculating...\nresult: Vince.",
+            "Vince it best dragon!",
+            "Gotta be Vince."
+        ]
+    },
+	{
 		"words":["some"],
 		"type":"exact",
 		"responses":[
 			"BODY once told me the world was gonna roll me, I ain’t the sharpest tool in the shed."
+		]
+	},
+	{
+		"words":["who","best","noodle"],
+		"type":"ordered",
+		"responses":[
+			"Must be Mike!",
+			"Calculations suggest...Mike!"
 		]
 	}
 ]
