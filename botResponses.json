@@ -12,6 +12,15 @@
 		]
 	},
 	{
+                "words":["who","best","dragon"],
+                "type":"ordered",
+                "responses":[
+                        "Calculating...\nresult: Vince.",
+                        "Vince it best dragon!",
+                        "Gotta be Vince."
+                ]
+        },
+	{
 		"words":["fuck","you"],
 		"type":"ordered",
 		"responses":[
