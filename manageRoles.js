@@ -120,7 +120,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 			callback("You already have the role "+roleGiven+".");
 		}
 		else{
-			tags.forEach(function(t){
+			tags.some(function(t){
 				if(prefix !== undefined && t.prefix == prefix){
 					// if the server already has the role, give the user the role
 					if(server.roles.some(function(role){
@@ -128,6 +128,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					})){
 						var newRole = getRoleFromGuildByName(server,roleGiven);
 						user.addRole(newRole);
+						return true;
 //TODO//				characterSets[message.member.id].currentCharacter().addRole(newRole);
 					}
 					// otherwise, create the new role.
@@ -138,6 +139,7 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 								case "species":
 									fs.writeFile("specieslist.json", JSON.stringify(t.roles), function(err){
 										if(err) console.log(err);
+										else return true;
 									});
 									break;
 							}
@@ -160,10 +162,6 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 						});
 					}
 				}
-				else if(allTags().every(t => t != roleGiven)){
-					callback("Not a self-assignable role.");
-					return;
-				}
 				else if(t.roles.some(function(tr){return tr == roleGiven;})){
 					var replaced = ".";
 					t.roles.forEach(function(tr){
@@ -182,12 +180,21 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 					if(role === undefined) errorCallback("The role was not found. You should add it.");
 					else{
 						user.addRole(role).then(function(ro){
+							return true;
 //TODO//					characterSets[message.member.id].addRole(roleGiven);
 						}).catch(function(err){
 							console.log(err);
+							return false;
 						});
 					}
 					callback("Added role "+roleGiven+replaced);
+				}
+				else if(allTags().every(t => t != roleGiven)){
+					callback("Not a self-assignable role.");
+					return true;
+				}
+				else{
+					return false;
 				}
 			});
 		}
