@@ -113,11 +113,6 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 		else{
 			roleGiven = capitalize(parameters[1]);
 		}
-		
-		if(allTags().every(t => t != roleGiven)){
-			callback("Not a self-assignable role.");
-			return;
-		}
 
 		if(user.roles.some(function(r1){
 			return r1.name == roleGiven;
@@ -164,6 +159,10 @@ function setRole(message,callback,errorCallback,alias=false,aliasRole=""){
 							console.log(err);
 						});
 					}
+				}
+				else if(allTags().every(t => t != roleGiven)){
+					callback("Not a self-assignable role.");
+					return;
 				}
 				else if(t.roles.some(function(tr){return tr == roleGiven;})){
 					var replaced = ".";
