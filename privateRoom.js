@@ -77,7 +77,7 @@ function getRoleFromGuildByName(guild,name){
 
 // Create Group Room, only visible to members of the group
 function create(message,callback,alias=false,name=""){
-	if(!alias && message.content.split(" ").length == 1){
+	if(message.content.split(" ").length == 1){
 		if(alias) callback("Usage: `!!eat @user ... `");
 		else callback("Usage: privateRoom *room_name* \@user \@user ...\nCreates a private room for you and any mentioned users (You are automatically included). Room will be a text channel visible only to you and your mentioned users. Room is destroyed when all participants leave the room via `leaveRoom`");
 	}
