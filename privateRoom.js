@@ -76,15 +76,16 @@ function getRoleFromGuildByName(guild,name){
 }
 
 // Create Group Room, only visible to members of the group
-function create(message,callback){
-	if(message.content.split(" ").length == 1){
-		callback("Usage: privateRoom *room_name* \@user \@user ...\nCreates a private room for you and any mentioned users (You are automatically included). Room will be a text channel visible only to you and your mentioned users. Room is destroyed when all participants leave the room via `leaveRoom`");
+function create(message,callback,alias=false,name=""){
+	if(!alias && message.content.split(" ").length == 1){
+		if(alias) callback("Usage: `!!eat @user ... `");
+		else callback("Usage: privateRoom *room_name* \@user \@user ...\nCreates a private room for you and any mentioned users (You are automatically included). Room will be a text channel visible only to you and your mentioned users. Room is destroyed when all participants leave the room via `leaveRoom`");
 	}
 	else if(message.channel.type != "text"){
 		callback("You cannot call this command outside of a server.");
 	}
 	else{
-		var name = message.content.split(" ")[1];
+		var name = alias ? name : message.content.split(" ")[1];
 		if(name.length > 98){
 			callback("Channel names must not exceed 98 characters!");
 		}
@@ -108,9 +109,9 @@ function create(message,callback){
 	}
 }
 
-function inviteToRoom(message,callback){
-	if(message.channel.topic.match(/^\{[1234567890abcdef]{4}\}.*$/)){
-		var newRole = getRoleFromGuildByName(message.guild,message.channel.topic.substring(1,5));
+function inviteToRoom(message,callback,alias=false,id=""){
+	if(alias || message.channel.topic.match(/^\{[1234567890abcdef]{4}\}.*$/)){
+		var newRole = getRoleFromGuildByName(message.guild, alias ? id : message.channel.topic.substring(1,5));
 
 		if(message.mentions.users.size > 0){
 			message.mentions.users.map(function(mentionedUser,uid){
@@ -120,7 +121,8 @@ function inviteToRoom(message,callback){
 			});
 		}
 		else{
-			callback("Usage: inviteToRoom @user @user ...\nAdds another user to your private room.");
+			if(alias) callback("Usage: `!!eat @user ... `");
+			else callback("Usage: inviteToRoom @user @user ...\nAdds another user to your private room.");
 		}
 	}
 	else{

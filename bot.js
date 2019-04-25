@@ -1072,6 +1072,26 @@ function initializeMultiCharacter(message,callback){
 	});
 }
 
+function eat(m,c){
+	var name = m.member.displayName + "s_stomach";
+	var id = null;
+	if(m.guild.channels.every(channel => {
+		if(channel.name == name){
+			id = channel.topic.substring(1,5);
+			return false;
+		}
+		else{
+			return true;
+		}
+	})){
+		privateRoom.create(m,c,true,name);
+	}
+	else{
+		privateRoom.inviteToRoom(m,c,true,id);
+	}
+
+}
+
 // Submenu Module
 
 var commandTree = {
@@ -1083,6 +1103,7 @@ var commandTree = {
 		"forceError":function(m,c){if(m.author.id == owner){c(UndefinedVariable);}}, // Will divide by zero.
 		"whereami":submenu.place
 	},
+	"eat":eat,
 	"back":submenu.up,
 	"help":submenu.list,
 	"whereami":submenu.place,
