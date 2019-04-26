@@ -1492,15 +1492,21 @@ bot.on("guildMemberAdd",function(member){
 	}
 });
 
-/*
+
 bot.on("guildMemberUpdate",(oldMember, newMember) => {
 	if(oldMember.displayName != newMember.displayName){
-		manageRoles.switchCharacter(newMember, newMember.displayName, function(res){
-			console.log(res);
+		let oldName = oldMember.displayName;
+		let newName = newMember.displayName;
+		let guild = oldMember.guild;
+
+		guild.channels.some(channel => {
+			if(channel.name == "p_"+cleanChannelName(oldName)+"s_stomach"){
+				channel.setName("p_"+cleanChannelName(newName)+"s_stomach");
+			}
 		});
 	}
 });
-*/
+
 
 bot.on("guildMemberRemove",function(member){
 	member.guild.channels.find("name","general").send("Sorry to see you go, "+member.displayName);
