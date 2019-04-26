@@ -84,6 +84,9 @@ function create(message,callback,alias=false,name=""){
 	else if(message.channel.type != "text"){
 		callback("You cannot call this command outside of a server.");
 	}
+	else if(alias && message.mentions.members.some((member, mid) => { mid === message.member.id })){
+		callback("You cannot eat yourself!");
+	}
 	else{
 		var name = alias ? name : message.content.split(" ")[1];
 		if(name.length > 98){
