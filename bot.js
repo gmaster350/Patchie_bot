@@ -1099,7 +1099,7 @@ function cleanChannelName(name){
 					}
 					break;
 				case "~":
-				case " ";
+				case " ":
 					if(c !== "-"){
 						new_name += "-";
 					}
