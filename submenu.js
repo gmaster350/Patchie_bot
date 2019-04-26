@@ -10,7 +10,7 @@ var tree = {};
 
 function evaluate(prefix,message,callback){
 	var parameters = message.content.substr(prefix.length).split(" ");
-	parameters[0] = parameteras[0].toLowerCase();
+	parameters[0] = parameters[0].toLowerCase();
 	if(parameters[0] == "root"){ // Users should always have a way to return to root.
 		active[message.author.id] = [];
 		callback("Info: Returned to root");
