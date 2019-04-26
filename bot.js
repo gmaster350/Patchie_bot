@@ -1079,7 +1079,6 @@ function cleanChannelName(name){
 	var special = "~ -_".split("");
 	for(let i = 0; i < name.length; i++){
 		let char = name.charAt(i);
-		let new_char;
 
 		if(lower.some(l => l === char)){
 			new_name += char;
@@ -1094,13 +1093,9 @@ function cleanChannelName(name){
 					new_name += "_";
 					break;
 				case "-":
-					if(new_name.length > 0 && c !== "-"){
-						new_name += "-";
-					}
-					break;
 				case "~":
 				case " ":
-					if(c !== "-"){
+					if(new_name.length > 0 && c !== "-"){
 						new_name += "-";
 					}
 					break;
