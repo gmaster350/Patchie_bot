@@ -1080,14 +1080,14 @@ function cleanChannelName(name){
 	for(let i = 0; i < name.length; i++){
 		let char = name.charAt(i);
 
-		if(lower.some(l => l === char)){
+		if(lower.some(character => character === char)){
 			new_name += char;
 		}
-		else if(upper.some(u => u === char)){
+		else if(upper.some(character => character === char)){
 			new_name += char.toLowerCase();
 		}
-		else if(special.some(s => s === char)){
-			let c = new_name.charAt(new_name.length-1);
+		else if(special.some(character => character === char)){
+			let c = new_name.length > 0 ? new_name.charAt(new_name.length-1) : null;
 			switch(char){
 				case "_":
 					new_name += "_";
@@ -1095,7 +1095,7 @@ function cleanChannelName(name){
 				case "-":
 				case "~":
 				case " ":
-					if(new_name.length > 0 && c !== "-"){
+					if(c !== null && c !== "-"){
 						new_name += "-";
 					}
 					break;
@@ -1106,7 +1106,7 @@ function cleanChannelName(name){
 }
 
 function eat(m,c){
-	var name = cleanChannelName(m.member.displayName.replace(" ") + "s_stomach");
+	var name = cleanChannelName(m.member.displayName + "s_stomach");
 	var id = null;
 	if(m.guild.channels.every(channel => {
 		if(channel.name == name){
