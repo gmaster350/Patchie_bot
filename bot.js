@@ -1072,8 +1072,46 @@ function initializeMultiCharacter(message,callback){
 	});
 }
 
+function cleanChannelName(name){
+	var new_name = "";
+	var lower = "abcdefghijklmnopqrstuvwxyz".split("");
+	var upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+	var special = "~ -_".split("");
+	for(let i = 0; i < name.length; i++){
+		let char = name.charAt(i);
+		let new_char;
+
+		if(lower.some(l => l === char)){
+			new_name += char;
+		}
+		else if(upper.some(u => u === char)){
+			new_name += char.toLowerCase();
+		}
+		else if(special.some(s => s === char)){
+			let c = new_name.charAt(new_name.length-1);
+			switch(char){
+				case "_":
+					new_name += "_";
+					break;
+				case "-":
+					if(new_name.length > 0 && c !== "-"){
+						new_name += "-";
+					}
+					break;
+				case "~":
+				case " ";
+					if(c !== "-"){
+						new_name += "-";
+					}
+					break;
+			}
+		}
+	}
+	return new_name;
+}
+
 function eat(m,c){
-	var name = m.member.displayName + "s_stomach";
+	var name = cleanChannelName(m.member.displayName.replace(" ") + "s_stomach");
 	var id = null;
 	if(m.guild.channels.every(channel => {
 		if(channel.name == name){
