@@ -1109,7 +1109,7 @@ function eat(m,c){
 	var name = cleanChannelName(m.member.displayName + "s_stomach");
 	var id = null;
 	if(m.guild.channels.every(channel => {
-		if(channel.name == name){
+		if(channel.name == "p_"+name){
 			id = channel.topic.substring(1,5);
 			return false;
 		}
