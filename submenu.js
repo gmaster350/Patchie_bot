@@ -10,14 +10,14 @@ var tree = {};
 
 function evaluate(prefix,message,callback){
 	var parameters = message.content.substr(prefix.length).split(" ");
-	
+	parameters[0] = parameter[0].toLowerCase();
 	if(parameters[0] == "root"){ // Users should always have a way to return to root.
 		active[message.author.id] = [];
 		callback("Info: Returned to root");
 	}
 	else{
-		/* If the (sub)object 
-		// present at the user's active node 
+		/* If the (sub)object
+		// present at the user's active node
 		// of the menu tree
 		// contains a key
 		// matching the first parameter...*/
@@ -26,46 +26,46 @@ function evaluate(prefix,message,callback){
 				oh.subObject(submenu_tree,submenu_active,function(menu){
 					oh.hasKey(menu,parameters[0],function(has_key){
 						if(has_key){
-							
+
 							/* ...then move the user down the tree
 							// such that the user's new active node
 							// within the command tree
 							// is the submenu they gave*/
-							
+
 							down(message.author.id,parameters[0],function(response){
-								
-								/* The response given is what the value of the 
-								// key-value pair in the subobject at the 
-								// current location, which will be either a 
+
+								/* The response given is what the value of the
+								// key-value pair in the subobject at the
+								// current location, which will be either a
 								// string or a function.
-								
+
 								// The string response exists for the purpose of responsiveness.
-								
+
 								// If the value of the key-value pair with the key whose string-value
-								// is equal to the first command parameter 
-								// is another sub-object, 
-								// it means that the command they entered was the name of a submenu, 
+								// is equal to the first command parameter
+								// is another sub-object,
+								// it means that the command they entered was the name of a submenu,
 								// and must then be moved down the subtree.
-								// Their active node will be changed 
+								// Their active node will be changed
 								// to reflect their current location
 								// in the submenu tree. */
-								
+
 								if(typeof response == "string"){
 									callback(response);
-								}	
-								
+								}
+
 								/* If however the response's type is a function
-								// it indicates that the value of the key-value pair 
+								// it indicates that the value of the key-value pair
 								// with the key whose string-value
 								// is equal to the first command parameter
 								// references a function.
 								// In this case, the user remains where they are in the submenu tree
 								// and the function is called.
-								
+
 								// The function will be defined above, likely to handle the imput,
 								// processing the raw Message object so that it can be used by another
 								// method or function, of which will likely have its own formal parameter format. */
-								
+
 								else if(typeof response == "function"){
 									response(message,function(res){
 										callback(res);
@@ -84,10 +84,10 @@ function evaluate(prefix,message,callback){
 }
 
 
-function down(user,destination,callback){ 
+function down(user,destination,callback){
 	// Get User's current tree position
 	oh.subObject(tree,active[user],function(result){
-		// Check to see if the branches immediately 
+		// Check to see if the branches immediately
 		// below the current tree position
 		// contain the destination key.
 		oh.hasKey(result,destination,function(has_key){
@@ -110,7 +110,7 @@ function down(user,destination,callback){
 					active[user].push(destination);
 					callback("Info: Entered submenu *" + destination + "*");
 				}
-				else{ 
+				else{
 					callback("Error: Not a submenu or command.");
 				}
 			}
@@ -170,15 +170,15 @@ function list(message,callback){
 	else{
 		user = message.author.id;
 	}
-	
+
 	var response = "Info:\n**Current location:**\n[root] ";
-	
+
 	active[user].forEach(function(node){
 		response += "> " + node;
 	});
-	
+
 	response += "\n\n**Available:**";
-	
+
 	var makeResponse = new Promise(function(res,rej){
 		subObject(tree,active[user],function(menu){
 			var index = 0;
@@ -195,7 +195,7 @@ function list(message,callback){
 			});
 		});
 	});
-	
+
 	makeResponse.then(function(){
 		callback(response);
 	});
@@ -209,13 +209,13 @@ function place(message,callback){
 	else{
 		user = message.author.id;
 	}
-	
+
 	var response = "Info:\n**Current location:**\n[root] ";
-	
+
 	active[user].forEach(function(node){
 		response += "> " + node;
 	});
-	
+
 	callback(response);
 }
 
@@ -243,7 +243,7 @@ function getActive(userid,callback){
 function getActiveAll(callback){
 	callback(active);
 }
-	
+
 module.exports = {
 	"up":up,
 	"down":down,

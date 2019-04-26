@@ -1146,37 +1146,37 @@ var commandTree = {
 		"help":submenu.list,
 		"checkTitle":titlecheck
 	},
-	"checkTitle":titlecheck,
-	"editOption":interactives.editOption,
+	"checktitle":titlecheck,
+	"editoption":interactives.editOption,
 	"potion":potion.generate,
-	"potionIgnore":potion.changeSetting,
-	"privateRoom":privateRoom.create,
-	"createRoom":privateRoom.create,
-	"leaveRoom":privateRoom.leave,
-	"inviteToRoom":privateRoom.inviteToRoom,
+	"potionignore":potion.changeSetting,
+	"privateroom":privateRoom.create,
+	"createroom":privateRoom.create,
+	"leaveroom":privateRoom.leave,
+	"invitetoroom":privateRoom.inviteToRoom,
 	"blacklist":blacklist,
 	"skin":skin,
-	"inspectUser": inspectUser,
+	"inspectuser": inspectUser,
 	"pokeball":pokeball,
 
 
 	//roles
-	"setRole":setRole,
-	"removeRole":manageRoles.removeRole,
-	"hasRole":manageRoles.hasRole,
+	"setrole":setRole,
+	"removerole":manageRoles.removeRole,
+	"hasrole":manageRoles.hasRole,
 	"lfrp":manageRoles.lfrp,
 
 	//interactives
-	"addOption":interactives.addOption,
-	"branchText":interactives.changeDescription,
-	"startStory":interactives.start,
+	"addoption":interactives.addOption,
+	"branchtext":interactives.changeDescription,
+	"startstory":interactives.start,
 
 	//characters
-//	"describeCharacter":manageRoles.describeCharacter,
-//	"renameCharacter":manageRoles.renameCharacter,
+//	"describecharacter":manageRoles.describeCharacter,
+//	"renamecharacter":manageRoles.renameCharacter,
 //	"characters":manageRoles.listCharacters,
-//	"allCharacters":manageRoles.listAllCharacters,
-//	"initializeMultiCharacter":initializeMultiCharacter
+//	"allcharacters":manageRoles.listAllCharacters,
+//	"initializemulticharacter":initializeMultiCharacter
 }
 
 fs.readFile("../submenuData.txt",function(err,data){
