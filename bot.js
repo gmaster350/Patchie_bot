@@ -1137,6 +1137,74 @@ var commandTree = {
 		"whereami":submenu.place
 	},
 	"eat":eat,
+	"prune":function(m,c){
+		var params = m.content.split(" ").slice(1);
+		var permitted = m.member.hasPermission("MANAGE_GUILD");
+		if(params.length <= 1){
+			c("Usage: `!!prune (number) (day[s] | week[s] | year[s])` [Admin only]\n\nKicks all members whose last message was sent (or who have sent no messages but joined) more than the specified length of time ago.\nYou "+(permitted ? "have" : "**do not** have")+" permission to use this command");
+		}
+		else if(!permitted){
+			c("You do not have permissions to use this command.");
+		}
+  		else if(["days","day","weeks","week","years","year"].every(s => params[1] != s)){
+			c("second parameter must be one of: [day[s] week[s] year[s]] ");
+		}
+		else{
+			var time = Number(params[0]);
+			if(time === NaN || time <= 0) c("first parameter must be a positive number");
+
+			switch(params[1]){
+				case "days":
+				case "day":
+					time *= 1000 * 60 * 60 * 24;
+					break;
+				case "weeks":
+				case "week":
+					time *= 1000 * 60 * 60 * 24 * 7;
+					break;
+				case "years":
+				case "year":
+					time *= 1000 * 60 * 60 * 24 * 365;
+					break;
+			}
+
+			var now = new Date().valueOf();
+
+			var toKick = [];
+			var toKickString = [];
+			m.guild.members.map(member => {
+				if(member.user.bot === false){
+					if(member.lastMessage !== null && member.lastMessage.createdAt.valueOf() < (now - time)){
+						toKick.push(member);
+						toKickString.push(member.displayName);
+					}
+					else if(member.lastMessage === null && member.joinedAt.valueOf() < (now - time)){
+						toKick.push(member);
+						toKickString.push(member.displayName);
+					}
+				}
+			});
+
+			c(toKickString.length + " members will be kicked. Type `yes` to proceed, or `no` to cancel.\n\nTo be kicked:\n"+toKickString.join("\n"));
+			m.channel.awaitMessages(m2 =>  m2.member.id == m.member.id && (m2.content == "yes" || m2.content == "no" || m2.content.toLowerCase().startsWith("!!prune")),{ max:1, time:60000, errors:['time']}).then(col => {
+				let m3 = col.first();
+				if(m3.content == "yes"){
+					toKick.forEach(member => {
+						member.user.send("You were kicked from our server for being inactive too long.\nYou can rejoin our server using the link below\n\nhttps://discord.gg/fHxnBjd");
+						member.kick();
+					});
+					m3.channel.send("kicked "+toKick.length+" members.");
+				}
+				else{
+					if(m3.content.toLowerCase().startsWith("!!prune")) m3.channel.send("(prior command canncelled)");
+					else m3.channel.send("command cancelled");
+				}
+
+			}).catch(err => {
+				m.channel.send("no response after 60 seconds");
+			});
+		}
+	},
 	"back":submenu.up,
 	"help":submenu.list,
 	"whereami":submenu.place,
