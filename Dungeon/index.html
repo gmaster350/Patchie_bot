@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script type="text/javascript" src="Room.class.js"></script>
+		<script type="text/javascript" src="Item.class.js"></script>
+		<script type="text/javascript" src="Character.class.js"></script>
+		<script type="text/javascript" src="NPC.class.js"></script>
+		<script type="text/javascript" src="Dialogue.class.js"></script>
+		<script type="text/javascript" src="Container.class.js"></script>
+		<script type="text/javascript" src="setup.js"></script>
+		<script type="text/javascript">
+
+			var player = coco;
+
+			function updatePlayerInfo(){
+				$("#player_name").html(player.name);
+				$("#player_gender").html(player.gender);
+				$("#player_health").html(player.health.toFixed(2));
+
+				var player_items = [];
+				player.items.forEach(item => player_items.push(item.name));
+
+				var player_wearing = [];
+				player.wearing.forEach(wear => player_wearing.push(wear.name));
+
+				$("#player_inventory").html(player_items.join("<br>"));
+				$("#player_wearing").html(player_wearing.join("<br>"));
+			}
+
+			$(document).ready(function(){
+				$("#i").on("change",function(){
+					var text = $("#i").val();
+					var result = player.action(text);
+					$("#o").append(`<li>${result}</li>`);
+					$("#o").prop("scrollTop",$("#o").prop("scrollHeight"));
+					$("#i").val("");
+
+					updatePlayerInfo();
+				});
+
+				updatePlayerInfo();
+			});
+		</script>
+		<style>
+			#o {
+				padding-top: 10px;
+				padding-left: 10px;
+			}
+
+			#o li {
+				list-style: none;
+			}
+
+			#o li:nth-child(odd) {
+				background-color: #cccccc;
+			}
+
+			#o li:nth-child(even) {
+				background-color: #dddddd;
+			}
+		</style>
+	</head>
+	<body style="background-color:white;">
+		<div style="float:left;">
+			<ul id="o" style="height:200px; width:500px; border:1px black solid; overflow-y: scroll;"></ul>
+			<input id="i" type="text" style="width:500px"/>
+		</div>
+		<div style="float:left; margin-left: 20px;">
+			<p>Actions:</p>
+			<ul>
+				<li>look around</li>
+				<li>look at (item|container|npc|player)</li>
+				<li>go to (room)</li>
+				<li>speak to (npc)</li>
+				<li>say (option) {only when speaking to npc}</li>
+				<li>open (container)</li>
+				<li>take (item)</li>
+				<li>use (item) [on (item|container|npc|player)]</li>
+				<li>remove (wearing)</li>
+				<li>wear (wearing)</li>
+			</ul>
+		</div>
+		<div style="float:left; margin-left: 20px;">
+			<p>Player:</p>
+			<table>
+				<tbody>
+					<tr>
+						<td>Name</td><td id="player_name"></td>
+					</tr>
+					<tr>
+						<td>Gender</td><td id="player_gender"></td>
+					</tr>
+					<tr>
+						<td>Health</td><td id="player_health"></td>
+					</tr>
+					<tr>
+						<td>Inventory</td><td id="player_inventory"></td>
+					</tr>
+					<tr>
+						<td>Wearing</td><td id="player_wearing"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</body>
+</html>
