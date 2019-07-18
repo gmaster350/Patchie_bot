@@ -1,25 +1,20 @@
 class Item extends Actionable {
-	constructor(name, description, equippable = true, divisible = false, container = false){
+	constructor(name, description){
+		super();
 		this.name = name;
 		this.description = description;
-		this.type = type;
 
-		this.isEquippable = equippable;
-		this.isDivisible = divisible;
-		this.isContainer = container;
-
-		this.whileEquipped = function(player){};
-		this.onEquip = function(player){};
-		this.onUnequip = function(player){};
+		this.directActions["onEquip"] = function(self, player){
+			return {interrupt:false,print:""};
+		};
+		this.directActions["onUnequip"] = function(self, player){
+			return {interrupt:false,print:""};
+		};
 
 		if(description === "") this.description = name;
 	}
 
 	describe(){
 		return this.description;
-	}
-
-	use(player, other){
-		this.action["use"](player, other);
 	}
 }

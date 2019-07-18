@@ -6,6 +6,16 @@ class NPC extends Character {
 		this.dialogueStates = {
 			null: "Oh hey, what's up?"
 		};
+
+		this.directActions["onSpeakTo"] = function(self, player){
+			return {interrupt:false, print:""};
+		};
+		this.onLeaveConversation["onLeaveConversation"] = function(self, player){
+			return {interrupt:false, print:""};
+		};
+		this.directActions["onReceive"] = function(self, player, item){
+			return {interrupt:false, print:""};
+		}
 	}
 
 	addDialogue(option, reply, conditions=[], actions=[]){

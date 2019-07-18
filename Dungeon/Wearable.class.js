@@ -1,7 +1,7 @@
 class Wearable extends Item {
 	constructor(type,name,description){
 		super(name, description);
-		if(["shirt","bra","pants","skirt","dress","gloves","scarf","underwear","hat","ring","bracelet","anklet","necklace","socks","shoes","onesie","overalls","thighhighs","mask","earmuffs"].every(t => t !== Wearable.wearableTypeSynonym(type))) return null;
+		if(["shirt","bra","pants","skirt","dress","gloves","scarf","underwear","hat","ring","bracelet","anklet","necklace","socks","shoes","onesie","overalls","thighhighs","mask","earmuffs"].every(t => t !== Wearable.wearableTypeSynonym(type))) throw new Error("Bad wearingType '"+type+"'");
 		this.wearableType = Wearable.wearableTypeSynonym(type);
 		this.covered = {
 			"face":false,
@@ -84,8 +84,12 @@ class Wearable extends Item {
 		}
 
 		this.armor = 0;
-		this.onWear = function(player){};
-		this.onRemove = function(player){};
+		this.directActions["onWear"] = function(self, player){
+			return {interrupt:false,print:""};
+		};
+		this.directActions["onRemove"] = function(self, player){
+			return {interrupt:false,print:""};
+		};
 	}
 }
 
@@ -136,6 +140,7 @@ Wearable.wearableTypeSynonym = function(type){
 		case "highheels":
 		case "runners":
 		case "trainers":
+		case "footwear":
 		case "shoes":
 			return "shoes";
 		case "weddingring":
@@ -152,5 +157,11 @@ Wearable.wearableTypeSynonym = function(type){
 			return "overalls";
 		case "thighhighs":
 			return "thighhighs";
+		case "pants":
+		case "cargopants":
+		case "shorts":
+		case "shortshorts":
+		case "trousers":
+			return "pants";
 	}
 };

@@ -1,4 +1,4 @@
-class Character {
+class Character extends Actionable {
 	constructor(name, description, gender){
 		this.name = name;
 		this.description = description;
@@ -23,11 +23,10 @@ class Character {
 		this.scaled = false;
 
 		this.height = 1.8;
+		this.weight = 80;
 		this.hunger = 100;
 
-		this.wearing.push(new Item("shirt","plain shirt","shirt"));
-		this.wearing.push(new Item("pants","plain pants","pants"));
-		this.wearing.push(new Item("shoes","plain shoes","footwear"));
+		this.property = {};
 
 		Character.instances[this.name] = this;
 	}
@@ -179,22 +178,35 @@ class Character {
 			else return Character.instances[alias].action(s.slice(0,s.length-2).join(" "));
 		}
 		else if(action.match(/^look around$/g) !== null) return this.lookAround();
-		else if (action.match(/^look at \w+$/g) !== null) return this.lookAt(action.replace(/^look at (\w+)$/g,"$1"));
-		else if (action.match(/^open \w+$/g) !== null) return this.open(action.replace(/^open (\w+)$/g,"$1"));
-		else if (action.match(/^speak to \w+$/g) !== null) return this.speakTo(action.replace(/^speak to (\w+)$/g,"$1"));
+		else if(action.match(/^look at \w+$/g) !== null) return this.lookAt(action.replace(/^look at (\w+)$/g,"$1"));
+		else if(action.match(/^open \w+$/g) !== null) return this.open(action.replace(/^open (\w+)$/g,"$1"));
+		else if(action.match(/^speak to \w+$/g) !== null) return this.speakTo(action.replace(/^speak to (\w+)$/g,"$1"));
 		else if(action.match(/^go to \w+$/g) !== null) return this.goTo(action.replace(/^go to (\w+)$/g,"$1"));
 		else if(action.match(/^say \d+$/g) !== null) return this.say(action.replace(/^say (\d+)$/g,"$1"));
 		else if(action.match(/^close$/g) !== null) return this.close();
+		else if(action.match(/^give (\w+) to (\w+)$/g) !== null) return this.close();
 		else if(action.match(/^take \w+$/g) !== null) return this.take(action.replace(/^take (\w+)$/g,"$1"));
+		else if(action.match(/^put (\w+) in (\w+)$/g) !== null) return this.put(action.replace(/^put (\w+) in (\w+)$/g,"$1"),action.replace(/^put (\w+) in (\w+)$/g,"$2"));
 		else if(action.match(/^switch to \w+$/g) !== null)return this.switchTo(action.replace(/^switch to (\w+)$/g,"$1"));
 		else if(action.match(/^remove \w+$/g) !== null) return this.remove(action.replace(/^remove (\w+)$/,"$1"));
 		else if(action.match(/^wear \w+$/g) !== null) return this.wear(action.replace(/^wear (\w+)$/,"$1"));
 		else if(action.match(/^use \w+ on \w+$/g) !== null) return this.use(action.replace(/^use (\w+) on (\w+)$/g,"$1"), action.replace(/^use (\w+) on (\w+)$/g,"$2"));
-		else if(action.match(/^use \w+$/g) return this.use(action.replace(/^use (\w+)$/g,"$1"));
-		else if(Actionable.verbs.some(a => action.startsWith(a))){
-			var itemName = action.split(" ").slice(1).join(" ");
-			var verb = action.split(" ")[0];
-			return this.verb(itemName, verb);
+		else if(action.match(/^use \w+$/g)) return this.use(action.replace(/^use (\w+)$/g,"$1"));
+		else if(action.match("/^(" + Actionable.verbs.join("|") + ") (\w+) ( with (\w+))?$/g")) {
+			var anythingName;
+			var itemName;
+			var verb = action.replace("/^(" + Actionable.verbs.join("|") + ") (\w+) ( with (\w+))?$/g","$1");
+
+			if(action.match("/^(" + Actionable.verbs.join("|") + ") (\w+) with (\w+)$/g")){
+				anythingName = action.replace("/^(" + Actionable.verbs.join("|") + ") (\w+) with (\w+)$/","$3");
+				itemName = action.replace("/^(" + Actionable.verbs.join("|") + ") (\w+) with (\w+)$/","$2");
+			}
+			else{
+				anythingName = action.replace("/^(" + Actionable.verbs.join("|") + ") (\w+)$/","$2");
+				itemName = null;
+			}
+
+			return this.verb(verb, anythingName, itemName);
 		}
 		else{
 			flag = false;
@@ -202,15 +214,17 @@ class Character {
 		}
 
 		if(flag){
-
+			var ind = this.indirect("any");
+			updatePlayerInfo();
+			return ind.print;
 		}
 	}
 
 	lookAround(){
-		var ind = this.indirect("lookAround");
-		if(ind.interrupt) return ind;
+		var ind = this.indirect("lookAround",this.currentRoom);
+		if(ind.interrupt) return ind.print;
 
-		var str = "You are standing in " + this.currentRoom.name + "<br>" + this.currentRoom.description;
+		var str = ind.print + "You are standing in " + this.currentRoom.name + "<br>" + this.currentRoom.description;
 
 		if(this.currentRoom.rooms.length > 0){
 			str += ".<br><br> You can see paths to "
@@ -245,78 +259,76 @@ class Character {
 	}
 
 	lookAt(thing){
-		var ind = this.indirect("lookAt");
-		if(ind.interrupt) return ind;
+		var any = this.getAny(thing);
 
-		return this.getAny(thing).describe();
+		var ind = this.indirect("lookAt",any);
+		if(ind.interrupt) return ind.print;
+
+		return ind.print + any.describe();
 	}
 
 	leaveConversation(){
-		var ind = this.indirect("leaveConversation");
-		if(ind.interrupt) return ind;
+		var ind = this.indirect("leaveConversation",this,this.activeNpc);
+		if(ind.interrupt) return ind.print;
 
+		var oldName = this.activeNpc.name;
 		this.activeNpc = null;
+		return ind.print + "You stopped speaking to " + oldName;
 	}
 
 	open(containerName){
-		var ind = this.indirect("open");
-		if(ind.interrupt) return ind;
+		var container = this.getContainer(containerName);
+		if(container === null) return ind.print + "No containers by that name exist";
 
-		return this.getContainer(containerName).contents();
+		var ind = this.indirect("open",this,container);
+		if(ind.interrupt) return ind.print;
+
+		var onOpen = container.directAction("onOpen",this);
+
+		this.activeContainer = container;
+		return ind.print + container.contents();
 	}
 
 	speakTo(npcName){
-		var ind = this.indirect("speakTo");
-		if(ind.interrupt) return ind;
-
-		if(npcName == this.name) return "You cannot speak to yourself";
+		if(npcName == this.name) return ind.print + "You cannot speak to yourself";
 		var npc = this.getCharacter(npcName);
 
-		if(npc === null) return "Could not find anyone named '"+npcName+"'";
-		if(npc.constructor !== NPC) return "("+npcName+" has no dialogue)";
+		if(npc === null) return ind.print + "Could not find anyone named '"+npcName+"'";
+		if(npc.constructor !== NPC) return ind.print + "("+npcName+" has no dialogue)";
+
+		var ind = this.indirect("speakTo",this,npc);
+		if(ind.interrupt) return ind.print;
 
 		this.activeNpc = this.getCharacter(npcName);
-		return this.activeNpc.speakTo(this,null,true);
+		return ind.print + this.activeNpc.speakTo(this,null,true);
 	}
 
 	goTo(roomName, force=false){
-		var ind = this.indirect("goTo");
-		if(ind.interrupt) return ind;
-
-		var newRoom = null;
 		if(force){
-			if(roomName in Room.instances){
-				newRoom = Room.instances[roomName];
-			}
-			else{
-				return "No such room '"+roomName+"'";
-			}
+			if(!(roomName in Room.instances))return "No such room '"+roomName+"'";
+			var newRoom = Room.instances[roomName];
 		}
 		else{
 			this.currentRoom.leave(this);
-			newRoom = this.getRoom(roomName);
+			var newRoom = this.getRoom(roomName);
 		}
-		if(newRoom !== null){
-			var onExit = this.currentRoom.onExit(this);
-			this.currentRoom = newRoom;
-			this.currentRoom.characters.push(this);
-			var onEnter = this.currentRoom.onEnter(this);
 
-			var str = "";
-			str += onExit === "" ? "" : onExit + "<br>";
-			str += "Moved to room " + newRoom.name;
-			str += onEnter === "" ? "" : "<br>" + onEnter;
-			return str;
-		}
-		else{
-			return "Cannot see any rooms by that name";
-		}
+		if(newRoom === null) return ind.print + "Cannot see any rooms by that name";
+		var oldRoom = this.currentRoom;
+
+		this.currentRoom = newRoom;
+		var onExit = this.currentRoom.directAction("onExit", oldRoom);
+
+		var ind = this.indirect("goTo",this,oldRoom,newRoom);
+		if(ind.interrupt) return ind.print;
+
+		this.currentRoom.characters.push(this);
+		var onEnter = this.currentRoom.directAction("onEnter", this);
+
+		return ind.print + (onExit === "" ? "" : onExit + "<br>") + "Moved to room " + newRoom.name + (onEnter === "" ? "" : "<br>" + onEnter);
 	}
 
 	say(said){
-		var ind = this.indirect("say");
-		if(ind.interrupt) return ind;
-
 		if(this.activeNpc === null){
 			return "You are not speaking to anyone";
 		}
@@ -325,262 +337,235 @@ class Character {
 			this.activeNpc = null;
 			return "No longer speaking to " + oldName;
 		}
+
+		var ind = this.indirect("say", this, this.activeNpc);
+		if(ind.interrupt) return ind.print;
+
 		var a = this.activeNpc.speakTo(this, said);
+
 		if(this.activeNpc !== null) a += "<br><br>" + this.activeNpc.speakTo(this);
-		return a;
+		return ind.print + a;
 	}
 
 	close(){
-		var ind = this.indirect("close");
-		if(ind.interrupt) return ind;
+		if(this.activeContainer === null) return "Nothing was open";
+		var oldContainer = this.activeContainer;
 
-		if(this.activeContainer === null){
-			return "Nothing was open";
-		}
-		var oldContainerName = this.activeContainer.name;
+		var ind = this.indirect("close", this, oldContainer);
+		if(ind.interrupt) return ind.print;
+
+		var onClose = this.activeContainer.directAction("onClose",this);
+		if(onClose.interrupt) return onClose.print;
+
 		this.activeContainer = null;
-		return "Closed " + oldContainerName;
+
+		return ind.print + onClose.print + "Closed " + oldContainer.Name;
 	}
 
+	// move item from container or room into inventory
 	take(itemName){
-		var ind = this.indirect("take");
-		if(ind.interrupt) return ind;
+		var ind = this.indirect("take",this);
+		if(ind.interrupt) return ind.print;
 
-		if(this.activeContainer === null){
-			var item = null;
-			if(this.currentRoom.items.some(i => {
-				if(i.name == itemName){
-					item = i;
-					return true;
-				}
-				return false;
-			})){
-				this.items.push(item);
-				return "Took " + item.name;
-			}
-			else{
-				return "Could not find item '"+itemName+"'";
-			}
-		}
-		else{
-			if(this.activeContainer.takeItem(this,itemName)){
+		var item = null;
+		if(this.activeContainer !== null){
+			item = getContainerItem(itemName);
+			if(item !== null){
+				this.activeContainer.takeItem(this, itemName);
 				return "Took " + itemName + " from " + this.activeContainer.name;
 			}
-			else{
-				return "Could not find item '" + itemName + "' in " + this.activeContainer.name;
-			}
 		}
+
+		item = getRoomItem(itemName);
+		if(item !== null){
+			this.currentRoom.takeItem(this, itemName);
+			var onEquip = item.directAction("onEquip",player);
+			return "Took " + itemName;
+		}
+
+		return ind.print + "Could not find item '"+itemName+"'";
 	}
 
-	switchTo(npcName){
-		var ind = this.indirect("switchTo");
-		if(ind.interrupt) return ind;
+	// opposite of take; move item from inventory into container; (container does not need to be open, but does need to be openable by player)
+	put(itemName, containerName){
+		var item = this.getInventoryItem(itemName);
+		if(item === null) return "Could not find item '"+itemName+"'";
 
-		if(Object.keys(Character.instances).every(k => k !== npcName)) return "No characters by that name";
+		var container = this.getContainer(containerName);
+		if(container === null) return "Could not find item '"+containerName+"'";
+
+		var ind = this.indirect("put",this,item,container);
+		if(ind.interrupt) return int.print;
+
+		container.items.push(item);
+		this.items.some((itm,index) => {
+			if(itm === item){
+				this.items.splice(index,1);
+				return true;
+			}
+			return false;
+		});
+
+		var onUnequip = item.directAction("onUnequip",player);
+		if(onUnequip.interrupt) return onUnequip.print;
+
+		return onUnequip.print += "Put " + itemName + " into " + containerName;
+	}
+
+	// similar to put, but item is moved to room
+	drop(itemName){
+		var ind = this.indirect("put",this);
+		if(ind.interrupt) return int.print;
+
+		var item = this.getInventoryItem(itemName);
+		if(item === null) return ind.print + "Could not find item '"+itemName+"'";
+
+		this.currentRoom.takeItem(this, itemName);
+		var onEquip = item.directAction("onEquip",player);
+		return "Put " + itemName + " into " + containerName;
+	}
+
+	//change active player
+	switchTo(npcName){
+		if(Object.keys(Character.instances).every(k => k !== npcName)) return ind.print + "No characters by that name";
 		else{
 			var char = Character.instances[npcName];
 			if(char.constructor !== NPC) {
+				var ind = this.indirect("switchTo",this,char);
+				if(ind.interrupt) return ind.print;
+
 				player = char;
-				return "Now playing as " + player.name;
+				return ind.print + "Now playing as " + player.name;
 			}
 			else{
-				return "You cannot play as an NPC";
+				return ind.print + "You cannot play as an NPC";
 			}
 		}
 	}
 
 	remove(wearName){
-		var ind = this.indirect("remove");
-		if(ind.interrupt) return ind;
+		var wear = this.getWearing(wearName);
+		if(wear === null) return "Not wearing anything named '"+wearName+"'";
 
-		var wear = null;
-		if(this.wearing.some((w,i) => {
-			if(w.name == wearName){
-				this.wearing.pop(i);
-				wear = w;
-				return true;
-			}
-			return false;
-		})){
-			var onRemove = wear.onRemove(this);
-			this.items.push(wear);
-			return (onRemove ? onRemove + "<br>" : "") +  "Removed " + wearName;
-		}
-		else{
-			return "Not wearing anything named '"+wearName+"'";
-		}
+		var ind = this.indirect("remove",this,wear);
+		if(ind.interrupt) return ind.print;
+
+		var onRemove = wear.directAction("onRemove",this);
+		this.items.push(wear);
+		return ind.print + (onRemove ? onRemove + "<br>" : "") +  "Removed " + wearName;
 	}
 
 	wear(wearName){
-		var ind = this.indirect("wear");
-		if(ind.interrupt) return ind;
+		var wear = this.getInventoryItem(wearName);
+		if(wear === null) return "Could not find '"+wearName+"' in your inventory";
+		if(wear.constructor !== Wearable) return "Item '"+wearName+"' cannot be worn.";
 
-		var wear = null;
-		if(this.items.some((w,i) => {
-			if(w.name == wearName){
-				this.items.pop(i);
-				wear = w;
-				return true;
-			}
-			return false;
-		})){
-			if(wear.constructor !== Wearable){
-				return "Item '"+wearName+"' cannot be worn.";
-			}
-			this.wearing.push(wear);
-			var onWear = wear.onWear(this);
-			return (onWear ? onWear + "<br>" : "") +  "Now wearing " + wearName;
-		}
-		else{
-			return "Not wearing anything named '"+wearName+"'";
-		}
+		var ind = this.indirect("wear",this,wear);
+		if(ind.interrupt) return ind.print;
+
+		this.wearing.push(wear);
+		var onWear = wear.directAction("onWear", this);
+		return ind.print + (onWear ? onWear + "<br>" : "") +  "Now wearing " + wearName;
 	}
 
 	use(objectOneName, objectTwoName = null){
-		if(objectTwoName === null){
-			var obj = null;
 
-			if(this.items.some(item => {
-				if(item.name == objectOneName){
-					obj = item;
-					return true;
-				}
-				return false;
-			}) || this.activeContainer.items.some(item => {
-				if(item.name == objectOneName){
-					obj = item;
-					return true;
-				}
-				return false;
-			}) || this.currentRoom.items.some(item => {
-				if(item.name == objectOneName){
-					obj = item;
-					return true;
-				}
-				return false;
-			})){
-				return obj.use(this);
-			}
-			else{
-				return "Could not find item named '"+objectOneName+"'";
-			}
+
+		if(objectTwoName === null){
+			var obj = this.getAnyItem(objectOneName);
+			if(obj === null) return "Could not find item named '"+objectOneName+"'";
+
+			var ind = this.indirect("use",this,obj);
+			if(ind.interrupt) return ind.print;
+
+			return obj.directAction("use",this);
 		}
 		else{
-			var objOne = null;
-			var objTwo = null;
+			var objOne = this.getAnyItem(objectOneName, true);
+			var objTwo = this.getAnyItem(objectTwoName, true);
 
-			if(this.items.some(item => {
-				if(item.name == objectOneName){
-					objOne = item;
-					return true;
-				}
-				return false;
-			}) || this.activeContainer.items.some(item => {
-				if(item.name == objectOneName){
-					objOne = item;
-					return true;
-				}
-				return false;
-			}) || this.currentRoom.items.some(item => {
-				if(item.name == objectOneName){
-					objOne = item;
-					return true;
-				}
-				return false;
-			})){
-				if(this.items.some(item => {
-					if(item.name == objectTwoName){
-						objTwo = item;
-						return true;
-					}
-					return false;
-				}) || this.activeContainer.items.some(item => {
-					if(item.name == objectTwoName){
-						objTwo = item;
-						return true;
-					}
-					return false;
-				}) || this.currentRoom.items.some(item => {
-					if(item.name == objectTwoName){
-						objTwo = item;
-						return true;
-					}
-					return false;
-				})){
-					return objOne.use(this,objTwo);
-				}
-				else{
-					return "Could not find item named '"+objectTwoName+"'";
-				}
-			}
-			else{
-				return "Could not find item named '"+objectOneName+"'";
-			}
+			if(objOne === null) return "Could not find item named '"+objectOneName+"'";
+			if(objTwo === null) return "Could not find item named '"+objectTwoName+"'";
+
+			var ind = this.indirect("use",this,objOne,objTwo);
+			if(ind.interrupt) return ind.print;
+
+			return objOne.directAction("use",this,objTwo);
 		}
 	}
 
-	verb(itemName, verb){
-		var item = null;
-		if(this.items.some(i => {
-			if(i.name == itemName){
-				item = i;
+	give(npcName, itemName){
+		var item = this.getInventoryItem(itemName);
+		var npc = this.getCharacter(npcName);
+
+		if(npc === null || (npc.constructor !== Character && npc.constructor !== NPC)) return "Could not find anyone named '"+npcName.constructor === String ? : npcName : npcName.name+"'";
+
+		var ind = this.indirect("give",this,any);
+		if(ind.interrupt) return ind.print;
+
+		this.items.some((itm,index) => {
+			if(itm === item){
+				this.items.splice(index,1);
 				return true;
 			}
 			return false;
-		})){
-			return item.interact(verb,this);
-		}
-		else{
-			return "You have no items by that name";
-		}
+		});
+		var onUnequip = item.directAction("onUnequip",this);
+
+		npc.items.push(item);
+		var onEquip = item.directAction("onEquip",npc);
+
+		var onRecieve = npc.directAction("onReceive",this,item);
+
+		return onUnequip.print + onEquip.print + onReceive.print + "Gave '"+itemName+"' to '"+npcName+"'";
 	}
 
-	hasItem(itemName, type){
-		return this.items.some(item => ((itemName === null) && (type == item.type)) || ((type === null) && (item.name == itemName)) || ((item.name == itemName) && (item.type == type)));
+	verb(verb, name, itemName=null){
+		var any = this.getAny(name);
+		var item = this.getInventoryItem(itemName);
+		if(any === null) return "Could not find anything named '"+name++"'";
+
+		var ind = this.indirect(Actionable.verbSynonym(verb),this,any,item);
+		if(ind.interrupt) return ind.print;
+
+		var onVerb = item.directAction(Actionable.verbSynonym(verb),this,any,item);
+		if(onVerb.interrupt) return onVerb.print;
+
+		return onVerb.print;
 	}
 
-	isWearing(itemName, type){
+	hasItem(itemName){
+		return this.getInventoryItem(itemName) !== null;
+	}
+
+	isWearing(itemName, wearingType){
 		return this.wearing.some(item => ((itemName === null) && (type == item.type)) || ((type === null) && (item.name == itemName)) || ((item.name == itemName) && (item.type == type)));
 	}
 
-	give(npc, itemName){
-		var ind = this.indirect("give");
-		if(ind.interrupt) return ind;
 
-		var item = null;
-		if(this.items.some((i,index) => {
-			if(i.name == itemName){
-				return true;
-				item = i;
-				this.items.pop(index);
-			}
-			return false;
-		})){
-			npc.items.push(item);
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-
-	indirect(action){
+	indirect(action,a,b,c,d){
 		var str = "";
 		var flag = false;
 
-		this.items.forEach(item => {
-			var res = item.indirectAction[action];
+		Actionable.globalActions[action].forEach(callback => {
+			var res = callback(this,a,b,c,d);
 			if(res.print) str += "<br>" + res.print;
 			if(res.interrupt) flag = true;
 		});
-		this.currentRooom.items.forEach(item => {
-			var res = item.indirectAction[action];
+
+		this.items.forEach(item => {
+			var res = item.indirectAction(action);
+			if(res.print) str += "<br>" + res.print;
+			if(res.interrupt) flag = true;
+		});
+		this.currentRoom.items.forEach(item => {
+			var res = item.indirectAction(action);
 			if(res.print) str += "<br>" + res.print;
 			if(res.interrupt) flag = true;
 		});
 		if(this.activeContainer !== null){
 			this.activeContainer.items.forEach(item => {
-				var res = item.indirectAction[action];
+				var res = item.indirectAction(action);
 				if(res.print) str += "<br>" + res.print;
 				if(res.interrupt) flag = true;
 			});

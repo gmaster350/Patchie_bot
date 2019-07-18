@@ -1,15 +1,11 @@
-class Container extends Item {
+class RoomItem extends Actionable {
 	constructor(name, description){
-		super(name,description);
-		this.items = [];
+		super();
+		this.name = name;
+		this.description = description;
 
-		this.directActions["onOpen"] = function(player){
-			return {interrupt:false,print:""};
-		};
+		if(description === "") this.description = name;
 
-		this.directActions["onClose"] = function(player){
-			return {interrupt:false,print:""};
-		};
 	}
 
 	describe(){

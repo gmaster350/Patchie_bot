@@ -4,8 +4,12 @@
 		<meta charset="utf-8">
 		<title></title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script type="text/javascript" src="Actionable.class.js"></script>
+		<script type="text/javascript" src="RoomItem.class.js"></script>
+		<script type="text/javascript" src="RoomContainer.class.js"></script>
 		<script type="text/javascript" src="Room.class.js"></script>
 		<script type="text/javascript" src="Item.class.js"></script>
+		<script type="text/javascript" src="Wearable.class.js"></script>
 		<script type="text/javascript" src="Character.class.js"></script>
 		<script type="text/javascript" src="NPC.class.js"></script>
 		<script type="text/javascript" src="Dialogue.class.js"></script>
@@ -13,21 +17,85 @@
 		<script type="text/javascript" src="setup.js"></script>
 		<script type="text/javascript">
 
-			var player = coco;
+			function metricPrefix(x, unit, long, fdigits){
+				var prefixes=[
+					[-24, 'y' ,'yocto'],
+					[-21, 'z', 'zepto'],
+					[-18, 'a', 'atto'],
+					[-15, 'f', 'femto'],
+					[-12, 'p', 'pico'],
+					[ -9, 'n', 'nano'],
+					[ -6, 'µ', 'micro'],
+					[ -3, 'm', 'mili'],
+					[ -2, 'c', 'centi'],
+					[  0, '', ''],
+					[  3, 'K', 'kilo'],
+					[  6, 'M', 'mega'],
+					[  9, 'G', 'giga'],
+					[ 12, 'T', 'tera'],
+					[ 15, 'P', 'peta'],
+					[ 18, 'E', 'exa'],
+					[ 21, 'Z', 'zetta'],
+					[ 24, 'Y', 'yotta']
+				];
+
+				var prefix = {
+					'base': 1,
+					'power': 0,
+					'symbol': '',
+					'name': '',
+				};
+				if(x!=0){
+					for(var i=0; i<prefixes.length; i++){
+						var base = Math.pow(10, prefixes[i][0]);
+						if(x>=base){
+							prefix = {
+								'base': base,
+								'power': prefixes[i][0],
+								'symbol': prefixes[i][1],
+								'name': prefixes[i][2]
+							};
+						}
+						else break;
+					}
+					x = (x/prefix.base);
+				}
+				if(fdigits!=null) x=parseFloat(x.toFixed(fdigits)); //limit float digits
+				return ( x + (long?prefix.name:prefix.symbol) + (unit||"") );
+			}
 
 			function updatePlayerInfo(){
 				$("#player_name").html(player.name);
 				$("#player_gender").html(player.gender);
 				$("#player_health").html(player.health.toFixed(2));
 
-				var player_items = [];
-				player.items.forEach(item => player_items.push(item.name));
+				var player_items = {};
+				player.items.forEach(item => {
+					if(!(item.name in player_items)) player_items[item.name] = 0;
+					player_items[item.name]++;
+				});
+
+				var player_items_array = [];
+				Object.keys(player_items).forEach(itemName =>{
+					player_items_array.push(itemName + " [x" + player_items[itemName] + "]");
+				});
 
 				var player_wearing = [];
 				player.wearing.forEach(wear => player_wearing.push(wear.name));
 
-				$("#player_inventory").html(player_items.join("<br>"));
+				var h = player.height.toFixed(15);
+				while(h.charAt(h.length-1) === "0") h = h.substring(0,h.length-1);
+
+				$("#player_inventory").html(player_items_array.join("<br>"));
 				$("#player_wearing").html(player_wearing.join("<br>"));
+				$("#player_height").html(h + "m");
+				$("#player_weight").html((player.weight < 1) ? (metricPrefix(player.weight,"g",false,2)) : (player.weight.toFixed(2) + "kg"));
+				$("#player_str").html(player.str);
+				$("#player_con").html(player.con);
+				$("#player_dex").html(player.dex);
+				$("#player_int").html(player.int);
+				$("#player_wis").html(player.wis);
+				$("#player_cha").html(player.cha);
 			}
 
 			$(document).ready(function(){
@@ -101,6 +169,30 @@
 					</tr>
 					<tr>
 						<td>Wearing</td><td id="player_wearing"></td>
+					</tr>
+					<tr>
+						<td>Height</td><td id="player_height"></td>
+					</tr>
+					<tr>
+						<td>Weight</td><td id="player_weight"></td>
+					</tr>
+					<tr>
+						<td>STR</td><td id="player_str"></td>
+					</tr>
+					<tr>
+						<td>CON</td><td id="player_con"></td>
+					</tr>
+					<tr>
+						<td>DEX</td><td id="player_dex"></td>
+					</tr>
+					<tr>
+						<td>INT</td><td id="player_int"></td>
+					</tr>
+					<tr>
+						<td>WIS</td><td id="player_wis"></td>
+					</tr>
+					<tr>
+						<td>CHA</td><td id="player_cha"></td>
 					</tr>
 				</tbody>
 			</table>
