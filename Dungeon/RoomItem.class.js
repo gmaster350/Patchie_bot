@@ -3,6 +3,7 @@ class RoomItem extends Actionable {
 		super();
 		this.name = name;
 		this.description = description;
+		this.throwable = false;
 
 		if(description === "") this.description = name;
 

@@ -8,6 +8,20 @@ class Character extends Actionable {
 		this.wearing = [];
 		this.currentRoom = null;
 		this.activeContainer = null;
+		this.throwable = true;
+		this.activeStatusConditions = [];
+
+		// -4 = fine
+		// -3 = diminutive
+		// -2 = tiny
+		// -1 = small
+		// 0 = medium;
+		// 1 = large
+		// 2 = huge
+		// 3 = gargantuan
+		// 4 = colossal
+
+		this.sizeClass = 0;
 
 		this.dex = 10;
 		this.str = 10;
@@ -29,6 +43,10 @@ class Character extends Actionable {
 		this.property = {};
 
 		Character.instances[this.name] = this;
+
+		this.directActions["onThrow"] = function(self, player){
+			return {interrupt:false,print:""};
+		};
 	}
 
 	getInventoryItem(itemName){
@@ -192,6 +210,8 @@ class Character extends Actionable {
 		else if(action.match(/^wear \w+$/g) !== null) return this.wear(action.replace(/^wear (\w+)$/,"$1"));
 		else if(action.match(/^use \w+ on \w+$/g) !== null) return this.use(action.replace(/^use (\w+) on (\w+)$/g,"$1"), action.replace(/^use (\w+) on (\w+)$/g,"$2"));
 		else if(action.match(/^use \w+$/g)) return this.use(action.replace(/^use (\w+)$/g,"$1"));
+		else if(action.match(/^cast (\w+)$/g)) return this.cast(action.replace(/^cast (\w+) at (\w+)$/g,"$1"));
+		else if(action.match(/^cast (\w+) at (\w+)$/g)) return this.cast(action.replace(/^cast (\w+) at (\w+)$/g,"$1"), action.replace(/^cast (\w+) at (\w+)$/g,"$2"));
 		else if(action.match("/^(" + Actionable.verbs.join("|") + ") (\w+) ( with (\w+))?$/g")) {
 			var anythingName;
 			var itemName;
@@ -520,6 +540,18 @@ class Character extends Actionable {
 		return onUnequip.print + onEquip.print + onReceive.print + "Gave '"+itemName+"' to '"+npcName+"'";
 	}
 
+	cast(spell,target=null){
+
+	}
+
+	throw(anyName,anyName2){
+		var any = this.getAny(anyName);
+		var any2 = this.getAny(anyName2);
+		if(any.throwable){
+			
+		}
+	}
+
 	verb(verb, name, itemName=null){
 		var any = this.getAny(name);
 		var item = this.getInventoryItem(itemName);
@@ -579,3 +611,85 @@ class Character extends Actionable {
 }
 
 Character.instances = {};
+Character.statusConditions = {
+	"blinded":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"charmed":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"deafened":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"fatigued":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"frightened":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"grappled":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"incapcitated":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"invisible":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"paralyzed":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"poisoned":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"petrified":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"prone":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"restrained":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"stunned":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"unconcious":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+	"exhaustion":function(player,action){
+		switch(action){
+		}
+		return {interrupt:false};
+	},
+};

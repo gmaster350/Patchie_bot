@@ -6,6 +6,7 @@ class NPC extends Character {
 		this.dialogueStates = {
 			null: "Oh hey, what's up?"
 		};
+		this.throwable = true;
 
 		this.directActions["onSpeakTo"] = function(self, player){
 			return {interrupt:false, print:""};
