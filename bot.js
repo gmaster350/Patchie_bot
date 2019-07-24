@@ -587,6 +587,10 @@ const version = "1.4.0";
 	"\nOwner: "+"<http://www.furaffinity.net/user/macabredragon>";
 
 	var owner;
+	var banVoteCount = {
+
+	};
+
 	fs.readFile("../discordBotOwnerId.txt",function(err,data){
 		if(err)console.log(err);
 		else{owner = data.toString();}
@@ -782,6 +786,49 @@ function botAddressed(message){
 	return message.cleanContent.startsWith("@") && message.mentions.users.size > 0 && message.mentions.users.some(function(m){
 		return m.id == bot.user.id;
 	});
+}
+
+function voteToBan(message,callback){
+	if(message.mentions.members.size === 0){
+		callback("Usage: !!ban @user\nVote to ban a recently joined user. Does not work for users who have been here for longer than a month.\nNeeded number of votes depends on how recently user joined. < 1 day = 3 votes; 1 - 7 days = 4 votes; 7 - 30 days = 5 votes\nVoting period is 5 minutes, beginning from first vote. You cannot vote more than once in a given voting period.");
+		return;
+	}
+	var member = message.mentions.members.first();
+	var time = new Date().valueOf() -  member.joinedTimestamp;
+
+	if(time > 2592000000){
+		callback("Cannot vote to ban someone who has been a member for longer than a month");
+		return;
+	}
+
+	if(!(member.id in banVoteCount) || banVoteCount[member.id]["active"] === false){
+		banVoteCount[member.id] = {};
+		banVoteCount[member.id]["active"] = true;
+		banVoteCount[member.id]["voters"] = [];
+		banVoteCount[member.id]["needed"] = time < 86400000 ? 3 : time < 604800000 ? 4 : time < 2592000000 ? 5 : Infinity;
+		banVoteCount[member.id]["channel"] = message.channel;
+		banVoteCount[member.id]["timeout"] = setTimeout(function(mem){
+			clearTimeout(banVoteCount[mem.id]["timeout"]);
+			banVoteCount[mem.id]["channel"].send("Voting period to ban "+mem.displayName+" has expired.");
+		},300000,member);
+	}
+
+	banVoteCount[member.id]["timeout"]["active"] = true;
+
+	if(banVoteCount[member.id]["voters"].some(v => v === message.author.id)){
+		callback("You cannot vote more than once.");
+		return;
+	}
+
+	banVoteCount[member.id]["voters"].push(message.author.id);
+	callback("Voted to ban " + member.displayName + " ("+banVoteCount[member.id]["voters"].length+"/"+banVoteCount[member.id]["needed"]+")");
+
+	if(banVoteCount[member.id]["count"] >= banVoteCount[member.id]["needed"]){
+		clearTimeout(banVoteCount[member.id]["timeout"]);
+		banVoteCount[member.id]["timeout"]["active"] = false;
+		banVoteCount[member.id]["voters"] = [];
+		member.ban(7);
+	}
 }
 
 function giveRole(message,callback){
@@ -1158,6 +1205,7 @@ var commandTree = {
 	"skin":skin,
 	"inspectuser": inspectUser,
 	"pokeball":pokeball,
+	"ban":voteToBan,
 
 
 	//roles
